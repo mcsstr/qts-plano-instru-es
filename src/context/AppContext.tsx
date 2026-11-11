@@ -9,8 +9,9 @@ import {
   GoogleSheetsConfig,
   Turno
 } from '../types';
-import { storageService, DEFAULT_STATE } from '../services/storageService';
+import { storageService } from '../services/storageService';
 import { GeneratedAulaPreview } from '../utils/rotationAlgorithm';
+import { ToastMessage } from '../components/common/Toast';
 
 interface AppContextType {
   state: AppState;
@@ -20,6 +21,11 @@ interface AppContextType {
   aulas: Aula[];
   gestores: Gestor[];
   sheetsConfig: GoogleSheetsConfig;
+
+  // Toast Notification
+  toast: ToastMessage | null;
+  showToast: (msg: Omit<ToastMessage, 'id'>) => void;
+  closeToast: () => void;
 
   // Filtros Globais
   selectedTurmaId: string;
@@ -94,6 +100,20 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<AppState>(() => storageService.loadState());
 
+  // Toast
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+
+  const showToast = useCallback((t: Omit<ToastMessage, 'id'>) => {
+    setToast({
+      ...t,
+      id: `toast-${Date.now()}`
+    });
+  }, []);
+
+  const closeToast = useCallback(() => {
+    setToast(null);
+  }, []);
+
   // Filtros
   const [selectedTurmaId, setSelectedTurmaId] = useState<string>('all');
   const [selectedMateriaId, setSelectedMateriaId] = useState<string>('all');
@@ -126,7 +146,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Sincronizar com Google Sheets
   const syncSheets = async () => {
     if (!state.sheetsConfig.scriptUrl) {
-      setSyncError('URL da Planilha Google não foi configurada.');
+      const err = 'URL da Planilha Google não foi configurada.';
+      setSyncError(err);
+      showToast({
+        type: 'error',
+        title: 'Planilha não configurada',
+        message: 'Insira a URL do Google Apps Script em Ajustes.'
+      });
       return;
     }
     setIsSyncing(true);
@@ -134,8 +160,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const updated = await storageService.syncWithSheets(state);
       setState(updated);
+      const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      showToast({
+        type: 'success',
+        title: 'Planilha Sincronizada com Sucesso!',
+        message: `${updated.aulas.length} aulas, ${updated.turmas.length} turmas e ${updated.instrutores.length} instrutores carregados às ${timeStr}.`
+      });
     } catch (err: any) {
-      setSyncError(err?.message || 'Falha ao sincronizar com Google Sheets');
+      const msg = err?.message || 'Falha ao sincronizar com Google Sheets';
+      setSyncError(msg);
+      showToast({
+        type: 'error',
+        title: 'Erro na Sincronização',
+        message: msg
+      });
     } finally {
       setIsSyncing(false);
     }
@@ -415,8 +453,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Reset / Backup
   const resetToDefaultData = () => {
-    setState(DEFAULT_STATE);
-    storageService.saveState(DEFAULT_STATE);
+    storageService.saveState(storageService.loadState());
+    showToast({
+      type: 'info',
+      title: 'Dados Redefinidos',
+      message: 'Os dados foram restaurados para a configuração inicial.'
+    });
   };
 
   const exportBackup = () => {
@@ -428,12 +470,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     link.download = `qts-backup-${new Date().toISOString().split('T')[0]}.json`;
     link.click();
     URL.revokeObjectURL(url);
+    showToast({
+      type: 'success',
+      title: 'Backup Exportado',
+      message: 'Arquivo JSON gerado e baixado com sucesso.'
+    });
   };
 
   const importBackup = (jsonStr: string) => {
     const imported = storageService.importFromJson(jsonStr);
     setState(imported);
     storageService.saveState(imported);
+    showToast({
+      type: 'success',
+      title: 'Backup Restaurado',
+      message: 'Todos os registros foram carregados com sucesso.'
+    });
   };
 
   // Lookup helpers
@@ -451,6 +503,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         aulas: state.aulas,
         gestores: state.gestores,
         sheetsConfig: state.sheetsConfig,
+
+        toast,
+        showToast,
+        closeToast,
 
         selectedTurmaId,
         setSelectedTurmaId,

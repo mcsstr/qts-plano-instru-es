@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AuthProvider } from './context/AuthContext';
-import { AppProvider } from './context/AppContext';
+import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
 import { LoginModal } from './components/layout/LoginModal';
@@ -10,13 +10,18 @@ import { BatchGeneratorView } from './components/generator/BatchGeneratorView';
 import { MetricsDashboard } from './components/metrics/MetricsDashboard';
 import { RegistersManager } from './components/registers/RegistersManager';
 import { GoogleSheetsSettingsModal } from './components/settings/GoogleSheetsSettingsModal';
+import { Toast } from './components/common/Toast';
 
 const AppContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<'calendario' | 'gerador' | 'metricas' | 'cadastros'>('calendario');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { toast, closeToast } = useApp();
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+      {/* Toast Flutuante de Notificação */}
+      <Toast toast={toast} onClose={closeToast} />
+
       {/* Banner PWA de Instalação no Celular */}
       <InstallPwaBanner />
 

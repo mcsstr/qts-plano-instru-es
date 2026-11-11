@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Aula } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
@@ -23,7 +23,6 @@ import {
   Calendar as CalendarIcon,
   List,
   CheckSquare,
-  AlertTriangle,
   RotateCcw
 } from 'lucide-react';
 
@@ -51,9 +50,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
 
   const { canEdit } = useAuth();
 
-  // Estado da data e visualização
+  // No mobile, inicia automaticamente em 'lista' para garantir visual perfeito e não espremido
+  const [viewMode, setViewMode] = useState<'mes' | 'lista'>(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      return 'lista';
+    }
+    return 'mes';
+  });
+
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [viewMode, setViewMode] = useState<'mes' | 'lista'>('mes');
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
 
   // Estados dos modais
@@ -114,7 +119,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
   return (
     <div className="space-y-4">
       {/* Top Bar: Navegação de Mês, Modos de Visão e Ações */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
         {/* Navegação de Data */}
         <div className="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-start">
           <div className="flex items-center space-x-1">
@@ -142,7 +147,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             </button>
           </div>
 
-          <h1 className="text-lg font-bold text-slate-900 capitalize tracking-tight ml-2">
+          <h1 className="text-base sm:text-lg font-bold text-slate-900 capitalize tracking-tight ml-2">
             {formatMonthYear(currentDate)}
           </h1>
         </div>
@@ -152,27 +157,27 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
           {/* Alternador de Visão (Mês / Lista) */}
           <div className="flex items-center bg-slate-100 p-1 rounded-xl">
             <button
-              onClick={() => setViewMode('mes')}
-              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                viewMode === 'mes'
-                  ? 'bg-white text-blue-600 shadow-xs font-semibold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <CalendarIcon className="w-3.5 h-3.5" />
-              <span>Mês</span>
-            </button>
-
-            <button
               onClick={() => setViewMode('lista')}
               className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 viewMode === 'lista'
-                  ? 'bg-white text-blue-600 shadow-xs font-semibold'
+                  ? 'bg-white text-blue-600 shadow-xs font-bold'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              <span>Lista</span>
+              <span>Lista {viewMode === 'lista' ? '• Dia a Dia' : ''}</span>
+            </button>
+
+            <button
+              onClick={() => setViewMode('mes')}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                viewMode === 'mes'
+                  ? 'bg-white text-blue-600 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <CalendarIcon className="w-3.5 h-3.5" />
+              <span>Grade Mês</span>
             </button>
           </div>
 
@@ -220,7 +225,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
           {canEdit && (
             <button
               onClick={() => handleOpenNewAula()}
-              className="flex items-center space-x-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-blue-500/20 transition-all"
+              className="flex items-center space-x-1.5 px-3.5 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-blue-500/20 transition-all"
             >
               <Plus className="w-4 h-4" />
               <span>Inserir Aula</span>
@@ -306,7 +311,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
         </div>
       </div>
 
-      {/* Conteúdo do Calendário (Grade Mensal ou Lista) */}
+      {/* Conteúdo do Calendário (Grade Mensal ou Lista PWA) */}
       {viewMode === 'mes' ? (
         <MonthGrid
           currentDate={currentDate}
@@ -349,4 +354,3 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
     </div>
   );
 };
-

@@ -1,9 +1,10 @@
 import React from 'react';
 import { Aula } from '../../types';
 import { ClassCard } from './ClassCard';
-import { formatDateBr, formatDayOfWeek, parseISO } from '../../utils/dateUtils';
+import { formatDateBr, formatDayOfWeek } from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
-import { Plus, CalendarDays } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
+import { Plus, CalendarDays, Sparkles, Clock, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface AgendaViewProps {
   aulas: Aula[];
@@ -17,8 +18,16 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
   onAddAulaOnDate
 }) => {
   const { canEdit } = useAuth();
+  const { getTurma, getMateria, getInstrutor } = useApp();
 
-  // Ordena aulas por data cronológica crescente
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // Aulas de HOJE
+  const todayAulas = React.useMemo(() => {
+    return aulas.filter(a => a.data === todayStr);
+  }, [aulas, todayStr]);
+
+  // Todas as datas com aulas, agrupadas
   const sortedDates = React.useMemo(() => {
     const map = new Map<string, Aula[]>();
     aulas.forEach(a => {
@@ -34,73 +43,238 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
     }));
   }, [aulas]);
 
-  if (sortedDates.length === 0) {
-    return (
-      <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400">
-          <CalendarDays className="w-6 h-6" />
-        </div>
-        <h3 className="text-base font-semibold text-slate-800">Nenhuma aula encontrada</h3>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-          Nenhuma aula coincide com os filtros selecionados ou não há aulas cadastradas para este período.
-        </p>
-      </div>
-    );
-  }
+  const upcomingDates = React.useMemo(() => {
+    return sortedDates.filter(g => g.date >= todayStr);
+  }, [sortedDates, todayStr]);
+
+  const pastDates = React.useMemo(() => {
+    return sortedDates.filter(g => g.date < todayStr).reverse();
+  }, [sortedDates, todayStr]);
 
   return (
-    <div className="space-y-4">
-      {sortedDates.map(group => {
-        const isToday = group.date === new Date().toISOString().split('T')[0];
-
-        return (
-          <div
-            key={group.date}
-            className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden"
-          >
-            {/* Header da Data */}
-            <div className={`px-4 py-3 border-b flex items-center justify-between ${
-              isToday ? 'bg-blue-50/70 border-blue-200' : 'bg-slate-50 border-slate-200'
-            }`}>
-              <div className="flex items-center space-x-2">
-                <span className={`text-sm font-bold ${isToday ? 'text-blue-700' : 'text-slate-900'}`}>
-                  {formatDateBr(group.date)}
-                </span>
-                <span className="text-xs text-slate-500 capitalize">
-                  • {formatDayOfWeek(group.date)}
-                </span>
-                {isToday && (
-                  <span className="text-[10px] font-bold uppercase bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                    Hoje
-                  </span>
-                )}
-              </div>
-
-              {canEdit && (
-                <button
-                  onClick={() => onAddAulaOnDate(group.date)}
-                  className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-700 font-medium py-1 px-2 rounded-lg hover:bg-blue-100/50 transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Adicionar aula neste dia</span>
-                </button>
-              )}
+    <div className="space-y-5">
+      {/* =========================================================================
+          CABEÇALHO FIXO / DESTACADO: AULAS DE HOJE
+         ========================================================================= */}
+      <div className="sticky top-16 z-20 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white rounded-2xl shadow-lg border border-blue-500/30 p-4 sm:p-5 backdrop-blur-md">
+        <div className="flex items-center justify-between pb-2.5 border-b border-white/15">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+              <CalendarDays className="w-4 h-4 text-white" />
             </div>
-
-            {/* Aulas do dia */}
-            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-              {group.aulas.map(aula => (
-                <ClassCard
-                  key={aula.id}
-                  aula={aula}
-                  onClick={() => onSelectAula(aula)}
-                />
-              ))}
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] uppercase font-extrabold tracking-wider bg-white text-blue-900 px-2 py-0.5 rounded-full shadow-2xs">
+                  HOJE
+                </span>
+                <span className="text-xs text-blue-100 capitalize font-medium">
+                  {formatDayOfWeek(todayStr)}
+                </span>
+              </div>
+              <h2 className="text-base sm:text-lg font-black tracking-tight mt-0.5">
+                {formatDateBr(todayStr)}
+              </h2>
             </div>
           </div>
-        );
-      })}
+
+          {canEdit && (
+            <button
+              onClick={() => onAddAulaOnDate(todayStr)}
+              className="flex items-center space-x-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-xs font-semibold transition-all border border-white/20 shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Inserir Aula Hoje</span>
+            </button>
+          )}
+        </div>
+
+        {/* Cards das Aulas de Hoje */}
+        <div className="mt-3">
+          {todayAulas.length === 0 ? (
+            <div className="p-3 bg-white/10 rounded-xl text-center text-xs text-blue-100 flex items-center justify-center space-x-2">
+              <Sparkles className="w-4 h-4 text-blue-200" />
+              <span>Nenhuma aula programada para hoje. Cronograma livre!</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+              {todayAulas.map(aula => {
+                const turma = getTurma(aula.turmaId);
+                const materia = getMateria(aula.materiaId);
+                const instrutor = getInstrutor(aula.instrutorId);
+                const isPrejudicada = aula.status === 'prejudicada';
+                const isRealizada = aula.status === 'realizada';
+
+                return (
+                  <div
+                    key={aula.id}
+                    onClick={() => onSelectAula(aula)}
+                    className="p-3 rounded-xl bg-white text-slate-900 shadow-md cursor-pointer hover:scale-[1.01] transition-all border-l-4 text-left"
+                    style={{ borderLeftColor: isPrejudicada ? '#f59e0b' : materia?.cor || '#2563eb' }}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-md"
+                        style={{ backgroundColor: `${turma?.cor || '#2563eb'}20`, color: turma?.cor || '#2563eb' }}
+                      >
+                        {turma?.sigla || 'TURMA'}
+                      </span>
+                      {isPrejudicada ? (
+                        <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <AlertTriangle className="w-3 h-3 text-amber-600" />
+                          Prejuízo
+                        </span>
+                      ) : isRealizada ? (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          Concluída
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-blue-600" />
+                          Hoje
+                        </span>
+                      )}
+                    </div>
+                    <div className="font-bold text-sm text-slate-900 leading-snug line-clamp-2">
+                      {materia?.nome || 'Matéria'}
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1 flex items-center justify-between">
+                      <span className="truncate max-w-[150px]">Instrutor: <strong>{instrutor?.nome}</strong></span>
+                      <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{aula.turno}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* =========================================================================
+          LISTA COMPLETA DIA A DIA (AGENDA MOBILE-FIRST)
+         ========================================================================= */}
+      <div className="space-y-4">
+        {/* Seção Próximas Aulas */}
+        {upcomingDates.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 px-1 flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-blue-600" />
+              <span>Próximas Datas com Aula</span>
+            </h3>
+
+            {upcomingDates.map(group => {
+              const isToday = group.date === todayStr;
+
+              return (
+                <div
+                  key={group.date}
+                  className={`bg-white rounded-2xl border shadow-xs overflow-hidden transition-all ${
+                    isToday ? 'border-blue-300 ring-2 ring-blue-500/20' : 'border-slate-200'
+                  }`}
+                >
+                  {/* Cabeçalho da Data */}
+                  <div
+                    className={`px-4 py-3 border-b flex items-center justify-between ${
+                      isToday ? 'bg-blue-50/80 border-blue-200' : 'bg-slate-50 border-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2.5">
+                      <div className="text-center bg-white px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs">
+                        <span className="block text-xs font-bold text-slate-900">
+                          {formatDateBr(group.date).substring(0, 5)}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-sm font-bold capitalize ${isToday ? 'text-blue-800' : 'text-slate-900'}`}>
+                            {formatDayOfWeek(group.date)}
+                          </span>
+                          {isToday && (
+                            <span className="text-[10px] font-bold uppercase bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                              Hoje
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-slate-500">
+                          {group.aulas.length} {group.aulas.length === 1 ? 'aula agendada' : 'aulas agendadas'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {canEdit && (
+                      <button
+                        onClick={() => onAddAulaOnDate(group.date)}
+                        className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 font-semibold p-1.5 hover:bg-blue-100/60 rounded-lg transition-colors"
+                        title="Adicionar aula nesta data"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">Adicionar</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Cards das Aulas do Dia */}
+                  <div className="p-3.5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {group.aulas.map(aula => (
+                      <ClassCard
+                        key={aula.id}
+                        aula={aula}
+                        onClick={() => onSelectAula(aula)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Seção Aulas Anteriores / Histórico */}
+        {pastDates.length > 0 && (
+          <div className="space-y-3 pt-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
+              Aulas Anteriores (Histórico)
+            </h3>
+
+            {pastDates.slice(0, 10).map(group => (
+              <div
+                key={group.date}
+                className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden opacity-90 hover:opacity-100 transition-opacity"
+              >
+                <div className="px-4 py-2.5 bg-slate-50/70 border-b border-slate-200 flex items-center justify-between text-xs">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-slate-800">{formatDateBr(group.date)}</span>
+                    <span className="text-slate-500 capitalize">• {formatDayOfWeek(group.date)}</span>
+                  </div>
+                  <span className="text-slate-400 text-[11px]">{group.aulas.length} aulas</span>
+                </div>
+
+                <div className="p-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                  {group.aulas.map(aula => (
+                    <ClassCard
+                      key={aula.id}
+                      aula={aula}
+                      onClick={() => onSelectAula(aula)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {sortedDates.length === 0 && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400">
+              <CalendarDays className="w-6 h-6" />
+            </div>
+            <h4 className="text-base font-semibold text-slate-800">Nenhuma aula encontrada</h4>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+              Nenhuma aula coincide com os filtros ativos. Tente limpar os filtros para ver todas as aulas.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
-
