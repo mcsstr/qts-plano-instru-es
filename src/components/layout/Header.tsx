@@ -23,7 +23,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openSettings, onOpenNewAula }) => {
-  const { canEdit, openLoginModal, logout } = useAuth();
+  const { canEdit, isAdmin, openLoginModal, logout } = useAuth();
   const { syncSheets, isSyncing, syncError, sheetsConfig } = useApp();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -118,14 +118,16 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                 </button>
               )}
 
-              {/* Settings button (Desktop) */}
-              <button
-                onClick={openSettings}
-                title="Configurações & Planilha Google"
-                className="hidden sm:block p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
+              {/* Settings button (Somente Admin no Desktop) */}
+              {isAdmin && (
+                <button
+                  onClick={openSettings}
+                  title="Configurações & Planilha Google (Exclusivo Admin)"
+                  className="hidden sm:block p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+                >
+                  <Settings className="w-5 h-5" />
+                </button>
+              )}
 
               {/* Auth / Login Status Pill (Desktop) */}
               <div className="hidden sm:flex items-center">

@@ -4,6 +4,9 @@ import { fetchGoogleSheetsData, pushGoogleSheetsData } from './googleSheetsServi
 
 const STORAGE_KEY = 'qts_plano_aulas_state_v2';
 
+export const DEFAULT_SCRIPT_URL =
+  'https://script.google.com/macros/s/AKfycbxwJ1ZcRqf80D0mQ4ZwwYB9pfZoBmvbw_6QkDLVehHuODFZYjXsxbMzuVWCGjxWswyUQg/exec';
+
 export const DEFAULT_STATE: AppState = {
   turmas: INITIAL_TURMAS,
   materias: INITIAL_MATERIAS,
@@ -11,7 +14,7 @@ export const DEFAULT_STATE: AppState = {
   aulas: INITIAL_AULAS,
   gestores: INITIAL_GESTORES,
   sheetsConfig: {
-    scriptUrl: '',
+    scriptUrl: DEFAULT_SCRIPT_URL,
     autoSync: true,
     ultimaSincronizacao: undefined
   }
@@ -39,6 +42,9 @@ export const storageService = {
         const sheetsConfig = parsed.sheetsConfig || DEFAULT_STATE.sheetsConfig;
         if (dbParam && dbParam.startsWith('http')) {
           sheetsConfig.scriptUrl = dbParam.trim();
+          sheetsConfig.autoSync = true;
+        } else if (!sheetsConfig.scriptUrl) {
+          sheetsConfig.scriptUrl = DEFAULT_SCRIPT_URL;
           sheetsConfig.autoSync = true;
         }
         return {

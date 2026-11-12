@@ -30,7 +30,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   setCurrentTab,
   openSettings
 }) => {
-  const { user, canEdit, openLoginModal, logout } = useAuth();
+  const { user, canEdit, isAdmin, openLoginModal, logout } = useAuth();
   const {
     syncSheets,
     isSyncing,
@@ -176,16 +176,18 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                 <span>Cadastros (Turmas, Matérias, Instrutores)</span>
               </button>
 
-              <button
-                onClick={() => {
-                  onClose();
-                  openSettings();
-                }}
-                className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-slate-700 hover:bg-slate-100 transition-colors text-left"
-              >
-                <Settings className="w-4 h-4 text-slate-500" />
-                <span>Ajustes & Banco de Dados</span>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    openSettings();
+                  }}
+                  className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-slate-700 hover:bg-slate-100 transition-colors text-left"
+                >
+                  <Settings className="w-4 h-4 text-slate-500" />
+                  <span>Ajustes & Banco de Dados (Admin)</span>
+                </button>
+              )}
             </div>
           </div>
 

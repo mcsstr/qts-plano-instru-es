@@ -23,7 +23,7 @@ interface BottomNavProps {
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, setCurrentTab, openSettings }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, canEdit, openLoginModal, logout } = useAuth();
+  const { user, canEdit, isAdmin, openLoginModal, logout } = useAuth();
   const { syncSheets, isSyncing, sheetsConfig } = useApp();
 
   const handleSelectTab = (tab: string) => {
@@ -125,20 +125,22 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, setCurrentTab,
               </button>
             </div>
 
-            {/* Ajustes & Sincronização */}
+            {/* Ajustes (Exclusivo Admin) & Sincronização */}
             <div className="space-y-2 pt-1 border-t border-slate-100">
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  openSettings();
-                }}
-                className="w-full flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold transition-colors"
-              >
-                <span className="flex items-center gap-2">
-                  <Settings className="w-4 h-4 text-slate-600" />
-                  <span>Ajustes & Planilha Google</span>
-                </span>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    openSettings();
+                  }}
+                  className="w-full flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-semibold transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-slate-600" />
+                    <span>Ajustes & Planilha Google (Admin)</span>
+                  </span>
+                </button>
+              )}
 
               {sheetsConfig.scriptUrl && (
                 <button

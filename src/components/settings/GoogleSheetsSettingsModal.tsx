@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { GOOGLE_APPS_SCRIPT_CODE } from '../../services/googleSheetsService';
 import {
   X,
@@ -38,6 +39,7 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
     resetToDefaultData
   } = useApp();
 
+  const { isAdmin } = useAuth();
   const [scriptUrl, setScriptUrl] = useState(sheetsConfig.scriptUrl || '');
   const [autoSync, setAutoSync] = useState(sheetsConfig.autoSync ?? true);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -45,7 +47,7 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
   const [importError, setImportError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'sheets' | 'backup' | 'pwa'>('sheets');
 
-  if (!isOpen) return null;
+  if (!isOpen || !isAdmin) return null;
 
   const handleSaveSheetsConfig = async (e: React.FormEvent) => {
     e.preventDefault();
