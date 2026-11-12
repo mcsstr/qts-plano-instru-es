@@ -1,7 +1,7 @@
 import React from 'react';
 import { Aula } from '../../types';
 import { useApp } from '../../context/AppContext';
-import { AlertTriangle, ArrowRightLeft, CheckCircle2, Check, User, Clock } from 'lucide-react';
+import { AlertTriangle, ArrowRightLeft, CheckCircle2, Check } from 'lucide-react';
 
 interface ClassCardProps {
   aula: Aula;
@@ -10,11 +10,10 @@ interface ClassCardProps {
 }
 
 export const ClassCard: React.FC<ClassCardProps> = ({ aula, onClick, compact = false }) => {
-  const { getTurma, getMateria, getInstrutor, isMultiSelectMode, selectedAulaIds, toggleSelectAula } = useApp();
+  const { getTurma, getMateria, isMultiSelectMode, selectedAulaIds, toggleSelectAula } = useApp();
 
   const turma = getTurma(aula.turmaId);
   const materia = getMateria(aula.materiaId);
-  const instrutor = getInstrutor(aula.instrutorId);
 
   const isSelected = selectedAulaIds.has(aula.id);
   const isPrejudicada = aula.status === 'prejudicada';
@@ -68,7 +67,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({ aula, onClick, compact = f
         </div>
       )}
 
-      {/* Linha Superior: Turma Badge e Status (sem truncar a sigla da turma) */}
+      {/* Linha Superior: Turma Badge e Status */}
       <div className={`flex items-center justify-between gap-1 ${compact ? 'mb-1' : 'mb-1.5'} ${isMultiSelectMode ? 'pr-4' : ''}`}>
         <span
           className={`${compact ? 'text-[9px] px-1.5 py-0.5' : 'text-[10px] px-2 py-0.5'} font-extrabold rounded shrink-0 tracking-tight`}
@@ -107,33 +106,16 @@ export const ClassCard: React.FC<ClassCardProps> = ({ aula, onClick, compact = f
         ) : null}
       </div>
 
-      {/* Nome da Matéria com fonte menor para mostrar mais conteúdo */}
+      {/* Nome da Matéria */}
       <div
         className={`font-bold text-slate-900 ${
           compact
-            ? 'text-[11px] leading-[1.25] line-clamp-2 mb-1'
-            : 'text-xs sm:text-sm leading-snug line-clamp-2 mb-1.5'
+            ? 'text-[11px] leading-[1.25] line-clamp-2'
+            : 'text-xs sm:text-sm leading-snug line-clamp-2'
         }`}
         title={materia?.nome}
       >
         {materia?.nome || 'Matéria'}
-      </div>
-
-      {/* Instrutor e Horário / Turno */}
-      <div
-        className={`pt-1 border-t border-slate-100 flex items-center justify-between gap-1 ${
-          compact ? 'text-[10px]' : 'text-[11px]'
-        } text-slate-600`}
-      >
-        <span className="flex items-center gap-0.5 font-medium truncate" title={instrutor?.nome}>
-          <User className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-          <span className="truncate">{instrutor?.nome || 'Sem instrutor'}</span>
-        </span>
-
-        <span className="flex items-center gap-0.5 text-[9px] text-slate-500 font-medium bg-slate-100 px-1 py-0.5 rounded shrink-0">
-          <Clock className="w-2 h-2 text-slate-400 shrink-0" />
-          <span>{aula.turno}</span>
-        </span>
       </div>
     </div>
   );

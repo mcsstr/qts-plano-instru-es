@@ -27,7 +27,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
   currentDate = new Date()
 }) => {
   const { canEdit } = useAuth();
-  const { getTurma, getMateria, getInstrutor } = useApp();
+  const { getTurma, getMateria } = useApp();
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const selectedYearMonth = format(currentDate, 'yyyy-MM');
@@ -120,7 +120,6 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                 {todayAulas.map(aula => {
                   const turma = getTurma(aula.turmaId);
                   const materia = getMateria(aula.materiaId);
-                  const instrutor = getInstrutor(aula.instrutorId);
                   const isPrejudicada = aula.status === 'prejudicada';
                   const isRealizada = aula.status === 'realizada';
 
@@ -157,10 +156,6 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                       </div>
                       <div className="font-bold text-sm text-slate-900 leading-snug line-clamp-2">
                         {materia?.nome || 'Matéria'}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1 flex items-center justify-between">
-                        <span className="truncate max-w-[150px]">Instrutor: <strong>{instrutor?.nome}</strong></span>
-                        <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{aula.turno}</span>
                       </div>
                     </div>
                   );

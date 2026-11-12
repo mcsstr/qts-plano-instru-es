@@ -61,8 +61,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
     clearSelectedAulas,
     deleteSelectedAulas,
     getTurma,
-    getMateria,
-    getInstrutor
+    getMateria
   } = useApp();
 
   const { canEdit, openLoginModal } = useAuth();
@@ -332,7 +331,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                 todayAulas.map(aula => {
                   const turma = getTurma(aula.turmaId);
                   const materia = getMateria(aula.materiaId);
-                  const instrutor = getInstrutor(aula.instrutorId);
                   const isPrejudicada = aula.status === 'prejudicada';
                   const isRealizada = aula.status === 'realizada';
 
@@ -367,12 +365,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                           </span>
                         )}
                       </div>
-                      <div className="font-bold text-xs text-slate-900 leading-snug line-clamp-1">
+                      <div className="font-bold text-xs text-slate-900 leading-snug line-clamp-2">
                         {materia?.nome || 'Matéria'}
-                      </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5 flex items-center justify-between">
-                        <span className="truncate max-w-[170px]">Instrutor: <strong>{instrutor?.nome}</strong></span>
-                        <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{aula.turno}</span>
                       </div>
                     </div>
                   );
