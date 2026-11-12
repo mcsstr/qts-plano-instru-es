@@ -103,7 +103,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
               {/* Google Sheets Sync Pill (Desktop) */}
               {sheetsConfig.scriptUrl && (
                 <button
-                  onClick={syncSheets}
+                  onClick={() => syncSheets()}
                   disabled={isSyncing}
                   title={syncError ? `Erro: ${syncError}` : 'Sincronizar com a Planilha Google agora'}
                   className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors bg-white shadow-2xs"
@@ -155,7 +155,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
               {/* Botão Sincronizar Rápido no Mobile */}
               {sheetsConfig.scriptUrl && (
                 <button
-                  onClick={syncSheets}
+                  onClick={() => syncSheets()}
                   disabled={isSyncing}
                   className="sm:hidden p-2 text-slate-600 hover:text-blue-600 rounded-xl"
                   title="Sincronizar Planilha"

@@ -492,7 +492,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       {/* =========================================================================
           2. VERSÃO DESKTOP: CONTROLES COMPLETOS (Mês, Grade, Filtros, Inserir)
          ========================================================================= */}
-      <div className="hidden md:flex bg-white rounded-2xl border border-slate-200 shadow-xs p-4 items-center justify-between gap-4">
+      <div className="hidden md:flex bg-white rounded-2xl border border-slate-200 shadow-xs px-4 py-2.5 items-center justify-between gap-4">
         {/* Navegação de Data */}
         <div className="flex items-center space-x-2">
           <div className="flex items-center space-x-1">

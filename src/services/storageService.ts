@@ -12,29 +12,10 @@ export const DEFAULT_STATE: AppState = {
   gestores: INITIAL_GESTORES,
   sheetsConfig: {
     scriptUrl: '',
-    autoSync: false,
+    autoSync: true,
     ultimaSincronizacao: undefined
   }
 };
-
-// Helper de mesclagem inteligente por ID:
-// Prioriza os itens locais para que NENHUM cadastro recém-criado seja perdido ou sobrescrito!
-function mergeCollections<T extends { id: string }>(localList: T[], remoteList: T[]): T[] {
-  const map = new Map<string, T>();
-  // 1. Adiciona itens remotos da planilha
-  if (Array.isArray(remoteList)) {
-    remoteList.forEach(item => {
-      if (item && item.id) map.set(item.id, item);
-    });
-  }
-  // 2. Mescla os itens locais por cima (preservando cadastros locais mais recentes)
-  if (Array.isArray(localList)) {
-    localList.forEach(item => {
-      if (item && item.id) map.set(item.id, item);
-    });
-  }
-  return Array.from(map.values());
-}
 
 // Normaliza datas de Aula para garantir formato YYYY-MM-DD puro
 function normalizeAulasDates(aulas: any[]): any[] {
@@ -48,16 +29,33 @@ function normalizeAulasDates(aulas: any[]): any[] {
 export const storageService = {
   loadState(): AppState {
     try {
+      // Verifica se a URL do banco veio via parâmetro ?db= na URL do navegador
+      const urlParams = new URLSearchParams(window.location.search);
+      const dbParam = urlParams.get('db');
+
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
+        const sheetsConfig = parsed.sheetsConfig || DEFAULT_STATE.sheetsConfig;
+        if (dbParam && dbParam.startsWith('http')) {
+          sheetsConfig.scriptUrl = dbParam.trim();
+          sheetsConfig.autoSync = true;
+        }
         return {
           turmas: parsed.turmas || INITIAL_TURMAS,
           materias: parsed.materias || INITIAL_MATERIAS,
           instrutores: parsed.instrutores || INITIAL_INSTRUTORES,
           aulas: normalizeAulasDates(parsed.aulas || INITIAL_AULAS),
           gestores: parsed.gestores || INITIAL_GESTORES,
-          sheetsConfig: parsed.sheetsConfig || DEFAULT_STATE.sheetsConfig
+          sheetsConfig
+        };
+      } else if (dbParam && dbParam.startsWith('http')) {
+        return {
+          ...DEFAULT_STATE,
+          sheetsConfig: {
+            scriptUrl: dbParam.trim(),
+            autoSync: true
+          }
         };
       }
     } catch (e) {
@@ -89,32 +87,63 @@ export const storageService = {
     } as AppState;
   },
 
-  async syncWithSheets(state: AppState): Promise<AppState> {
-    if (!state.sheetsConfig.scriptUrl) {
+  /**
+   * Busca os dados da Planilha Google (fonte da verdade).
+   * Se a planilha já tiver registros, usa os dados da planilha para que todos os dispositivos
+   * vejam exatamente as mesmas turmas, matérias, instrutores, aulas e gestores.
+   * Só envia os dados locais se a planilha estiver completamente vazia (primeira conexão).
+   */
+  async syncWithSheets(state: AppState, customScriptUrl?: string): Promise<AppState> {
+    const targetUrl = (customScriptUrl || state.sheetsConfig.scriptUrl || '').trim();
+    if (!targetUrl) {
       throw new Error('URL do Google Sheets não configurada.');
     }
 
     try {
-      // 1. Envia os dados atuais para a planilha
-      await pushGoogleSheetsData(state.sheetsConfig.scriptUrl, {
-        turmas: state.turmas,
-        materias: state.materias,
-        instrutores: state.instrutores,
-        aulas: state.aulas,
-        gestores: state.gestores
-      });
+      // 1. Primeiro BUSCA o que está na Planilha Google
+      const fetched = await fetchGoogleSheetsData(targetUrl);
 
-      // 2. Busca dados da planilha com mesclagem inteligente
-      const fetched = await fetchGoogleSheetsData(state.sheetsConfig.scriptUrl);
+      const remoteHasData =
+        fetched.turmas.length > 0 ||
+        fetched.materias.length > 0 ||
+        fetched.instrutores.length > 0 ||
+        fetched.aulas.length > 0 ||
+        fetched.gestores.length > 0;
 
+      if (!remoteHasData) {
+        // Planilha nova/vazia: envia os dados deste dispositivo para inicializar a planilha
+        await pushGoogleSheetsData(targetUrl, {
+          turmas: state.turmas,
+          materias: state.materias,
+          instrutores: state.instrutores,
+          aulas: normalizeAulasDates(state.aulas),
+          gestores: state.gestores
+        });
+
+        const initializedState: AppState = {
+          ...state,
+          sheetsConfig: {
+            ...state.sheetsConfig,
+            scriptUrl: targetUrl,
+            autoSync: true,
+            ultimaSincronizacao: new Date().toISOString()
+          }
+        };
+        storageService.saveState(initializedState);
+        return initializedState;
+      }
+
+      // Planilha já possui dados: usa os dados da planilha como fonte oficial para sincronizar dispositivos
       const updatedState: AppState = {
-        turmas: mergeCollections(state.turmas, fetched.turmas),
-        materias: mergeCollections(state.materias, fetched.materias),
-        instrutores: mergeCollections(state.instrutores, fetched.instrutores),
-        aulas: normalizeAulasDates(mergeCollections(state.aulas, fetched.aulas)),
-        gestores: mergeCollections(state.gestores, fetched.gestores),
+        turmas: fetched.turmas.length > 0 ? fetched.turmas : state.turmas,
+        materias: fetched.materias.length > 0 ? fetched.materias : state.materias,
+        instrutores: fetched.instrutores.length > 0 ? fetched.instrutores : state.instrutores,
+        aulas: normalizeAulasDates(fetched.aulas),
+        gestores: fetched.gestores.length > 0 ? fetched.gestores : state.gestores,
         sheetsConfig: {
           ...state.sheetsConfig,
+          scriptUrl: targetUrl,
+          autoSync: true,
           ultimaSincronizacao: new Date().toISOString()
         }
       };
@@ -128,14 +157,15 @@ export const storageService = {
   },
 
   /**
-   * Apenas ENVIA (push) os dados locais para a planilha Google.
-   * Não busca nem mescla. Usado para auto-sync a cada ação do usuário.
+   * Envia (push) imediatamente o estado atual deste dispositivo para a Planilha Google.
+   * Chamado automaticamente toda vez que o usuário adiciona, edita ou exclui qualquer item.
    */
-  async pushToSheets(state: AppState): Promise<void> {
-    if (!state.sheetsConfig.scriptUrl) return;
+  async pushToSheets(state: AppState, customScriptUrl?: string): Promise<void> {
+    const targetUrl = (customScriptUrl || state.sheetsConfig.scriptUrl || '').trim();
+    if (!targetUrl) return;
 
     try {
-      await pushGoogleSheetsData(state.sheetsConfig.scriptUrl, {
+      await pushGoogleSheetsData(targetUrl, {
         turmas: state.turmas,
         materias: state.materias,
         instrutores: state.instrutores,

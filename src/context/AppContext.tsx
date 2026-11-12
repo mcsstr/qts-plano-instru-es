@@ -81,7 +81,8 @@ interface AppContextType {
   validateGestorLogin: (loginOrNome: string, senha: string) => Gestor | null;
 
   // Google Sheets & Backup
-  syncSheets: () => Promise<void>;
+  syncSheets: (customUrl?: string) => Promise<void>;
+  forcePushToSheets: (customUrl?: string) => Promise<void>;
   updateSheetsConfig: (config: GoogleSheetsConfig) => void;
   isSyncing: boolean;
   syncError: string | null;
@@ -128,14 +129,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
-  // Refs para controlar auto-push sem loops
+  // Refs para controlar auto-push sem loops e manter referência atualizada do state
   const isFirstRender = useRef(true);
   const skipAutoPush = useRef(false);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   // Salva no localStorage sempre que o state mudar
   useEffect(() => {
     storageService.saveState(state);
   }, [state]);
+
+  // Ao abrir o aplicativo, se já houver URL da planilha configurada, busca os dados mais recentes da planilha
+  useEffect(() => {
+    if (stateRef.current.sheetsConfig.scriptUrl) {
+      syncSheets(stateRef.current.sheetsConfig.scriptUrl);
+    }
+  }, []);
 
   // =========================================================================
   // AUTO-PUSH: a cada alteração de dados (adicionar, editar, excluir),
@@ -165,7 +175,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         showToast({
           type: 'success',
           title: 'Salvo na Planilha!',
-          message: `Alteração sincronizada automaticamente às ${timeStr}.`
+          message: `Alteração gravada no banco de dados às ${timeStr}.`
         });
       })
       .catch(err => {
@@ -186,15 +196,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     if (state.sheetsConfig.autoSync && state.sheetsConfig.scriptUrl) {
       const interval = setInterval(() => {
-        syncSheets();
-      }, 5 * 60 * 1000);
+        syncSheets(stateRef.current.sheetsConfig.scriptUrl);
+      }, 2 * 60 * 1000);
       return () => clearInterval(interval);
     }
-  }, [state.sheetsConfig]);
+  }, [state.sheetsConfig.autoSync, state.sheetsConfig.scriptUrl]);
 
-  // Sincronizar com Google Sheets (push + fetch + merge — manual)
-  const syncSheets = async () => {
-    if (!state.sheetsConfig.scriptUrl) {
+  // Sincronizar (Buscar dados da Planilha Google para este dispositivo)
+  const syncSheets = async (customUrl?: string) => {
+    const currentState = stateRef.current;
+    const targetUrl = (customUrl || currentState.sheetsConfig.scriptUrl || '').trim();
+    if (!targetUrl) {
       const err = 'URL da Planilha Google não foi configurada.';
       setSyncError(err);
       showToast({
@@ -207,14 +219,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsSyncing(true);
     setSyncError(null);
     try {
-      const updated = await storageService.syncWithSheets(state);
-      skipAutoPush.current = true; // Pula o auto-push para não enviar de volta
+      const updated = await storageService.syncWithSheets(currentState, targetUrl);
+      skipAutoPush.current = true;
       setState(updated);
       const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       showToast({
         type: 'success',
         title: 'Planilha Sincronizada com Sucesso!',
-        message: `${updated.aulas.length} aulas, ${updated.turmas.length} turmas e ${updated.instrutores.length} instrutores carregados às ${timeStr}.`
+        message: `${updated.aulas.length} aulas, ${updated.materias.length} matérias e ${updated.gestores.length} gestores carregados às ${timeStr}.`
       });
     } catch (err: any) {
       const msg = err?.message || 'Falha ao sincronizar com Google Sheets';
@@ -222,6 +234,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       showToast({
         type: 'error',
         title: 'Erro na Sincronização',
+        message: msg
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Força o envio (push) de todos os dados deste dispositivo para a Planilha Google
+  const forcePushToSheets = async (customUrl?: string) => {
+    const currentState = stateRef.current;
+    const targetUrl = (customUrl || currentState.sheetsConfig.scriptUrl || '').trim();
+    if (!targetUrl) {
+      showToast({
+        type: 'error',
+        title: 'Planilha não configurada',
+        message: 'Insira a URL do Google Apps Script antes de enviar.'
+      });
+      return;
+    }
+    setIsSyncing(true);
+    setSyncError(null);
+    try {
+      await storageService.pushToSheets(currentState, targetUrl);
+      const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      showToast({
+        type: 'success',
+        title: 'Dados Enviados para a Planilha!',
+        message: `Todas as ${currentState.materias.length} matérias, ${currentState.aulas.length} aulas e ${currentState.gestores.length} gestores deste dispositivo foram gravados na planilha às ${timeStr}.`
+      });
+    } catch (err: any) {
+      const msg = err?.message || 'Falha ao enviar dados para a planilha';
+      setSyncError(msg);
+      showToast({
+        type: 'error',
+        title: 'Erro ao Enviar',
         message: msg
       });
     } finally {
@@ -601,6 +648,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         validateGestorLogin,
 
         syncSheets,
+        forcePushToSheets,
         updateSheetsConfig,
         isSyncing,
         syncError,

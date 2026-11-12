@@ -30,6 +30,7 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
     sheetsConfig,
     updateSheetsConfig,
     syncSheets,
+    forcePushToSheets,
     isSyncing,
     syncError,
     exportBackup,
@@ -38,8 +39,9 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
   } = useApp();
 
   const [scriptUrl, setScriptUrl] = useState(sheetsConfig.scriptUrl || '');
-  const [autoSync, setAutoSync] = useState(sheetsConfig.autoSync || false);
+  const [autoSync, setAutoSync] = useState(sheetsConfig.autoSync ?? true);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'sheets' | 'backup' | 'pwa'>('sheets');
 
@@ -47,13 +49,33 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
 
   const handleSaveSheetsConfig = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanUrl = scriptUrl.trim();
     updateSheetsConfig({
-      scriptUrl: scriptUrl.trim(),
+      scriptUrl: cleanUrl,
       autoSync
     });
-    if (scriptUrl.trim()) {
-      await syncSheets();
+    if (cleanUrl) {
+      await syncSheets(cleanUrl);
     }
+  };
+
+  const handleForcePush = async () => {
+    const cleanUrl = scriptUrl.trim();
+    if (!cleanUrl) return;
+    updateSheetsConfig({
+      scriptUrl: cleanUrl,
+      autoSync
+    });
+    await forcePushToSheets(cleanUrl);
+  };
+
+  const handleCopyShareLink = () => {
+    const cleanUrl = scriptUrl.trim();
+    if (!cleanUrl) return;
+    const shareUrl = `${window.location.origin}${window.location.pathname}?db=${encodeURIComponent(cleanUrl)}`;
+    navigator.clipboard.writeText(shareUrl);
+    setCopiedShareLink(true);
+    setTimeout(() => setCopiedShareLink(false), 3000);
   };
 
   const handleCopyCode = () => {
@@ -163,7 +185,7 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <label className="flex items-center space-x-2 text-xs text-slate-700 cursor-pointer">
                     <input
                       type="checkbox"
@@ -171,18 +193,51 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
                       onChange={e => setAutoSync(e.target.checked)}
                       className="w-4 h-4 text-emerald-600 rounded"
                     />
-                    <span>Sincronização Automática em segundo plano (a cada 5 min)</span>
+                    <span>Sincronização Automática ativa</span>
                   </label>
 
-                  <button
-                    type="submit"
-                    disabled={isSyncing}
-                    className="flex items-center space-x-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                    <span>{isSyncing ? 'Sincronizando...' : 'Salvar & Sincronizar'}</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleForcePush}
+                      disabled={isSyncing || !scriptUrl.trim()}
+                      title="Envia todas as matérias, gestores e aulas deste dispositivo para a planilha"
+                      className="flex items-center space-x-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Enviar Dados Locais p/ Planilha</span>
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={isSyncing}
+                      title="Conecta e carrega os dados salvos na planilha"
+                      className="flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                      <span>{isSyncing ? 'Sincronizando...' : 'Salvar & Puxar da Planilha'}</span>
+                    </button>
+                  </div>
                 </div>
+
+                {scriptUrl.trim() && (
+                  <div className="p-3 bg-indigo-50/80 border border-indigo-200 rounded-xl flex items-center justify-between gap-2 text-xs">
+                    <div className="text-indigo-900">
+                      <span className="font-bold block">Abrir em outro celular ou computador já conectado:</span>
+                      <span className="text-[11px] text-indigo-700">
+                        Use este link para abrir o app em outro dispositivo já ligado a esta planilha automaticamente.
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCopyShareLink}
+                      className="flex items-center space-x-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shrink-0 transition-colors"
+                    >
+                      {copiedShareLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedShareLink ? 'Link Copiado!' : 'Copiar Link'}</span>
+                    </button>
+                  </div>
+                )}
 
                 {syncError && (
                   <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl flex items-center space-x-2 border border-red-200">
