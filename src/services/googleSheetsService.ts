@@ -187,12 +187,19 @@ export async function fetchGoogleSheetsData(scriptUrl: string): Promise<{
     data: normalizeDateStr(a.data)
   }));
 
+  const rawGestores: Gestor[] = json.gestores || [];
+  const normalizedGestores = rawGestores.map(g => ({
+    ...g,
+    login: String(g.login ?? ''),
+    senha: String(g.senha ?? '')
+  }));
+
   return {
     turmas: json.turmas || [],
     materias: json.materias || [],
     instrutores: json.instrutores || [],
     aulas: normalizedAulas,
-    gestores: json.gestores || []
+    gestores: normalizedGestores
   };
 }
 

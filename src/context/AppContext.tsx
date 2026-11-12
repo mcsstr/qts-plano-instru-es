@@ -7,11 +7,13 @@ import {
   Aula,
   Gestor,
   GoogleSheetsConfig,
-  Turno
+  Turno,
+  AppTheme
 } from '../types';
-import { storageService } from '../services/storageService';
+import { storageService, markIdsAsDeleted } from '../services/storageService';
 import { GeneratedAulaPreview } from '../utils/rotationAlgorithm';
 import { ToastMessage } from '../components/common/Toast';
+import { THEMES, ThemePalette } from '../utils/themeConfig';
 
 interface AppContextType {
   state: AppState;
@@ -21,6 +23,11 @@ interface AppContextType {
   aulas: Aula[];
   gestores: Gestor[];
   sheetsConfig: GoogleSheetsConfig;
+
+  // Tema Visual (4 Temas escolhidos pelo Admin)
+  theme: AppTheme;
+  themePalette: ThemePalette;
+  setTheme: (theme: AppTheme) => void;
 
   // Toast Notification
   toast: ToastMessage | null;
@@ -148,8 +155,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   // =========================================================================
-  // AUTO-PUSH: a cada alteração de dados (adicionar, editar, excluir),
-  // sincroniza diretamente com a planilha Google sem precisar clicar no botão
+  // AUTO-PUSH RÁPIDO EM SEGUNDO PLANO (DEBOUNCED):
+  // Agrupa alterações rápidas em 400ms e envia em background com trava sequencial,
+  // mantendo a interface instantânea e garantindo persistência total na planilha.
   // =========================================================================
   useEffect(() => {
     if (isFirstRender.current) {
@@ -162,34 +170,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     if (!state.sheetsConfig.scriptUrl) return;
 
-    setIsSyncing(true);
-    setSyncError(null);
-    storageService
-      .pushToSheets(state)
-      .then(() => {
-        const timeStr = new Date().toLocaleTimeString('pt-BR', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
+    const timer = setTimeout(() => {
+      setIsSyncing(true);
+      setSyncError(null);
+      storageService
+        .pushToSheets(stateRef.current)
+        .then(() => {
+          const timeStr = new Date().toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+          showToast({
+            type: 'success',
+            title: 'Salvo na Planilha!',
+            message: `Dados persistidos no banco às ${timeStr}.`
+          });
+        })
+        .catch(err => {
+          console.error('Auto-sync push falhou:', err);
+          setSyncError(err?.message || 'Erro ao salvar na planilha');
+          showToast({
+            type: 'error',
+            title: 'Erro ao salvar na planilha',
+            message: 'Salvo no dispositivo; tentaremos sincronizar novamente em breve.'
+          });
+        })
+        .finally(() => {
+          setIsSyncing(false);
         });
-        showToast({
-          type: 'success',
-          title: 'Salvo na Planilha!',
-          message: `Alteração gravada no banco de dados às ${timeStr}.`
-        });
-      })
-      .catch(err => {
-        console.error('Auto-sync push falhou:', err);
-        setSyncError(err?.message || 'Erro ao salvar na planilha');
-        showToast({
-          type: 'error',
-          title: 'Erro ao salvar na planilha',
-          message: 'Os dados foram salvos localmente, mas a planilha não pôde ser atualizada.'
-        });
-      })
-      .finally(() => {
-        setIsSyncing(false);
-      });
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [state.turmas, state.materias, state.instrutores, state.aulas, state.gestores]);
 
   // Se autoSync estiver ativo e tiver URL, sincroniza periodicamente (fetch completo)
@@ -279,8 +291,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateSheetsConfig = (config: GoogleSheetsConfig) => {
     setState(prev => ({
       ...prev,
-      sheetsConfig: config
+      sheetsConfig: {
+        ...prev.sheetsConfig,
+        ...config
+      }
     }));
+  };
+
+  // Tema Visual (padrão: 'ft-19bpm' inspirado no brasão 19º BPM/I Força Tática)
+  const currentTheme: AppTheme = state.sheetsConfig.theme || 'ft-19bpm';
+  const themePalette: ThemePalette = THEMES[currentTheme] || THEMES['ft-19bpm'];
+
+  const setTheme = (newTheme: AppTheme) => {
+    setState(prev => ({
+      ...prev,
+      sheetsConfig: {
+        ...prev.sheetsConfig,
+        theme: newTheme
+      }
+    }));
+    showToast({
+      type: 'info',
+      title: `Tema: ${THEMES[newTheme].name}`,
+      message: THEMES[newTheme].subtitle
+    });
   };
 
   // Funções de Seleção Múltipla
@@ -335,6 +369,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteAula = (id: string) => {
+    markIdsAsDeleted([id]);
     setState(prev => ({
       ...prev,
       aulas: prev.aulas.filter(a => a.id !== id)
@@ -342,6 +377,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteBulkAulas = (ids: string[]) => {
+    markIdsAsDeleted(ids);
     const idSet = new Set(ids);
     setState(prev => ({
       ...prev,
@@ -450,6 +486,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteTurma = (id: string) => {
+    markIdsAsDeleted([id]);
     setState(prev => ({
       ...prev,
       turmas: prev.turmas.filter(t => t.id !== id)
@@ -477,6 +514,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteMateria = (id: string) => {
+    markIdsAsDeleted([id]);
     setState(prev => ({
       ...prev,
       materias: prev.materias.filter(m => m.id !== id)
@@ -504,6 +542,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteInstrutor = (id: string) => {
+    markIdsAsDeleted([id]);
     setState(prev => ({
       ...prev,
       instrutores: prev.instrutores.filter(i => i.id !== id)
@@ -531,6 +570,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteGestor = (id: string) => {
+    markIdsAsDeleted([id]);
     setState(prev => ({
       ...prev,
       gestores: prev.gestores.filter(g => g.id !== id)
@@ -543,8 +583,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     return state.gestores.find(
       g => g.ativo &&
-        (g.login.toLowerCase() === cleanLogin || g.nome.toLowerCase() === cleanLogin) &&
-        g.senha === cleanSenha
+        (String(g.login ?? '').toLowerCase() === cleanLogin || String(g.nome ?? '').toLowerCase() === cleanLogin) &&
+        String(g.senha ?? '') === cleanSenha
     ) || null;
   };
 
@@ -600,6 +640,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         aulas: state.aulas,
         gestores: state.gestores,
         sheetsConfig: state.sheetsConfig,
+
+        theme: currentTheme,
+        themePalette,
+        setTheme,
 
         toast,
         showToast,

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { MobileDrawer } from './MobileDrawer';
+import { THEME_LIST } from '../../utils/themeConfig';
 import {
   Calendar,
   Layers,
@@ -12,7 +13,9 @@ import {
   LogOut,
   RefreshCw,
   ShieldCheck,
-  Menu
+  Menu,
+  Palette,
+  Check
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -24,12 +27,15 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openSettings, onOpenNewAula }) => {
   const { canEdit, isAdmin, openLoginModal, logout } = useAuth();
-  const { syncSheets, isSyncing, syncError, sheetsConfig } = useApp();
+  const { syncSheets, isSyncing, syncError, sheetsConfig, theme, themePalette, setTheme } = useApp();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+
+  const isDarkHeader = theme === 'ft-19bpm';
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-indigo-100 border-t-4 border-t-indigo-600 shadow-xs safe-top-header md:pt-0">
+      <header className={`sticky top-0 z-30 ${themePalette.headerBg} border-b ${themePalette.headerBorderTop} shadow-xs safe-top-header md:pt-0 transition-colors duration-200`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo & Title */}
@@ -37,24 +43,29 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
               <img
                 src="/favicon.svg"
                 alt="QTS FT"
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl shadow-md shadow-blue-500/20 shrink-0"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl shadow-md shadow-black/20 shrink-0"
               />
               <div>
                 <div className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className="font-bold text-base sm:text-lg text-slate-900 tracking-tight">QTS FT</span>
+                  <span className={`font-bold text-base sm:text-lg ${themePalette.headerText} tracking-tight`}>QTS FT</span>
+                  <span className={`hidden lg:inline-block text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                    isDarkHeader ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-slate-200/70 text-slate-600'
+                  }`}>
+                    19º BPM/I
+                  </span>
                 </div>
-                <p className="text-[11px] text-slate-500 hidden sm:block">Plano de Aulas, Rodízio e Instrutores</p>
+                <p className={`text-[11px] ${themePalette.headerSubtext} hidden sm:block`}>Plano de Aulas, Rodízio e Instrutores</p>
               </div>
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1.5 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60">
+            <nav className={`hidden md:flex items-center space-x-1.5 p-1 rounded-xl border ${themePalette.navContainerBg}`}>
               <button
                 onClick={() => setCurrentTab('calendario')}
                 className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   currentTab === 'calendario'
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                    ? themePalette.navActiveBg
+                    : themePalette.navInactiveText
                 }`}
               >
                 <Calendar className="w-4 h-4" />
@@ -65,8 +76,8 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                 onClick={() => setCurrentTab('gerador')}
                 className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   currentTab === 'gerador'
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                    ? themePalette.navActiveBg
+                    : themePalette.navInactiveText
                 }`}
               >
                 <Layers className="w-4 h-4" />
@@ -77,8 +88,8 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                 onClick={() => setCurrentTab('metricas')}
                 className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   currentTab === 'metricas'
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                    ? themePalette.navActiveBg
+                    : themePalette.navInactiveText
                 }`}
               >
                 <BarChart3 className="w-4 h-4" />
@@ -89,8 +100,8 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                 onClick={() => setCurrentTab('cadastros')}
                 className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   currentTab === 'cadastros'
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                    ? themePalette.navActiveBg
+                    : themePalette.navInactiveText
                 }`}
               >
                 <Users className="w-4 h-4" />
@@ -106,9 +117,13 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                   onClick={() => syncSheets()}
                   disabled={isSyncing}
                   title={syncError ? `Erro: ${syncError}` : 'Sincronizar com a Planilha Google agora'}
-                  className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors bg-white shadow-2xs"
+                  className={`hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 text-xs rounded-xl border transition-colors shadow-2xs ${
+                    isDarkHeader
+                      ? 'border-white/15 bg-white/10 text-slate-200 hover:bg-white/20'
+                      : 'border-slate-200 text-slate-700 hover:bg-slate-50 bg-white'
+                  }`}
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-amber-400' : isDarkHeader ? 'text-slate-300' : 'text-slate-500'}`} />
                   <span className="font-medium">Sincronizar</span>
                   {syncError ? (
                     <span className="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
@@ -118,12 +133,90 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                 </button>
               )}
 
+              {/* Seletor Rápido de Tema (Exclusivo Admin) */}
+              {isAdmin && (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
+                    title="Escolher Tema Visual (Exclusivo Admin)"
+                    className={`p-2 rounded-xl transition-colors flex items-center gap-1 ${
+                      isDarkHeader
+                        ? 'text-amber-300 hover:bg-white/15 bg-white/5'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    }`}
+                  >
+                    <Palette className="w-5 h-5" />
+                  </button>
+
+                  {isThemeMenuOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setIsThemeMenuOpen(false)}
+                      />
+                      <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                          <div>
+                            <span className="text-xs font-extrabold text-slate-900 block">Tema da Unidade (Admin)</span>
+                            <span className="text-[10px] text-slate-500">Cores inspiradas no 19º BPM/I • FT</span>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          {THEME_LIST.map(t => {
+                            const active = theme === t.id;
+                            return (
+                              <button
+                                key={t.id}
+                                onClick={() => {
+                                  setTheme(t.id);
+                                  setIsThemeMenuOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between p-2 rounded-xl border text-left transition-all ${
+                                  active
+                                    ? 'border-blue-600 bg-blue-50/70 shadow-2xs'
+                                    : 'border-slate-200/80 hover:bg-slate-50'
+                                }`}
+                              >
+                                <div className="flex items-center space-x-2.5">
+                                  <div className="flex -space-x-1 shrink-0">
+                                    {t.previewColors.map((hex, i) => (
+                                      <span
+                                        key={i}
+                                        className="w-4 h-4 rounded-full border border-white shadow-2xs"
+                                        style={{ backgroundColor: hex }}
+                                      />
+                                    ))}
+                                  </div>
+                                  <div>
+                                    <span className="text-xs font-bold text-slate-900 block leading-tight">
+                                      {t.name}
+                                    </span>
+                                    <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
+                                      {t.subtitle}
+                                    </span>
+                                  </div>
+                                </div>
+                                {active && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
               {/* Settings button (Somente Admin no Desktop) */}
               {isAdmin && (
                 <button
                   onClick={openSettings}
                   title="Configurações & Planilha Google (Exclusivo Admin)"
-                  className="hidden sm:block p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+                  className={`hidden sm:block p-2 rounded-xl transition-colors ${
+                    isDarkHeader
+                      ? 'text-slate-300 hover:text-white hover:bg-white/15'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
                 >
                   <Settings className="w-5 h-5" />
                 </button>
@@ -159,17 +252,21 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                 <button
                   onClick={() => syncSheets()}
                   disabled={isSyncing}
-                  className="sm:hidden p-2 text-slate-600 hover:text-blue-600 rounded-xl"
+                  className={`sm:hidden p-2 rounded-xl ${
+                    isDarkHeader ? 'text-slate-200 hover:text-amber-300' : 'text-slate-600 hover:text-blue-600'
+                  }`}
                   title="Sincronizar Planilha"
                 >
-                  <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin text-blue-600' : 'text-slate-600'}`} />
+                  <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin text-amber-400' : ''}`} />
                 </button>
               )}
 
               {/* Botão Menu Sanduíche (Exclusivo Mobile) */}
               <button
                 onClick={() => setIsDrawerOpen(true)}
-                className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
+                className={`md:hidden p-2 rounded-xl transition-colors ${
+                  isDarkHeader ? 'text-white hover:bg-white/10' : 'text-slate-700 hover:bg-slate-100'
+                }`}
                 title="Menu"
                 aria-label="Abrir Menu"
               >

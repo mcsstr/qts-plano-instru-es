@@ -61,7 +61,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
     clearSelectedAulas,
     deleteSelectedAulas,
     getTurma,
-    getMateria
+    getMateria,
+    themePalette
   } = useApp();
 
   const { canEdit, openLoginModal } = useAuth();
@@ -288,7 +289,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
 
         {/* Card Fixo de HOJE (visível na tela principal mobile; oculto na página de histórico) */}
         {!isMobileHistoryPage ? (
-          <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white rounded-2xl shadow-md border border-blue-500/30 p-3.5">
+          <div className={`${themePalette.todayCardGradient} text-white rounded-2xl shadow-md border border-white/15 p-3.5 transition-colors duration-200`}>
             <div className="flex items-center justify-between pb-2 border-b border-white/15">
               <div className="flex items-center space-x-2">
                 <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
@@ -296,10 +297,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                 </div>
                 <div>
                   <div className="flex items-center space-x-1.5">
-                    <span className="text-[10px] uppercase font-extrabold tracking-wider bg-white text-blue-900 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] uppercase font-extrabold tracking-wider bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full">
                       HOJE
                     </span>
-                    <span className="text-xs text-blue-100 capitalize font-medium">
+                    <span className="text-xs text-white/85 capitalize font-medium">
                       {formatDayOfWeek(todayStr)}
                     </span>
                   </div>

@@ -2,6 +2,8 @@ export type Turno = 'Manhã' | 'Tarde' | 'Noite' | 'Integral';
 
 export type AulaStatus = 'agendada' | 'realizada' | 'prejudicada' | 'remanejada' | 'cancelada';
 
+export type AppTheme = 'ft-19bpm' | 'azul-operacional' | 'rubro-ouro' | 'clean-slate';
+
 export interface Turma {
   id: string;
   nome: string;
@@ -67,6 +69,7 @@ export interface GoogleSheetsConfig {
   scriptUrl: string;
   autoSync: boolean;
   ultimaSincronizacao?: string;
+  theme?: AppTheme;
 }
 
 export interface AppState {

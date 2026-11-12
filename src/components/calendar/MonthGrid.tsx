@@ -11,6 +11,7 @@ import {
   isWeekend
 } from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
 import { Plus, ChevronDown, ChevronUp, Maximize2, X, CalendarDays } from 'lucide-react';
 
 interface MonthGridProps {
@@ -27,6 +28,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
   onAddAulaOnDate
 }) => {
   const { canEdit } = useAuth();
+  const { themePalette } = useApp();
   const days = getCalendarDays(currentDate);
   const weekDays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
   const weekDaysShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -70,15 +72,15 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-indigo-200/80 shadow-md overflow-hidden">
-        {/* Cabeçalho dos Dias da Semana Colorido */}
-        <div className="grid grid-cols-7 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-center text-[11px] font-extrabold text-white tracking-wide uppercase">
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-md overflow-hidden">
+        {/* Cabeçalho dos Dias da Semana Colorido conforme o Tema */}
+        <div className={`grid grid-cols-7 ${themePalette.calHeaderBg} ${themePalette.calHeaderText} text-center text-[11px] font-extrabold tracking-wide uppercase`}>
           {weekDays.map((d, index) => (
             <div
               key={d}
               className={`py-2 ${
                 index === 0 || index === 6
-                  ? 'bg-black/20 text-amber-200'
+                  ? `${themePalette.calHeaderWeekendBg} ${themePalette.calHeaderWeekendText}`
                   : 'border-r border-white/10'
               }`}
             >
@@ -88,8 +90,8 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
           ))}
         </div>
 
-        {/* Grade de Dias do Mês com Cores Alternadas */}
-        <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-indigo-100/80">
+        {/* Grade de Dias do Mês com Cores Alternadas conforme o Tema */}
+        <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-200/70">
           {days.map((day, idx) => {
             const dateStr = format(day, 'yyyy-MM-dd');
             const isCurrentMonth = isSameMonth(day, currentDate);
@@ -100,18 +102,18 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
             const hasMoreThanTwo = dayAulas.length > 2;
             const isExpanded = expandedDates.has(dateStr);
 
-            // Alternância de cor nos dias (efeito xadrez colorido suave)
+            // Alternância de cor nos dias (efeito xadrez colorido suave e equilibrado)
             const isAlternateCell = idx % 2 === 1;
 
             let cellBgClass = 'bg-white';
             if (!isCurrentMonth) {
               cellBgClass = 'bg-slate-100/75 text-slate-400';
             } else if (isToday) {
-              cellBgClass = 'bg-blue-100/70 ring-2 ring-inset ring-blue-500/60';
+              cellBgClass = `${themePalette.calTodayBg} ${themePalette.calTodayRing}`;
             } else if (isDayWeekend) {
-              cellBgClass = isAlternateCell ? 'bg-amber-50/65' : 'bg-orange-50/45';
+              cellBgClass = themePalette.calWeekendBg;
             } else {
-              cellBgClass = isAlternateCell ? 'bg-sky-50/75' : 'bg-indigo-50/30';
+              cellBgClass = isAlternateCell ? themePalette.calDayOddBg : themePalette.calDayEvenBg;
             }
 
             // Exibe até 2 matérias diretamente dentro do bloco.
@@ -122,21 +124,21 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
             return (
               <div
                 key={idx}
-                className={`min-h-[100px] sm:min-h-[112px] p-1.5 flex flex-col transition-colors group relative hover:bg-blue-50/60 ${cellBgClass}`}
+                className={`min-h-[100px] sm:min-h-[112px] p-1.5 flex flex-col transition-colors group relative hover:bg-blue-50/50 ${cellBgClass}`}
               >
                 {/* Topo do dia: Número, Marcador de Múltiplas Matérias e Botão Adicionar */}
                 <div className="flex items-center justify-between mb-1 gap-1">
                   <span
                     className={`text-[11px] font-extrabold w-5 h-5 flex items-center justify-center rounded-md transition-all shrink-0 ${
                       isToday
-                        ? 'bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/30 scale-105'
+                        ? `${themePalette.calTodayBadge} scale-105`
                         : !isCurrentMonth
                         ? 'text-slate-400/70'
                         : isDayWeekend
-                        ? 'text-amber-800 bg-amber-200/50'
+                        ? themePalette.calDayNumWeekend
                         : isAlternateCell
-                        ? 'text-blue-900 bg-blue-200/50'
-                        : 'text-indigo-900 bg-indigo-100/70'
+                        ? themePalette.calDayNumOdd
+                        : themePalette.calDayNumEven
                     }`}
                   >
                     {format(day, 'd')}

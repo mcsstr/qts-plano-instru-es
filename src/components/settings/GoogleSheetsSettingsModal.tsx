@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { GOOGLE_APPS_SCRIPT_CODE } from '../../services/googleSheetsService';
+import { THEME_LIST } from '../../utils/themeConfig';
 import {
   X,
   FileSpreadsheet,
@@ -12,10 +13,9 @@ import {
   Upload,
   RotateCcw,
   Smartphone,
-  ExternalLink,
-  CheckCircle2,
   AlertCircle,
-  HelpCircle
+  HelpCircle,
+  Palette
 } from 'lucide-react';
 
 interface GoogleSheetsSettingsModalProps {
@@ -36,7 +36,9 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
     syncError,
     exportBackup,
     importBackup,
-    resetToDefaultData
+    resetToDefaultData,
+    theme,
+    setTheme
   } = useApp();
 
   const { isAdmin } = useAuth();
@@ -45,7 +47,7 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedShareLink, setCopiedShareLink] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'sheets' | 'backup' | 'pwa'>('sheets');
+  const [activeTab, setActiveTab] = useState<'temas' | 'sheets' | 'backup' | 'pwa'>('temas');
 
   if (!isOpen || !isAdmin) return null;
 
@@ -127,7 +129,19 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex border-b border-slate-200 px-5 pt-3 bg-slate-50/50 space-x-4 text-xs font-semibold shrink-0">
+        <div className="flex flex-wrap border-b border-slate-200 px-5 pt-3 bg-slate-50/50 gap-4 text-xs font-semibold shrink-0">
+          <button
+            onClick={() => setActiveTab('temas')}
+            className={`pb-2.5 transition-colors border-b-2 flex items-center space-x-1.5 ${
+              activeTab === 'temas'
+                ? 'border-emerald-600 text-emerald-700 font-bold'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Palette className="w-4 h-4" />
+            <span>Temas da Unidade (4)</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('sheets')}
             className={`pb-2.5 transition-colors border-b-2 flex items-center space-x-1.5 ${
@@ -167,6 +181,55 @@ export const GoogleSheetsSettingsModal: React.FC<GoogleSheetsSettingsModalProps>
 
         {/* Modal Body */}
         <div className="p-5 overflow-y-auto space-y-4">
+          {/* ABA 0: 4 TEMAS VISUAIS (EXCLUSIVO ADMIN) */}
+          {activeTab === 'temas' && (
+            <div className="space-y-3">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600">
+                Escolha um dos <strong>4 temas visuais</strong> inspirados nas cores representativas do brasão do <strong>19º BPM/I • Força Tática</strong> (Preto, Ouro, Rubro, Azul Tático e Branco), com equilíbrio para manter a leitura leve e limpa.
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {THEME_LIST.map(t => {
+                  const isSelected = theme === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTheme(t.id)}
+                      className={`p-3.5 rounded-2xl border-2 text-left transition-all flex flex-col justify-between ${
+                        isSelected
+                          ? 'border-blue-600 bg-blue-50/50 shadow-sm'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex -space-x-1">
+                            {t.previewColors.map((hex, i) => (
+                              <span
+                                key={i}
+                                className="w-5 h-5 rounded-full border-2 border-white shadow-xs"
+                                style={{ backgroundColor: hex }}
+                              />
+                            ))}
+                          </div>
+                          {isSelected && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
+                              <Check className="w-3 h-3" />
+                              Ativo
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="text-xs font-extrabold text-slate-900">{t.name}</h4>
+                        <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">{t.subtitle}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* ABA 1: PLANILHA GOOGLE */}
           {activeTab === 'sheets' && (
             <div className="space-y-4">
