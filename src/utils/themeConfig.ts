@@ -8,6 +8,7 @@ export interface ThemePalette {
   // Fundo geral da aplicação
   appBg: string;
   // Header superior
+  headerHex: string;
   headerBg: string;
   headerText: string;
   headerSubtext: string;
@@ -45,10 +46,11 @@ export const THEMES: Record<AppTheme, ThemePalette> = {
     subtitle: 'Grafite tático, ouro imperial, azul e rubro',
     previewColors: ['#0f172a', '#eab308', '#dc2626', '#0284c7'],
     appBg: 'bg-slate-300',
-    headerBg: 'bg-slate-900 border-b border-slate-800',
+    headerHex: '#0f172a',
+    headerBg: 'bg-slate-900',
     headerText: 'text-white',
     headerSubtext: 'text-amber-400/90 font-medium',
-    headerBorderTop: 'border-t-4 border-t-amber-400',
+    headerBorderTop: 'border-b-2 border-b-amber-400',
     navContainerBg: 'bg-slate-800/90 border border-slate-700',
     navActiveBg: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-bold shadow-xs',
     navActiveText: 'text-slate-950',
@@ -79,10 +81,11 @@ export const THEMES: Record<AppTheme, ThemePalette> = {
     subtitle: 'Azul marinho e celeste institucional leve',
     previewColors: ['#1e3a8a', '#0284c7', '#e0f2fe', '#ffffff'],
     appBg: 'bg-slate-50',
-    headerBg: 'bg-white/95 border-b border-blue-100',
+    headerHex: '#ffffff',
+    headerBg: 'bg-white',
     headerText: 'text-slate-900',
     headerSubtext: 'text-slate-500',
-    headerBorderTop: 'border-t-4 border-t-blue-700',
+    headerBorderTop: 'border-b-2 border-b-blue-700',
     navContainerBg: 'bg-slate-100 border border-slate-200/70',
     navActiveBg: 'bg-blue-700 text-white font-semibold shadow-xs',
     navActiveText: 'text-white',
@@ -113,10 +116,11 @@ export const THEMES: Record<AppTheme, ThemePalette> = {
     subtitle: 'Vermelho rubro, dourado e grafite sóbrio',
     previewColors: ['#991b1b', '#dc2626', '#eab308', '#1e293b'],
     appBg: 'bg-stone-100/80',
-    headerBg: 'bg-white/95 border-b border-red-100',
+    headerHex: '#ffffff',
+    headerBg: 'bg-white',
     headerText: 'text-slate-900',
     headerSubtext: 'text-red-800/80 font-medium',
-    headerBorderTop: 'border-t-4 border-t-red-700',
+    headerBorderTop: 'border-b-2 border-b-red-700',
     navContainerBg: 'bg-stone-100 border border-stone-200',
     navActiveBg: 'bg-gradient-to-r from-red-700 to-red-800 text-amber-300 font-bold shadow-xs',
     navActiveText: 'text-amber-300',
@@ -147,10 +151,11 @@ export const THEMES: Record<AppTheme, ThemePalette> = {
     subtitle: 'Tons neutros de alto contraste e leitura leve',
     previewColors: ['#334155', '#64748b', '#f1f5f9', '#ffffff'],
     appBg: 'bg-slate-100',
-    headerBg: 'bg-white border-b border-slate-200',
+    headerHex: '#ffffff',
+    headerBg: 'bg-white',
     headerText: 'text-slate-900',
     headerSubtext: 'text-slate-500',
-    headerBorderTop: 'border-t-4 border-t-slate-800',
+    headerBorderTop: 'border-b-2 border-b-slate-800',
     navContainerBg: 'bg-slate-100 border border-slate-200',
     navActiveBg: 'bg-slate-800 text-white font-semibold shadow-xs',
     navActiveText: 'text-white',

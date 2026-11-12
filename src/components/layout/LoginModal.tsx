@@ -15,6 +15,10 @@ export const LoginModal: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    window.scrollTo(0, 0);
     const success = login(usuario, senha);
     if (!success) {
       setError(true);
@@ -26,6 +30,10 @@ export const LoginModal: React.FC = () => {
   };
 
   const handleSelectQuickGestor = (gestor: any) => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    window.scrollTo(0, 0);
     loginAsGestor(gestor);
   };
 
@@ -64,8 +72,7 @@ export const LoginModal: React.FC = () => {
                     if (error) setError(false);
                   }}
                   placeholder="Ex: admin ou rocha"
-                  autoFocus
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-900 placeholder-slate-400 text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-900 placeholder-slate-400 text-base sm:text-sm"
                 />
                 <User className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5" />
               </div>
@@ -87,7 +94,7 @@ export const LoginModal: React.FC = () => {
                   placeholder="Senha cadastrada"
                   className={`w-full px-4 py-2.5 rounded-xl border ${
                     error ? 'border-red-500 focus:ring-red-400' : 'border-slate-300 focus:ring-blue-500'
-                  } focus:outline-none focus:ring-2 text-slate-900 placeholder-slate-400 text-sm`}
+                  } focus:outline-none focus:ring-2 text-slate-900 placeholder-slate-400 text-base sm:text-sm`}
                 />
                 <Lock className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5" />
               </div>

@@ -31,7 +31,10 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
   const isDarkHeader = theme === 'ft-19bpm';
 
   return (
-    <header className={`shrink-0 z-30 ${themePalette.headerBg} border-b ${themePalette.headerBorderTop} shadow-xs safe-top-header md:pt-0 transition-colors duration-200 select-none`}>
+    <header
+      style={{ boxShadow: `0 -120px 0 0 ${themePalette.headerHex}` }}
+      className={`shrink-0 z-30 ${themePalette.headerBg} ${themePalette.headerBorderTop} safe-top-header md:pt-0 transition-colors duration-200 select-none`}
+    >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo & Title */}

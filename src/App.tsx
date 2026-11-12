@@ -25,8 +25,36 @@ const AppContent: React.FC = () => {
     return () => window.removeEventListener('beforeinstallprompt', preventInstallPrompt);
   }, []);
 
+  // Sincroniza a cor da barra de status / safe-area do celular com a cor exata do cabeçalho (sensação de infinito)
+  useEffect(() => {
+    const hex = themePalette.headerHex || '#0f172a';
+    document.documentElement.style.backgroundColor = hex;
+    document.body.style.backgroundColor = hex;
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', hex);
+    }
+  }, [themePalette.headerHex]);
+
+  // Garante que após fechar o teclado no iOS (ex: após realizar login), a tela nunca fique deslocada para cima no safe area
+  useEffect(() => {
+    const resetViewportScroll = () => {
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+      }, 50);
+    };
+    window.addEventListener('focusout', resetViewportScroll);
+    window.visualViewport?.addEventListener('resize', resetViewportScroll);
+    return () => {
+      window.removeEventListener('focusout', resetViewportScroll);
+      window.visualViewport?.removeEventListener('resize', resetViewportScroll);
+    };
+  }, []);
+
   return (
-    <div className={`h-dvh overflow-hidden ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
+    <div className={`h-full w-full overflow-hidden ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
       {/* Toast Flutuante de Notificação */}
       <Toast toast={toast} onClose={closeToast} />
 
