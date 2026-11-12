@@ -30,7 +30,7 @@ export const Toast: React.FC<ToastProps> = ({ toast, onClose }) => {
   const isError = toast.type === 'error';
 
   return (
-    <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-md animate-in slide-in-from-top-4 duration-200">
+    <div className="fixed toast-below-header left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-md animate-in slide-in-from-top-4 duration-200">
       <div
         className={`rounded-2xl p-4 shadow-xl border backdrop-blur-md flex items-start space-x-3 text-sm ${
           isSuccess

@@ -36,13 +36,26 @@
   background: #94a3b8;
 }
 
-/* Safe Area Superior (iPhone / PWA) na altura natural do topo */
-.safe-top-header {
-  padding-top: env(safe-area-inset-top, 0px);
+/* Safe Area Superior (iPhone / PWA) com leve ajuste fino de 6px abaixo da safe area */
+@media (max-width: 767px) {
+  .safe-top-header {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
+  }
+
+  .sticky-below-header {
+    top: calc(3.5rem + env(safe-area-inset-top, 0px) + 6px);
+  }
 }
 
-.sticky-below-header {
-  top: calc(3.5rem + env(safe-area-inset-top, 0px));
+/* Posicionamento do Card de Notificação (Toast) sempre abaixo do menu superior */
+.toast-below-header {
+  top: calc(4.1rem + env(safe-area-inset-top, 0px) + 6px);
+}
+
+@media (min-width: 768px) {
+  .toast-below-header {
+    top: 4.5rem;
+  }
 }
 
 /* Barra inferior com leve respiro da margem inferior do celular */
