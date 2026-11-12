@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   AppState,
   Turma,
@@ -128,12 +128,61 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncError, setSyncError] = useState<string | null>(null);
 
+  // Refs para controlar auto-push sem loops
+  const isFirstRender = useRef(true);
+  const skipAutoPush = useRef(false);
+
   // Salva no localStorage sempre que o state mudar
   useEffect(() => {
     storageService.saveState(state);
   }, [state]);
 
-  // Se autoSync estiver ativo e tiver URL, sincroniza periodicamente
+  // =========================================================================
+  // AUTO-PUSH: a cada alteração de dados (adicionar, editar, excluir),
+  // sincroniza diretamente com a planilha Google sem precisar clicar no botão
+  // =========================================================================
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (skipAutoPush.current) {
+      skipAutoPush.current = false;
+      return;
+    }
+    if (!state.sheetsConfig.scriptUrl) return;
+
+    setIsSyncing(true);
+    setSyncError(null);
+    storageService
+      .pushToSheets(state)
+      .then(() => {
+        const timeStr = new Date().toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        showToast({
+          type: 'success',
+          title: 'Salvo na Planilha!',
+          message: `Alteração sincronizada automaticamente às ${timeStr}.`
+        });
+      })
+      .catch(err => {
+        console.error('Auto-sync push falhou:', err);
+        setSyncError(err?.message || 'Erro ao salvar na planilha');
+        showToast({
+          type: 'error',
+          title: 'Erro ao salvar na planilha',
+          message: 'Os dados foram salvos localmente, mas a planilha não pôde ser atualizada.'
+        });
+      })
+      .finally(() => {
+        setIsSyncing(false);
+      });
+  }, [state.turmas, state.materias, state.instrutores, state.aulas, state.gestores]);
+
+  // Se autoSync estiver ativo e tiver URL, sincroniza periodicamente (fetch completo)
   useEffect(() => {
     if (state.sheetsConfig.autoSync && state.sheetsConfig.scriptUrl) {
       const interval = setInterval(() => {
@@ -143,7 +192,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [state.sheetsConfig]);
 
-  // Sincronizar com Google Sheets
+  // Sincronizar com Google Sheets (push + fetch + merge — manual)
   const syncSheets = async () => {
     if (!state.sheetsConfig.scriptUrl) {
       const err = 'URL da Planilha Google não foi configurada.';
@@ -159,6 +208,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSyncError(null);
     try {
       const updated = await storageService.syncWithSheets(state);
+      skipAutoPush.current = true; // Pula o auto-push para não enviar de volta
       setState(updated);
       const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       showToast({

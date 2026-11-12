@@ -37,7 +37,7 @@ export const BulkActionBar: React.FC<BulkActionBarProps> = ({ currentAulasIds })
   };
 
   return (
-    <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 text-white backdrop-blur-md px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-3 sm:space-x-4 animate-in slide-in-from-bottom-5">
+    <div className="hidden md:flex fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 text-white backdrop-blur-md px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 items-center space-x-4 animate-in slide-in-from-bottom-5">
       <div className="flex items-center space-x-2">
         <span className="w-6 h-6 rounded-full bg-blue-500 text-white font-bold text-xs flex items-center justify-center">
           {count}

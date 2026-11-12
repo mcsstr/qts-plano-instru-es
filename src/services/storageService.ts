@@ -125,5 +125,26 @@ export const storageService = {
       console.error('Erro na sincronização com Google Sheets:', err);
       throw err;
     }
+  },
+
+  /**
+   * Apenas ENVIA (push) os dados locais para a planilha Google.
+   * Não busca nem mescla. Usado para auto-sync a cada ação do usuário.
+   */
+  async pushToSheets(state: AppState): Promise<void> {
+    if (!state.sheetsConfig.scriptUrl) return;
+
+    try {
+      await pushGoogleSheetsData(state.sheetsConfig.scriptUrl, {
+        turmas: state.turmas,
+        materias: state.materias,
+        instrutores: state.instrutores,
+        aulas: normalizeAulasDates(state.aulas),
+        gestores: state.gestores
+      });
+    } catch (err: any) {
+      console.error('Erro no auto-sync (push) com Google Sheets:', err);
+      throw err;
+    }
   }
 };
