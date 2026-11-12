@@ -32,10 +32,19 @@
   background: #94a3b8;
 }
 
-/* Mobile safe area padding */
-.safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 16px);
+/* iPhone Safe Area Support */
+.safe-top-header {
+  padding-top: max(env(safe-area-inset-top, 0px), 12px);
 }
-.safe-top {
-  padding-top: env(safe-area-inset-top, 16px);
+
+.sticky-below-header {
+  top: calc(3.5rem + max(env(safe-area-inset-top, 0px), 12px));
+}
+
+.fab-safe-bottom {
+  bottom: calc(3.25rem + env(safe-area-inset-bottom, 0px));
+}
+
+.fab-trash-safe-bottom {
+  bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
 }
