@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
               </div>
               <div>
                 <div className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className="font-bold text-base sm:text-lg text-slate-900 tracking-tight">QTS Inteligente</span>
+                  <span className="font-bold text-base sm:text-lg text-slate-900 tracking-tight">QTS FT</span>
                   <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-sm bg-blue-100 text-blue-700">
                     PWA
                   </span>

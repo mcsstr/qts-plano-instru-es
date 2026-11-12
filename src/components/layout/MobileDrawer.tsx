@@ -11,12 +11,7 @@ import {
   LogIn,
   LogOut,
   RefreshCw,
-  ShieldCheck,
-  CheckSquare,
-  Filter,
-  RotateCcw,
-  Sparkles,
-  Smartphone
+  ShieldCheck
 } from 'lucide-react';
 
 interface MobileDrawerProps {
@@ -33,24 +28,10 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onClose,
   currentTab,
   setCurrentTab,
-  openSettings,
-  onOpenNewAula
+  openSettings
 }) => {
   const { user, canEdit, openLoginModal, logout } = useAuth();
   const {
-    turmas,
-    materias,
-    instrutores,
-    selectedTurmaId,
-    setSelectedTurmaId,
-    selectedMateriaId,
-    setSelectedMateriaId,
-    selectedInstrutorId,
-    setSelectedInstrutorId,
-    selectedStatus,
-    setSelectedStatus,
-    isMultiSelectMode,
-    setIsMultiSelectMode,
     syncSheets,
     isSyncing,
     sheetsConfig
@@ -61,19 +42,6 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   const handleNavigate = (tab: string) => {
     setCurrentTab(tab);
     onClose();
-  };
-
-  const hasActiveFilters =
-    selectedTurmaId !== 'all' ||
-    selectedMateriaId !== 'all' ||
-    selectedInstrutorId !== 'all' ||
-    selectedStatus !== 'all';
-
-  const clearFilters = () => {
-    setSelectedTurmaId('all');
-    setSelectedMateriaId('all');
-    setSelectedInstrutorId('all');
-    setSelectedStatus('all');
   };
 
   return (
@@ -94,7 +62,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-sm leading-tight">Menu Principal</h3>
-              <p className="text-[11px] text-blue-100">QTS Inteligente</p>
+              <p className="text-[11px] text-blue-100">QTS FT</p>
             </div>
           </div>
           <button
@@ -221,137 +189,34 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             </div>
           </div>
 
-          {/* Seção de Filtros Rápidos do Calendário */}
-          <div>
-            <div className="flex items-center justify-between mb-2 px-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                <Filter className="w-3 h-3 text-slate-400" />
-                <span>Filtros do Calendário</span>
-              </span>
-              {hasActiveFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="text-[11px] text-rose-600 font-semibold flex items-center gap-1"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>Limpar</span>
-                </button>
-              )}
-            </div>
-
-            <div className="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs">
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Turma:</label>
-                <select
-                  value={selectedTurmaId}
-                  onChange={e => setSelectedTurmaId(e.target.value)}
-                  className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium"
-                >
-                  <option value="all">Todas as Turmas</option>
-                  {turmas.map(t => (
-                    <option key={t.id} value={t.id}>{t.sigla} - {t.nome}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Matéria:</label>
-                <select
-                  value={selectedMateriaId}
-                  onChange={e => setSelectedMateriaId(e.target.value)}
-                  className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium"
-                >
-                  <option value="all">Todas as Matérias</option>
-                  {materias.map(m => (
-                    <option key={m.id} value={m.id}>{m.nome}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Instrutor:</label>
-                <select
-                  value={selectedInstrutorId}
-                  onChange={e => setSelectedInstrutorId(e.target.value)}
-                  className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium"
-                >
-                  <option value="all">Todos os Instrutores</option>
-                  {instrutores.map(i => (
-                    <option key={i.id} value={i.id}>{i.nome}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-600 mb-1">Status:</label>
-                <select
-                  value={selectedStatus}
-                  onChange={e => setSelectedStatus(e.target.value)}
-                  className="w-full p-2 rounded-xl border border-slate-200 bg-white font-medium"
-                >
-                  <option value="all">Todos os Status</option>
-                  <option value="agendada">📅 Agendadas</option>
-                  <option value="realizada">✅ Realizadas</option>
-                  <option value="prejudicada">⚠️ Prejudicadas</option>
-                  <option value="remanejada">🔄 Remanejadas</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Ferramentas do Gestor */}
-          {canEdit && (
+          {/* Sincronização Manual (se configurada) */}
+          {canEdit && sheetsConfig.scriptUrl && (
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2 px-1">
-                Ferramentas de Gestão
+                Banco de Dados
               </span>
-              <div className="space-y-1.5">
-                <button
-                  onClick={() => {
-                    setIsMultiSelectMode(!isMultiSelectMode);
-                    onClose();
-                  }}
-                  className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-xs font-semibold transition-colors ${
-                    isMultiSelectMode
-                      ? 'bg-blue-600 border-blue-600 text-white'
-                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <CheckSquare className="w-4 h-4" />
-                    <span>Modo Seleção Múltipla</span>
-                  </span>
-                  <span className="text-[10px] bg-black/10 px-1.5 py-0.5 rounded">
-                    {isMultiSelectMode ? 'Ativo' : 'Desativado'}
-                  </span>
-                </button>
-
-                {sheetsConfig.scriptUrl && (
-                  <button
-                    onClick={() => {
-                      syncSheets();
-                    }}
-                    disabled={isSyncing}
-                    className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold"
-                  >
-                    <span className="flex items-center gap-2">
-                      <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
-                      <span>Sincronizar Planilha Google</span>
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  </button>
-                )}
-              </div>
+              <button
+                onClick={() => {
+                  syncSheets();
+                }}
+                disabled={isSyncing}
+                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold"
+              >
+                <span className="flex items-center gap-2">
+                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+                  <span>Sincronizar Planilha Google</span>
+                </span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              </button>
             </div>
           )}
         </div>
 
         {/* Drawer Footer */}
         <div className="p-3 bg-slate-50 border-t border-slate-200 text-center text-[11px] text-slate-400 shrink-0">
-          QTS Inteligente • PWA v2.0
+          QTS FT • PWA v2.0
         </div>
       </div>
     </div>
   );
 };
-

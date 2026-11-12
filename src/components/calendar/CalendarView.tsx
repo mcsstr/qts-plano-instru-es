@@ -10,6 +10,8 @@ import { PrejuizoModal } from './PrejuizoModal';
 import { BulkActionBar } from './BulkActionBar';
 import {
   formatMonthYear,
+  formatDateBr,
+  formatDayOfWeek,
   addMonths,
   subMonths,
   format
@@ -25,7 +27,14 @@ import {
   CheckSquare,
   RotateCcw,
   Trash2,
-  X
+  X,
+  History,
+  ArrowLeft,
+  CalendarDays,
+  Sparkles,
+  Clock,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 
 interface CalendarViewProps {
@@ -50,20 +59,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
     setIsMultiSelectMode,
     selectedAulaIds,
     clearSelectedAulas,
-    deleteSelectedAulas
+    deleteSelectedAulas,
+    getTurma,
+    getMateria,
+    getInstrutor
   } = useApp();
 
   const { canEdit, openLoginModal } = useAuth();
 
-  // No mobile, o modo de visualização é SEMPRE lista
-  const [viewMode, setViewMode] = useState<'mes' | 'lista'>('lista');
+  // Na versão Desktop, a visualização padrão é SEMPRE do calendário inteiro ('mes')
+  const [viewMode, setViewMode] = useState<'mes' | 'lista'>('mes');
+
+  // No Mobile, controla se está na página de Histórico do mês inteiro
+  const [isMobileHistoryPage, setIsMobileHistoryPage] = useState<boolean>(false);
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [showFiltersDesktop, setShowFiltersDesktop] = useState(false);
 
   // Modal de filtro mobile
   const [showFilterModal, setShowFilterModal] = useState(false);
-  // Estado temporário dos filtros no modal (só aplica ao clicar "Aplicar")
   const [tempTurmaId, setTempTurmaId] = useState('all');
   const [tempMateriaId, setTempMateriaId] = useState('all');
   const [tempInstrutorId, setTempInstrutorId] = useState('all');
@@ -102,7 +116,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
     setSelectedAulaForPrejuizo(aula);
   };
 
-  // Abrir modal de filtro mobile (carrega estado atual nos campos temporários)
+  // Abrir modal de filtro mobile
   const openFilterModal = () => {
     setTempTurmaId(selectedTurmaId);
     setTempMateriaId(selectedMateriaId);
@@ -133,6 +147,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
 
   const currentAulasIds = useMemo(() => filteredAulas.map(a => a.id), [filteredAulas]);
 
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+
+  // Aulas de Hoje para o Card Fixo no Mobile
+  const todayAulas = useMemo(() => {
+    return filteredAulas.filter(a => {
+      const clean = a.data ? String(a.data).split('T')[0].split(' ')[0].trim() : '';
+      return clean === todayStr;
+    });
+  }, [filteredAulas, todayStr]);
+
   const hasActiveFilters =
     selectedTurmaId !== 'all' ||
     selectedMateriaId !== 'all' ||
@@ -157,82 +181,218 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* =========================================================================
-          1. VERSÃO MOBILE: BARRA FIXA (sticky) - Mês/Ano + Filtro + MultiSelect
+          1. VERSÃO MOBILE: BLOCO SUPERIOR FIXO (STICKY)
+             Contém: Barra de Mês/Ano + Botões (Filtro, Histórico, MultiSelect)
+             + Card Azul de HOJE. As aulas rolam SOMENTE abaixo deste bloco!
          ========================================================================= */}
-      <div className="md:hidden sticky top-14 z-20 flex items-center justify-between bg-white px-3 py-2 rounded-2xl border border-slate-200/90 shadow-sm">
-        {/* Seta esquerda */}
-        <button
-          onClick={handlePrevMonth}
-          className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-          title="Mês Anterior"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-
-        {/* Mês e Ano (sem "Hoje") */}
-        <button
-          onClick={handleToday}
-          className="text-sm font-bold text-slate-900 capitalize tracking-tight px-1"
-          title="Ir para o mês atual"
-        >
-          {formatMonthYear(currentDate)}
-        </button>
-
-        {/* Seta direita */}
-        <button
-          onClick={handleNextMonth}
-          className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-          title="Próximo Mês"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-
-        {/* Separador visual */}
-        <div className="h-5 w-px bg-slate-200 mx-1" />
-
-        {/* Botão de Filtro */}
-        <button
-          onClick={() => {
-            if (hasActiveFilters) {
-              // Se já tem filtro ativo, limpa ao clicar novamente
-              clearFilters();
-            } else {
-              openFilterModal();
-            }
-          }}
-          className={`p-1.5 rounded-lg transition-colors relative ${
-            hasActiveFilters
-              ? 'text-blue-700 bg-blue-100 border border-blue-300'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-          }`}
-          title={hasActiveFilters ? 'Limpar Filtros' : 'Abrir Filtros'}
-        >
-          <Filter className="w-4.5 h-4.5" />
-          {hasActiveFilters && (
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white" />
+      <div className="md:hidden sticky top-14 z-20 bg-slate-50 pt-1 pb-2.5 space-y-2.5 -mx-3 px-3 shadow-[0_6px_12px_-6px_rgba(15,23,42,0.08)]">
+        {/* Linha de Mês/Ano + Filtro + Histórico + Seleção Múltipla */}
+        <div className="flex items-center justify-between bg-white px-2.5 py-2 rounded-2xl border border-slate-200/90 shadow-xs">
+          {isMobileHistoryPage && (
+            <button
+              onClick={() => setIsMobileHistoryPage(false)}
+              className="flex items-center gap-1 px-2 py-1 mr-1 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors shrink-0"
+              title="Voltar para Próximas Aulas"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Voltar</span>
+            </button>
           )}
-        </button>
 
-        {/* Botão de Seleção Múltipla */}
-        {canEdit && (
-          <button
-            onClick={() => {
-              if (isMultiSelectMode) {
-                clearSelectedAulas();
-                setIsMultiSelectMode(false);
-              } else {
-                setIsMultiSelectMode(true);
-              }
-            }}
-            className={`p-1.5 rounded-lg transition-colors ${
-              isMultiSelectMode
-                ? 'text-white bg-blue-600 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-            }`}
-            title={isMultiSelectMode ? 'Desativar Seleção' : 'Seleção Múltipla'}
-          >
-            <CheckSquare className="w-4.5 h-4.5" />
-          </button>
+          {/* Navegação Mês e Ano */}
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={handlePrevMonth}
+              className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              title="Mês Anterior"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={handleToday}
+              className="text-sm font-bold text-slate-900 capitalize tracking-tight px-1"
+              title="Ir para o mês atual"
+            >
+              {formatMonthYear(currentDate)}
+            </button>
+
+            <button
+              onClick={handleNextMonth}
+              className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              title="Próximo Mês"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Ações à Direita: Filtro, Histórico, MultiSelect */}
+          <div className="flex items-center space-x-1">
+            {/* Botão de Filtro */}
+            <button
+              onClick={() => {
+                if (hasActiveFilters) {
+                  clearFilters();
+                } else {
+                  openFilterModal();
+                }
+              }}
+              className={`p-2 rounded-xl transition-colors relative ${
+                hasActiveFilters
+                  ? 'text-blue-700 bg-blue-100 border border-blue-300'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+              title={hasActiveFilters ? 'Limpar Filtros' : 'Abrir Filtros'}
+            >
+              <Filter className="w-4 h-4" />
+              {hasActiveFilters && (
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white" />
+              )}
+            </button>
+
+            {/* Botão de Histórico (abre página com o mês inteiro) */}
+            <button
+              onClick={() => setIsMobileHistoryPage(!isMobileHistoryPage)}
+              className={`p-2 rounded-xl transition-colors flex items-center gap-1 text-xs font-semibold ${
+                isMobileHistoryPage
+                  ? 'text-white bg-indigo-600 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+              title={isMobileHistoryPage ? 'Sair do Histórico' : 'Ver Histórico do Mês'}
+            >
+              <History className="w-4 h-4" />
+            </button>
+
+            {/* Botão de Seleção Múltipla */}
+            {canEdit && (
+              <button
+                onClick={() => {
+                  if (isMultiSelectMode) {
+                    clearSelectedAulas();
+                    setIsMultiSelectMode(false);
+                  } else {
+                    setIsMultiSelectMode(true);
+                  }
+                }}
+                className={`p-2 rounded-xl transition-colors ${
+                  isMultiSelectMode
+                    ? 'text-white bg-blue-600 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+                title={isMultiSelectMode ? 'Desativar Seleção' : 'Seleção Múltipla'}
+              >
+                <CheckSquare className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Card Fixo de HOJE (visível na tela principal mobile; oculto na página de histórico) */}
+        {!isMobileHistoryPage ? (
+          <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white rounded-2xl shadow-md border border-blue-500/30 p-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-white/15">
+              <div className="flex items-center space-x-2">
+                <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                  <CalendarDays className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-1.5">
+                    <span className="text-[10px] uppercase font-extrabold tracking-wider bg-white text-blue-900 px-2 py-0.5 rounded-full">
+                      HOJE
+                    </span>
+                    <span className="text-xs text-blue-100 capitalize font-medium">
+                      {formatDayOfWeek(todayStr)}
+                    </span>
+                  </div>
+                  <h2 className="text-sm font-black tracking-tight mt-0.5">
+                    {formatDateBr(todayStr)}
+                  </h2>
+                </div>
+              </div>
+
+              {canEdit && (
+                <button
+                  onClick={() => handleOpenNewAula(todayStr)}
+                  className="flex items-center space-x-1 px-2.5 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-[11px] font-semibold transition-all border border-white/20 shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Inserir Aula Hoje</span>
+                </button>
+              )}
+            </div>
+
+            {/* Cards das Aulas de Hoje (com rolagem interna caso haja muitas aulas no mesmo dia) */}
+            <div className="mt-2.5 max-h-36 overflow-y-auto space-y-2 pr-0.5">
+              {todayAulas.length === 0 ? (
+                <div className="p-2.5 bg-white/10 rounded-xl text-center text-xs text-blue-100 flex items-center justify-center space-x-2">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-200 shrink-0" />
+                  <span>Nenhuma aula programada para hoje. Cronograma livre!</span>
+                </div>
+              ) : (
+                todayAulas.map(aula => {
+                  const turma = getTurma(aula.turmaId);
+                  const materia = getMateria(aula.materiaId);
+                  const instrutor = getInstrutor(aula.instrutorId);
+                  const isPrejudicada = aula.status === 'prejudicada';
+                  const isRealizada = aula.status === 'realizada';
+
+                  return (
+                    <div
+                      key={aula.id}
+                      onClick={() => setSelectedAulaForDetails(aula)}
+                      className="p-2.5 rounded-xl bg-white text-slate-900 shadow-xs cursor-pointer transition-all border-l-4 text-left"
+                      style={{ borderLeftColor: isPrejudicada ? '#f59e0b' : materia?.cor || '#2563eb' }}
+                    >
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span
+                          className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                          style={{ backgroundColor: `${turma?.cor || '#2563eb'}20`, color: turma?.cor || '#2563eb' }}
+                        >
+                          {turma?.sigla || 'TURMA'}
+                        </span>
+                        {isPrejudicada ? (
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                            <AlertTriangle className="w-2.5 h-2.5 text-amber-600" />
+                            Prejuízo
+                          </span>
+                        ) : isRealizada ? (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                            Concluída
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                            <Clock className="w-2.5 h-2.5 text-blue-600" />
+                            Hoje
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-bold text-xs text-slate-900 leading-snug line-clamp-1">
+                        {materia?.nome || 'Matéria'}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5 flex items-center justify-between">
+                        <span className="truncate max-w-[170px]">Instrutor: <strong>{instrutor?.nome}</strong></span>
+                        <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{aula.turno}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-indigo-600 text-white px-3.5 py-2.5 rounded-2xl shadow-xs flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <History className="w-4 h-4 text-indigo-200 shrink-0" />
+              <div>
+                <span className="text-xs font-bold block">Histórico Mensal Completo</span>
+                <span className="text-[11px] text-indigo-100 capitalize">{formatMonthYear(currentDate)}</span>
+              </div>
+            </div>
+            <span className="text-[11px] bg-white/20 px-2 py-0.5 rounded-lg font-semibold">
+              Mês Inteiro
+            </span>
+          </div>
         )}
       </div>
 
@@ -376,18 +536,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
           {/* Alternador de Visão no Desktop */}
           <div className="flex items-center bg-slate-100 p-1 rounded-xl">
             <button
-              onClick={() => setViewMode('lista')}
-              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                viewMode === 'lista'
-                  ? 'bg-white text-blue-600 shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <List className="w-3.5 h-3.5" />
-              <span>Lista</span>
-            </button>
-
-            <button
               onClick={() => setViewMode('mes')}
               className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 viewMode === 'mes'
@@ -397,6 +545,18 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             >
               <CalendarIcon className="w-3.5 h-3.5" />
               <span>Grade Mês</span>
+            </button>
+
+            <button
+              onClick={() => setViewMode('lista')}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                viewMode === 'lista'
+                  ? 'bg-white text-blue-600 shadow-xs font-bold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <List className="w-3.5 h-3.5" />
+              <span>Lista</span>
             </button>
           </div>
 
@@ -519,12 +679,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
         </div>
       )}
 
-      {/* Conteúdo: No mobile é SEMPRE Lista (AgendaView); no Desktop respeita viewMode */}
+      {/* =========================================================================
+          CONTEÚDO PRINCIPAL (Abaixo do bloco sticky no mobile)
+         ========================================================================= */}
       <div className="md:hidden">
         <AgendaView
           aulas={filteredAulas}
           onSelectAula={aula => setSelectedAulaForDetails(aula)}
           onAddAulaOnDate={dateStr => handleOpenNewAula(dateStr)}
+          hideTodayCard={true}
+          mode={isMobileHistoryPage ? 'month-history' : 'upcoming'}
+          currentDate={currentDate}
         />
       </div>
 
@@ -548,7 +713,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       {/* =========================================================================
           BOTÕES FLUTUANTES (FAB) NO MOBILE
          ========================================================================= */}
-      {/* Botão de Lixeira - aparece no canto inferior ESQUERDO quando multi-select está ativo e há itens selecionados */}
+      {/* Botão de Lixeira Vermelha - aparece no canto inferior ESQUERDO quando multi-select está ativo e há itens selecionados */}
       {isMultiSelectMode && selectedAulaIds.size > 0 && (
         <button
           onClick={handleMobileDelete}
@@ -575,7 +740,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
         </button>
       )}
 
-      {/* Barra de Ações em Lote (Desktop) */}
+      {/* Barra de Ações em Lote (Somente Desktop) */}
       <BulkActionBar currentAulasIds={currentAulasIds} />
 
       {/* Modais */}
