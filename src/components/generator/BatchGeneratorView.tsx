@@ -80,14 +80,6 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
 
   const parsedSpecificDays = parseDiasPorVirgula(diasPorVirgulaInput);
 
-  const toggleDayInCommaList = (dayNum: number) => {
-    const current = parseDiasPorVirgula(diasPorVirgulaInput);
-    const next = current.includes(dayNum)
-      ? current.filter(d => d !== dayNum)
-      : [...current, dayNum].sort((a, b) => a - b);
-    setDiasPorVirgulaInput(next.join(', '));
-  };
-
   // Toggle dia da semana
   const toggleDiaSemana = (dayNum: number) => {
     setDiasSemana(prev =>
@@ -457,8 +449,8 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
               </div>
             </div>
 
-            {/* Campo de Dias separados por vírgula + botões clicáveis de apoio */}
-            <div className="p-4 bg-indigo-50/50 border border-indigo-200/80 rounded-2xl space-y-3">
+            {/* Campo de Dias separados por vírgula */}
+            <div className="p-4 bg-indigo-50/50 border border-indigo-200/80 rounded-2xl space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <label className="block text-xs font-bold text-indigo-950">
                   Dias de {mesesNomes.find(m => m.num === mesEspecifico)?.nome}/{anoEspecifico} em que a(s) matéria(s) será(ão) inserida(s) (separados por vírgula): *
@@ -477,32 +469,6 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
                 placeholder="Ex: 3, 7, 12, 18, 24, 28"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-300 bg-white text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
               />
-
-              {/* Atalho visual: clique nos números do mês se preferir preencher automaticamente */}
-              <div>
-                <span className="text-[11px] text-slate-500 block mb-1.5">
-                  Dica: Digite os dias separados por vírgula acima ou clique nos dias do mês abaixo:
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {Array.from({ length: maxDaysInSelectedMonth }, (_, i) => i + 1).map(dayNum => {
-                    const isSelected = parsedSpecificDays.includes(dayNum);
-                    return (
-                      <button
-                        type="button"
-                        key={dayNum}
-                        onClick={() => toggleDayInCommaList(dayNum)}
-                        className={`w-7 h-7 rounded-lg text-[11px] font-bold transition-all ${
-                          isSelected
-                            ? 'bg-indigo-600 text-white shadow-2xs scale-105'
-                            : 'bg-white border border-slate-200 text-slate-700 hover:bg-indigo-100 hover:border-indigo-300'
-                        }`}
-                      >
-                        {dayNum}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
           </div>
         )}

@@ -124,7 +124,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
             return (
               <div
                 key={idx}
-                className={`min-h-[100px] sm:min-h-[112px] p-1.5 flex flex-col transition-colors group relative hover:bg-blue-50/50 ${cellBgClass}`}
+                className={`min-h-[110px] sm:min-h-[138px] lg:min-h-[146px] p-2 flex flex-col transition-colors group relative hover:bg-blue-50/50 ${cellBgClass}`}
               >
                 {/* Topo do dia: Número, Marcador de Múltiplas Matérias e Botão Adicionar */}
                 <div className="flex items-center justify-between mb-1 gap-1">
