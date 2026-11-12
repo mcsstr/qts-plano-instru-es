@@ -23,7 +23,9 @@ import {
   Calendar as CalendarIcon,
   List,
   CheckSquare,
-  RotateCcw
+  RotateCcw,
+  Trash2,
+  X
 } from 'lucide-react';
 
 interface CalendarViewProps {
@@ -45,7 +47,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
     selectedStatus,
     setSelectedStatus,
     isMultiSelectMode,
-    setIsMultiSelectMode
+    setIsMultiSelectMode,
+    selectedAulaIds,
+    clearSelectedAulas,
+    deleteSelectedAulas
   } = useApp();
 
   const { canEdit, openLoginModal } = useAuth();
@@ -55,6 +60,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
 
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [showFiltersDesktop, setShowFiltersDesktop] = useState(false);
+
+  // Modal de filtro mobile
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  // Estado temporário dos filtros no modal (só aplica ao clicar "Aplicar")
+  const [tempTurmaId, setTempTurmaId] = useState('all');
+  const [tempMateriaId, setTempMateriaId] = useState('all');
+  const [tempInstrutorId, setTempInstrutorId] = useState('all');
+  const [tempStatus, setTempStatus] = useState('all');
 
   // Estados dos modais
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -89,6 +102,24 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
     setSelectedAulaForPrejuizo(aula);
   };
 
+  // Abrir modal de filtro mobile (carrega estado atual nos campos temporários)
+  const openFilterModal = () => {
+    setTempTurmaId(selectedTurmaId);
+    setTempMateriaId(selectedMateriaId);
+    setTempInstrutorId(selectedInstrutorId);
+    setTempStatus(selectedStatus);
+    setShowFilterModal(true);
+  };
+
+  // Aplicar filtros do modal
+  const applyFilters = () => {
+    setSelectedTurmaId(tempTurmaId);
+    setSelectedMateriaId(tempMateriaId);
+    setSelectedInstrutorId(tempInstrutorId);
+    setSelectedStatus(tempStatus);
+    setShowFilterModal(false);
+  };
+
   // Filtragem de Aulas
   const filteredAulas = useMemo(() => {
     return aulas.filter(aula => {
@@ -115,51 +146,192 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
     setSelectedStatus('all');
   };
 
+  // Handler para deletar selecionados no mobile
+  const handleMobileDelete = () => {
+    if (selectedAulaIds.size === 0) return;
+    if (confirm(`Tem certeza que deseja excluir ${selectedAulaIds.size} aula(s) selecionada(s)? Esta ação não pode ser desfeita.`)) {
+      deleteSelectedAulas();
+    }
+  };
+
   return (
     <div className="space-y-3 sm:space-y-4">
       {/* =========================================================================
-          1. VERSÃO MOBILE: BARRA ULTRA COMPACTA (APENAS MUDAR MÊS E ANO)
+          1. VERSÃO MOBILE: BARRA FIXA (sticky) - Mês/Ano + Filtro + MultiSelect
          ========================================================================= */}
-      <div className="md:hidden flex items-center justify-between bg-white px-3 py-2 rounded-2xl border border-slate-200/90 shadow-2xs">
+      <div className="md:hidden sticky top-14 z-20 flex items-center justify-between bg-white px-3 py-2 rounded-2xl border border-slate-200/90 shadow-sm">
+        {/* Seta esquerda */}
         <button
           onClick={handlePrevMonth}
-          className="p-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+          className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
           title="Mês Anterior"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center space-x-2">
-          <h1 className="text-sm font-bold text-slate-900 capitalize tracking-tight">
-            {formatMonthYear(currentDate)}
-          </h1>
-          <button
-            onClick={handleToday}
-            className="px-2 py-0.5 rounded-lg text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200"
-          >
-            Hoje
-          </button>
-        </div>
+        {/* Mês e Ano (sem "Hoje") */}
+        <button
+          onClick={handleToday}
+          className="text-sm font-bold text-slate-900 capitalize tracking-tight px-1"
+          title="Ir para o mês atual"
+        >
+          {formatMonthYear(currentDate)}
+        </button>
 
+        {/* Seta direita */}
         <button
           onClick={handleNextMonth}
-          className="p-1.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+          className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
           title="Próximo Mês"
         >
           <ChevronRight className="w-5 h-5" />
         </button>
+
+        {/* Separador visual */}
+        <div className="h-5 w-px bg-slate-200 mx-1" />
+
+        {/* Botão de Filtro */}
+        <button
+          onClick={() => {
+            if (hasActiveFilters) {
+              // Se já tem filtro ativo, limpa ao clicar novamente
+              clearFilters();
+            } else {
+              openFilterModal();
+            }
+          }}
+          className={`p-1.5 rounded-lg transition-colors relative ${
+            hasActiveFilters
+              ? 'text-blue-700 bg-blue-100 border border-blue-300'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+          title={hasActiveFilters ? 'Limpar Filtros' : 'Abrir Filtros'}
+        >
+          <Filter className="w-4.5 h-4.5" />
+          {hasActiveFilters && (
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white" />
+          )}
+        </button>
+
+        {/* Botão de Seleção Múltipla */}
+        {canEdit && (
+          <button
+            onClick={() => {
+              if (isMultiSelectMode) {
+                clearSelectedAulas();
+                setIsMultiSelectMode(false);
+              } else {
+                setIsMultiSelectMode(true);
+              }
+            }}
+            className={`p-1.5 rounded-lg transition-colors ${
+              isMultiSelectMode
+                ? 'text-white bg-blue-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+            title={isMultiSelectMode ? 'Desativar Seleção' : 'Seleção Múltipla'}
+          >
+            <CheckSquare className="w-4.5 h-4.5" />
+          </button>
+        )}
       </div>
 
-      {/* Alerta de Filtro Ativo no Mobile (com botão para limpar) */}
-      {hasActiveFilters && (
-        <div className="md:hidden flex items-center justify-between px-3 py-1.5 bg-blue-50 text-blue-800 text-[11px] rounded-xl border border-blue-200 animate-in fade-in">
-          <span className="font-medium">Filtro aplicado às aulas</span>
-          <button
-            onClick={clearFilters}
-            className="font-bold underline text-blue-900 hover:text-blue-950"
-          >
-            Limpar filtros
-          </button>
+      {/* =========================================================================
+          MODAL DE FILTRO MOBILE (sobreposição)
+         ========================================================================= */}
+      {showFilterModal && (
+        <div className="md:hidden fixed inset-0 z-50 flex items-end justify-center">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs"
+            onClick={() => setShowFilterModal(false)}
+          />
+          {/* Modal Bottom Sheet */}
+          <div className="relative w-full max-w-lg bg-white rounded-t-3xl shadow-2xl p-5 pb-8 animate-in slide-in-from-bottom duration-300 z-10">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Filter className="w-4 h-4 text-blue-600" />
+                Filtros
+              </h3>
+              <button
+                onClick={() => setShowFilterModal(false)}
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-sm">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Turma</label>
+                <select
+                  value={tempTurmaId}
+                  onChange={e => setTempTurmaId(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm"
+                >
+                  <option value="all">Todas as Turmas</option>
+                  {turmas.map(t => (
+                    <option key={t.id} value={t.id}>{t.sigla} - {t.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Matéria</label>
+                <select
+                  value={tempMateriaId}
+                  onChange={e => setTempMateriaId(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm"
+                >
+                  <option value="all">Todas as Matérias</option>
+                  {materias.map(m => (
+                    <option key={m.id} value={m.id}>{m.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Instrutor</label>
+                <select
+                  value={tempInstrutorId}
+                  onChange={e => setTempInstrutorId(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm"
+                >
+                  <option value="all">Todos os Instrutores</option>
+                  {instrutores.map(i => (
+                    <option key={i.id} value={i.id}>{i.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-1">Status</label>
+                <select
+                  value={tempStatus}
+                  onChange={e => setTempStatus(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm"
+                >
+                  <option value="all">Todos os Status</option>
+                  <option value="agendada">📅 Agendadas</option>
+                  <option value="realizada">✅ Realizadas</option>
+                  <option value="prejudicada">⚠️ Prejudicadas</option>
+                  <option value="remanejada">🔄 Remanejadas</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={() => setShowFilterModal(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={applyFilters}
+                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20"
+              >
+                Aplicar Filtros
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -374,19 +546,36 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       </div>
 
       {/* =========================================================================
-          BOTÃO FLUTUANTE PREMIUM (FAB) NO MOBILE
-          Inspirado em apps premium (Google Calendar / Material Design 3)
+          BOTÕES FLUTUANTES (FAB) NO MOBILE
          ========================================================================= */}
-      <button
-        onClick={() => handleOpenNewAula()}
-        className="md:hidden fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none"
-        title="Inserir Nova Aula"
-        aria-label="Inserir Nova Aula"
-      >
-        <Plus className="w-7 h-7 stroke-[2.5]" />
-      </button>
+      {/* Botão de Lixeira - aparece no canto inferior ESQUERDO quando multi-select está ativo e há itens selecionados */}
+      {isMultiSelectMode && selectedAulaIds.size > 0 && (
+        <button
+          onClick={handleMobileDelete}
+          className="md:hidden fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-rose-600 to-red-600 text-white shadow-xl shadow-rose-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none animate-in zoom-in duration-200"
+          title={`Excluir ${selectedAulaIds.size} aula(s)`}
+          aria-label="Excluir selecionadas"
+        >
+          <Trash2 className="w-6 h-6 stroke-[2.5]" />
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-rose-700 rounded-full text-[10px] font-black flex items-center justify-center shadow-sm border border-rose-200">
+            {selectedAulaIds.size}
+          </span>
+        </button>
+      )}
 
-      {/* Barra de Ações em Lote */}
+      {/* Botão FAB Inserir Aula - canto inferior DIREITO */}
+      {canEdit && (
+        <button
+          onClick={() => handleOpenNewAula()}
+          className="md:hidden fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none"
+          title="Inserir Nova Aula"
+          aria-label="Inserir Nova Aula"
+        >
+          <Plus className="w-7 h-7 stroke-[2.5]" />
+        </button>
+      )}
+
+      {/* Barra de Ações em Lote (Desktop) */}
       <BulkActionBar currentAulasIds={currentAulasIds} />
 
       {/* Modais */}

@@ -30,13 +30,19 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
   const weekDaysShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
   const today = new Date();
 
-  // Agrupa aulas por data (YYYY-MM-DD)
+  // Agrupa aulas por data (YYYY-MM-DD com normalização robusta)
   const aulasByDate = React.useMemo(() => {
     const map = new Map<string, Aula[]>();
     aulas.forEach(aula => {
-      const list = map.get(aula.data) || [];
+      // Normalização robusta: remove parte de hora, espaços e garante formato YYYY-MM-DD
+      let cleanDate = '';
+      if (aula.data) {
+        cleanDate = String(aula.data).split('T')[0].split(' ')[0].trim();
+      }
+      if (!cleanDate || cleanDate.length < 10) return;
+      const list = map.get(cleanDate) || [];
       list.push(aula);
-      map.set(aula.data, list);
+      map.set(cleanDate, list);
     });
     return map;
   }, [aulas]);

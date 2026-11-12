@@ -17,6 +17,34 @@ export const DEFAULT_STATE: AppState = {
   }
 };
 
+// Helper de mesclagem inteligente por ID:
+// Prioriza os itens locais para que NENHUM cadastro recém-criado seja perdido ou sobrescrito!
+function mergeCollections<T extends { id: string }>(localList: T[], remoteList: T[]): T[] {
+  const map = new Map<string, T>();
+  // 1. Adiciona itens remotos da planilha
+  if (Array.isArray(remoteList)) {
+    remoteList.forEach(item => {
+      if (item && item.id) map.set(item.id, item);
+    });
+  }
+  // 2. Mescla os itens locais por cima (preservando cadastros locais mais recentes)
+  if (Array.isArray(localList)) {
+    localList.forEach(item => {
+      if (item && item.id) map.set(item.id, item);
+    });
+  }
+  return Array.from(map.values());
+}
+
+// Normaliza datas de Aula para garantir formato YYYY-MM-DD puro
+function normalizeAulasDates(aulas: any[]): any[] {
+  if (!Array.isArray(aulas)) return [];
+  return aulas.map(a => ({
+    ...a,
+    data: a.data ? String(a.data).split('T')[0].split(' ')[0].trim() : ''
+  }));
+}
+
 export const storageService = {
   loadState(): AppState {
     try {
@@ -27,7 +55,7 @@ export const storageService = {
           turmas: parsed.turmas || INITIAL_TURMAS,
           materias: parsed.materias || INITIAL_MATERIAS,
           instrutores: parsed.instrutores || INITIAL_INSTRUTORES,
-          aulas: parsed.aulas || INITIAL_AULAS,
+          aulas: normalizeAulasDates(parsed.aulas || INITIAL_AULAS),
           gestores: parsed.gestores || INITIAL_GESTORES,
           sheetsConfig: parsed.sheetsConfig || DEFAULT_STATE.sheetsConfig
         };
@@ -76,15 +104,15 @@ export const storageService = {
         gestores: state.gestores
       });
 
-      // 2. Busca os dados atualizados da planilha
+      // 2. Busca dados da planilha com mesclagem inteligente
       const fetched = await fetchGoogleSheetsData(state.sheetsConfig.scriptUrl);
 
       const updatedState: AppState = {
-        turmas: fetched.turmas.length > 0 ? fetched.turmas : state.turmas,
-        materias: fetched.materias.length > 0 ? fetched.materias : state.materias,
-        instrutores: fetched.instrutores.length > 0 ? fetched.instrutores : state.instrutores,
-        aulas: fetched.aulas.length > 0 ? fetched.aulas : state.aulas,
-        gestores: fetched.gestores.length > 0 ? fetched.gestores : state.gestores,
+        turmas: mergeCollections(state.turmas, fetched.turmas),
+        materias: mergeCollections(state.materias, fetched.materias),
+        instrutores: mergeCollections(state.instrutores, fetched.instrutores),
+        aulas: normalizeAulasDates(mergeCollections(state.aulas, fetched.aulas)),
+        gestores: mergeCollections(state.gestores, fetched.gestores),
         sheetsConfig: {
           ...state.sheetsConfig,
           ultimaSincronizacao: new Date().toISOString()

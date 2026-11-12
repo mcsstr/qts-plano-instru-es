@@ -5,12 +5,11 @@ export const GOOGLE_APPS_SCRIPT_CODE = `/**
  * BANCO DE DADOS GOOGLE SHEETS - QTS / PLANO DE AULAS INTELIGENTE
  * =========================================================================
  * 
- * INSTRUÇÕES RÁPIDAS DE INSTALAÇÃO:
+ * INSTRUÇÕES:
  * 1. Em sua Planilha Google, clique em 'Extensões' > 'Apps Script'.
  * 2. Cole este código completo.
  * 3. Clique em 'Implantar' > 'Gerenciar Implantações' > Ícone de Lápis (Editar)
- *    e selecione Versão: 'Nova versão', depois 'Implantar'
- *    (ou 'Nova Implantação' > 'App da Web' > Quem pode acessar: 'Qualquer pessoa').
+ *    e selecione Versão: 'Nova versão', depois 'Implantar'.
  * 4. Copie a URL do App da Web e cole nos Ajustes do QTS!
  */
 
@@ -99,7 +98,10 @@ function getSheetData(sheet) {
     const item = {};
     headers.forEach((header, idx) => {
       let val = row[idx];
-      if (header === 'materiasAptas' && typeof val === 'string' && val.trim().startsWith('[')) {
+      // Normalização de Datas para YYYY-MM-DD
+      if (val instanceof Date) {
+        val = Utilities.formatDate(val, Session.getScriptTimeZone() || 'GMT-3', 'yyyy-MM-dd');
+      } else if (header === 'materiasAptas' && typeof val === 'string' && val.trim().startsWith('[')) {
         try { val = JSON.parse(val); } catch(e) { val = []; }
       } else if (header === 'materiasAptas' && typeof val === 'string') {
         val = val ? val.split(',').map(s => s.trim()) : [];
@@ -145,6 +147,14 @@ function createJsonResponse(data) {
 }
 `;
 
+const normalizeDateStr = (d: any): string => {
+  if (!d) return '';
+  if (typeof d === 'string') {
+    return d.split('T')[0];
+  }
+  return String(d);
+};
+
 export async function fetchGoogleSheetsData(scriptUrl: string): Promise<{
   turmas: Turma[];
   materias: Materia[];
@@ -171,11 +181,17 @@ export async function fetchGoogleSheetsData(scriptUrl: string): Promise<{
     throw new Error(json.error || 'Erro retornado pela planilha');
   }
 
+  const rawAulas: Aula[] = json.aulas || [];
+  const normalizedAulas = rawAulas.map(a => ({
+    ...a,
+    data: normalizeDateStr(a.data)
+  }));
+
   return {
     turmas: json.turmas || [],
     materias: json.materias || [],
     instrutores: json.instrutores || [],
-    aulas: json.aulas || [],
+    aulas: normalizedAulas,
     gestores: json.gestores || []
   };
 }
@@ -194,9 +210,18 @@ export async function pushGoogleSheetsData(
     throw new Error('URL do Google Apps Script inválida.');
   }
 
+  // Normaliza datas antes de enviar para a planilha
+  const cleanedAulas = data.aulas.map(a => ({
+    ...a,
+    data: normalizeDateStr(a.data)
+  }));
+
   const payload = {
     action: 'syncAll',
-    data
+    data: {
+      ...data,
+      aulas: cleanedAulas
+    }
   };
 
   await fetch(scriptUrl, {

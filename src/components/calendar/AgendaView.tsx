@@ -22,18 +22,23 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
 
   const todayStr = new Date().toISOString().split('T')[0];
 
-  // Aulas de HOJE
+  // Aulas de HOJE (com normalização robusta de data)
   const todayAulas = React.useMemo(() => {
-    return aulas.filter(a => a.data === todayStr);
+    return aulas.filter(a => {
+      const clean = a.data ? String(a.data).split('T')[0].split(' ')[0].trim() : '';
+      return clean === todayStr;
+    });
   }, [aulas, todayStr]);
 
   // Todas as datas com aulas, agrupadas
   const sortedDates = React.useMemo(() => {
     const map = new Map<string, Aula[]>();
     aulas.forEach(a => {
-      const list = map.get(a.data) || [];
+      const cleanDate = a.data ? String(a.data).split('T')[0].split(' ')[0].trim() : '';
+      if (!cleanDate || cleanDate.length < 10) return;
+      const list = map.get(cleanDate) || [];
       list.push(a);
-      map.set(a.data, list);
+      map.set(cleanDate, list);
     });
 
     const dates = Array.from(map.keys()).sort();
