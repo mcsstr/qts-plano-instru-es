@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { MobileDrawer } from './MobileDrawer';
 import { THEME_LIST } from '../../utils/themeConfig';
 import {
   Calendar,
@@ -13,7 +12,6 @@ import {
   LogOut,
   RefreshCw,
   ShieldCheck,
-  Menu,
   Palette,
   Check
 } from 'lucide-react';
@@ -25,17 +23,15 @@ interface HeaderProps {
   onOpenNewAula?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openSettings, onOpenNewAula }) => {
+export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openSettings }) => {
   const { canEdit, isAdmin, openLoginModal, logout } = useAuth();
   const { syncSheets, isSyncing, syncError, sheetsConfig, theme, themePalette, setTheme } = useApp();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
 
   const isDarkHeader = theme === 'ft-19bpm';
 
   return (
-    <>
-      <header className={`sticky top-0 z-30 ${themePalette.headerBg} border-b ${themePalette.headerBorderTop} shadow-xs safe-top-header md:pt-0 transition-colors duration-200`}>
+    <header className={`shrink-0 z-30 ${themePalette.headerBg} border-b ${themePalette.headerBorderTop} shadow-xs safe-top-header md:pt-0 transition-colors duration-200 select-none`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo & Title */}
@@ -213,18 +209,19 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                 </button>
               )}
 
-              {/* Auth / Login Status Pill (Desktop) */}
-              <div className="hidden sm:flex items-center">
+              {/* Auth / Login Status Pill (Mobile & Desktop) */}
+              <div className="flex items-center">
                 {canEdit ? (
-                  <div className="flex items-center space-x-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-medium">
+                  <div className="flex items-center space-x-1.5 sm:space-x-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium">
                     <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="font-semibold">Gestor Ativo</span>
+                    <span className="font-semibold hidden sm:inline">Gestor Ativo</span>
                     <button
                       onClick={logout}
                       title="Sair do modo de edição"
-                      className="ml-0.5 text-emerald-700 hover:text-emerald-950 p-0.5 rounded hover:bg-emerald-200/50"
+                      className="text-emerald-700 hover:text-emerald-950 p-0.5 rounded hover:bg-emerald-200/50 flex items-center gap-1"
                     >
                       <LogOut className="w-3.5 h-3.5" />
+                      <span className="sm:hidden text-[11px] font-bold">Sair</span>
                     </button>
                   </div>
                 ) : (
@@ -237,32 +234,9 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                   </button>
                 )}
               </div>
-
-              {/* Botão Menu Sanduíche (Exclusivo Mobile) */}
-              <button
-                onClick={() => setIsDrawerOpen(true)}
-                className={`md:hidden p-2 rounded-xl transition-colors ${
-                  isDarkHeader ? 'text-white hover:bg-white/10' : 'text-slate-700 hover:bg-slate-100'
-                }`}
-                title="Menu"
-                aria-label="Abrir Menu"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
             </div>
           </div>
         </div>
-      </header>
-
-      {/* Menu Sanduíche Drawer Mobile */}
-      <MobileDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        currentTab={currentTab}
-        setCurrentTab={setCurrentTab}
-        openSettings={openSettings}
-        onOpenNewAula={onOpenNewAula || (() => {})}
-      />
-    </>
+    </header>
   );
 };

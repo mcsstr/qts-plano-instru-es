@@ -26,34 +26,36 @@ const AppContent: React.FC = () => {
   }, []);
 
   return (
-    <div className={`min-h-screen ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
+    <div className={`h-dvh overflow-hidden ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
       {/* Toast Flutuante de Notificação */}
       <Toast toast={toast} onClose={closeToast} />
 
-      {/* Header Fixo / Sticky */}
+      {/* Header Congelado no Topo (não se move no pull-to-refresh) */}
       <Header
         currentTab={currentTab}
         setCurrentTab={(tab: any) => setCurrentTab(tab)}
         openSettings={() => setIsSettingsOpen(true)}
       />
 
-      {/* Conteúdo Principal */}
-      <main className="grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 pb-24 md:pb-6">
-        {currentTab === 'calendario' && (
-          <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
-        )}
+      {/* Conteúdo Principal com Rolagem Independente */}
+      <main className="grow overflow-y-auto overscroll-y-none w-full">
+        <div className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 pb-24 md:pb-6">
+          {currentTab === 'calendario' && (
+            <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
+          )}
 
-        {currentTab === 'gerador' && (
-          <BatchGeneratorView onSuccess={() => setCurrentTab('calendario')} />
-        )}
+          {currentTab === 'gerador' && (
+            <BatchGeneratorView onSuccess={() => setCurrentTab('calendario')} />
+          )}
 
-        {currentTab === 'metricas' && (
-          <MetricsDashboard />
-        )}
+          {currentTab === 'metricas' && (
+            <MetricsDashboard />
+          )}
 
-        {currentTab === 'cadastros' && (
-          <RegistersManager />
-        )}
+          {currentTab === 'cadastros' && (
+            <RegistersManager />
+          )}
+        </div>
       </main>
 
       {/* Navegação Inferior para Telas Mobile */}

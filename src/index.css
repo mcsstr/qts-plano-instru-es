@@ -6,13 +6,19 @@
     -webkit-tap-highlight-color: transparent;
   }
   
-  body {
+  html, body, #root {
     margin: 0;
     padding: 0;
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    overscroll-behavior-y: none;
+  }
+
+  body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background-color: #f8fafc;
     color: #1e293b;
-    overscroll-behavior-y: none;
   }
 }
 
@@ -35,18 +41,15 @@
 /* iPhone Safe Area Support */
 .safe-top-header {
   padding-top: max(env(safe-area-inset-top, 0px), 12px);
+  touch-action: none;
 }
 
-.sticky-below-header {
-  top: calc(3.5rem + max(env(safe-area-inset-top, 0px), 12px));
+.safe-bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  touch-action: none;
 }
 
-/* Botão Menu bem próximo da borda inferior */
-.fab-menu-bottom {
-  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
-}
-
-/* Botão Add (+) exatamente em cima do botão Menu */
-.fab-add-above-menu {
-  bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+/* Botões flutuantes (FAB) acima da barra inferior no mobile */
+.fab-above-bottom-nav {
+  bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
 }

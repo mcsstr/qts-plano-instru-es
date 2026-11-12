@@ -185,7 +185,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
              Contém: Barra de Mês/Ano + Botões (Filtro, Histórico, MultiSelect)
              + Card Azul de HOJE. As aulas rolam SOMENTE abaixo deste bloco!
          ========================================================================= */}
-      <div className={`md:hidden sticky sticky-below-header z-20 ${themePalette.appBg} pt-1 pb-2.5 space-y-2.5 -mx-3 px-3 shadow-[0_6px_12px_-6px_rgba(15,23,42,0.08)] transition-colors duration-200`}>
+      <div className={`md:hidden sticky top-0 z-20 ${themePalette.appBg} -mt-2.5 pt-2.5 pb-2.5 space-y-2.5 -mx-3 px-3 shadow-[0_6px_12px_-6px_rgba(15,23,42,0.08)] transition-colors duration-200`}>
         {/* Linha de Mês/Ano + Filtro + Histórico + Seleção Múltipla */}
         <div className="flex items-center justify-between bg-white px-2.5 py-2 rounded-2xl border border-slate-200/90 shadow-xs">
           {isMobileHistoryPage && (
@@ -706,13 +706,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       </div>
 
       {/* =========================================================================
-          BOTÕES FLUTUANTES (FAB) NO MOBILE
+          BOTÕES FLUTUANTES (FAB) NO MOBILE (Lado Direito, acima do Menu Inferior)
          ========================================================================= */}
-      {/* Botão de Lixeira Vermelha - aparece ao lado do botão Add/Menu quando multi-select está ativo */}
+      {/* Botão de Lixeira Vermelha - aparece ao lado do botão (+) quando itens estão selecionados */}
       {isMultiSelectMode && selectedAulaIds.size > 0 && (
         <button
           onClick={handleMobileDelete}
-          className="md:hidden fixed left-20 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-rose-600 to-red-600 text-white shadow-xl shadow-rose-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none animate-in zoom-in duration-200 fab-menu-bottom"
+          className="md:hidden fixed right-20 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-rose-600 to-red-600 text-white shadow-xl shadow-rose-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none animate-in zoom-in duration-200 fab-above-bottom-nav"
           title={`Excluir ${selectedAulaIds.size} aula(s)`}
           aria-label="Excluir selecionadas"
         >
@@ -723,11 +723,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
         </button>
       )}
 
-      {/* Botão FAB Inserir Aula - em cima do botão sanduíche no canto inferior esquerdo */}
+      {/* Botão FAB Inserir Aula (+) no canto inferior direito */}
       {canEdit && (
         <button
           onClick={() => handleOpenNewAula()}
-          className="md:hidden fixed left-4 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none fab-add-above-menu"
+          className="md:hidden fixed right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none fab-above-bottom-nav"
           title="Inserir Nova Aula"
           aria-label="Inserir Nova Aula"
         >
