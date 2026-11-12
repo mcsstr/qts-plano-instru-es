@@ -25,65 +25,104 @@ const AppContent: React.FC = () => {
     return () => window.removeEventListener('beforeinstallprompt', preventInstallPrompt);
   }, []);
 
-  // Sincroniza a cor da barra de status / safe-area do celular com a cor exata do cabeçalho (sensação de infinito)
+  // Sincroniza a cor do safe-area / barra de status com a mesma cor do menu do tema escolhido
   useEffect(() => {
     const hex = themePalette.headerHex || '#0f172a';
     document.documentElement.style.backgroundColor = hex;
     document.body.style.backgroundColor = hex;
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', hex);
+    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (!metaThemeColor) {
+      metaThemeColor = document.createElement('meta');
+      metaThemeColor.setAttribute('name', 'theme-color');
+      document.head.appendChild(metaThemeColor);
     }
+    metaThemeColor.setAttribute('content', hex);
   }, [themePalette.headerHex]);
 
-  // Garante que após fechar o teclado no iOS (ex: após realizar login), a tela nunca fique deslocada para cima no safe area
+  // Monitora a abertura do teclado virtual no celular para que os modais acompanhem o espaço visível restante
   useEffect(() => {
-    const resetViewportScroll = () => {
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-      }, 50);
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const handleViewportChange = () => {
+      const isKeyboardOpen = vv.height < window.innerHeight * 0.82;
+      document.documentElement.style.setProperty('--vvh', `${vv.height}px`);
+      document.documentElement.style.setProperty('--vv-top', `${vv.offsetTop}px`);
+      document.body.classList.toggle('keyboard-open', isKeyboardOpen);
+
+      if (isKeyboardOpen && document.activeElement instanceof HTMLElement) {
+        const tag = document.activeElement.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+          setTimeout(() => {
+            (document.activeElement as HTMLElement)?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            });
+          }, 100);
+        }
+      }
     };
-    window.addEventListener('focusout', resetViewportScroll);
-    window.visualViewport?.addEventListener('resize', resetViewportScroll);
+
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target) return;
+      const tag = target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+        setTimeout(() => {
+          handleViewportChange();
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 250);
+      }
+    };
+
+    const handleFocusOut = () => {
+      setTimeout(() => {
+        handleViewportChange();
+      }, 150);
+    };
+
+    vv.addEventListener('resize', handleViewportChange);
+    vv.addEventListener('scroll', handleViewportChange);
+    window.addEventListener('focusin', handleFocusIn);
+    window.addEventListener('focusout', handleFocusOut);
+
     return () => {
-      window.removeEventListener('focusout', resetViewportScroll);
-      window.visualViewport?.removeEventListener('resize', resetViewportScroll);
+      vv.removeEventListener('resize', handleViewportChange);
+      vv.removeEventListener('scroll', handleViewportChange);
+      window.removeEventListener('focusin', handleFocusIn);
+      window.removeEventListener('focusout', handleFocusOut);
     };
   }, []);
 
   return (
-    <div className={`h-full w-full overflow-hidden ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
+    <div className={`min-h-screen ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
       {/* Toast Flutuante de Notificação */}
       <Toast toast={toast} onClose={closeToast} />
 
-      {/* Header Congelado no Topo (não se move no pull-to-refresh) */}
+      {/* Header Sticky (não desce ao puxar para atualizar, mas permite o teclado subir nos modais) */}
       <Header
         currentTab={currentTab}
         setCurrentTab={(tab: any) => setCurrentTab(tab)}
         openSettings={() => setIsSettingsOpen(true)}
       />
 
-      {/* Conteúdo Principal com Rolagem Independente */}
-      <main className="grow overflow-y-auto overscroll-y-none w-full">
-        <div className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 pb-24 md:pb-6">
-          {currentTab === 'calendario' && (
-            <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
-          )}
+      {/* Conteúdo Principal */}
+      <main className="grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 pb-24 md:pb-6">
+        {currentTab === 'calendario' && (
+          <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
+        )}
 
-          {currentTab === 'gerador' && (
-            <BatchGeneratorView onSuccess={() => setCurrentTab('calendario')} />
-          )}
+        {currentTab === 'gerador' && (
+          <BatchGeneratorView onSuccess={() => setCurrentTab('calendario')} />
+        )}
 
-          {currentTab === 'metricas' && (
-            <MetricsDashboard />
-          )}
+        {currentTab === 'metricas' && (
+          <MetricsDashboard />
+        )}
 
-          {currentTab === 'cadastros' && (
-            <RegistersManager />
-          )}
-        </div>
+        {currentTab === 'cadastros' && (
+          <RegistersManager />
+        )}
       </main>
 
       {/* Navegação Inferior para Telas Mobile */}

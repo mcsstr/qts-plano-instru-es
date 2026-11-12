@@ -28,12 +28,16 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
   const { syncSheets, isSyncing, syncError, sheetsConfig, theme, themePalette, setTheme } = useApp();
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
 
-  const isDarkHeader = theme === 'ft-19bpm';
+  const isDarkHeader = theme !== 'clean-slate';
 
   return (
     <header
-      style={{ boxShadow: `0 -120px 0 0 ${themePalette.headerHex}` }}
-      className={`shrink-0 z-30 ${themePalette.headerBg} ${themePalette.headerBorderTop} safe-top-header md:pt-0 transition-colors duration-200 select-none`}
+      onTouchMove={e => e.preventDefault()}
+      style={{
+        backgroundColor: themePalette.headerHex,
+        boxShadow: `0 -120px 0 0 ${themePalette.headerHex}`
+      }}
+      className={`sticky top-0 z-30 ${themePalette.headerBg} ${themePalette.headerBorderTop} safe-top-header md:pt-0 transition-colors duration-200 select-none touch-none`}
     >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">

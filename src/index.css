@@ -6,15 +6,10 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  html, body, #root {
+  html, body {
     margin: 0;
     padding: 0;
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    overscroll-behavior: none;
+    min-height: 100%;
     overscroll-behavior-y: none;
   }
 
@@ -41,19 +36,40 @@
   background: #94a3b8;
 }
 
-/* Safe Area Superior (iPhone / PWA) com mesma cor contínua até o topo */
-@media (max-width: 767px) {
-  .safe-top-header {
-    padding-top: max(env(safe-area-inset-top, 0px), 2.5rem);
-  }
+/* Safe Area Superior (iPhone / PWA) na altura natural do topo */
+.safe-top-header {
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* Barra inferior bem colada na margem inferior do celular */
+.sticky-below-header {
+  top: calc(3.5rem + env(safe-area-inset-top, 0px));
+}
+
+/* Barra inferior com leve respiro da margem inferior do celular */
 .safe-bottom-nav {
-  padding-bottom: 2px;
+  padding-bottom: 10px;
 }
 
-/* Botões flutuantes (FAB) logo acima da barra inferior compacta no mobile */
+/* Botões flutuantes (FAB) logo acima da barra inferior no mobile */
 .fab-above-bottom-nav {
-  bottom: 3.5rem;
+  bottom: 4.5rem;
+}
+
+/* Quando o teclado virtual é ativado no celular, os modais acompanham o espaço visível restante */
+@media (max-width: 767px) {
+  body.keyboard-open .fixed.inset-0.z-50 {
+    height: var(--vvh, 100dvh) !important;
+    max-height: var(--vvh, 100dvh) !important;
+    top: var(--vv-top, 0px) !important;
+    bottom: auto !important;
+    align-items: flex-start !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    overflow-y: auto !important;
+  }
+
+  body.keyboard-open .fixed.inset-0.z-50 > div:not(.fixed) {
+    max-height: calc(var(--vvh, 100dvh) - 1rem) !important;
+    overflow-y: auto !important;
+  }
 }
