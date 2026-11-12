@@ -82,10 +82,14 @@ export const RegistersManager: React.FC = () => {
   const [gestorSenha, setGestorSenha] = useState('');
   const [gestorCargo, setGestorCargo] = useState('');
 
-  // Color options
+  // Paleta expandida de 27 cores distintas para Turmas e Matérias
   const COLOR_PALETTE = [
-    '#2563eb', '#059669', '#dc2626', '#ea580c', '#7c3aed',
-    '#0891b2', '#d97706', '#4f46e5', '#db2777', '#475569'
+    '#1d4ed8', '#2563eb', '#0284c7', '#0891b2', '#0d9488',
+    '#059669', '#16a34a', '#15803d', '#65a30d', '#4d7c0f',
+    '#eab308', '#ca8a04', '#d97706', '#ea580c', '#c2410c',
+    '#dc2626', '#991b1b', '#e11d48', '#db2777', '#be185d',
+    '#9333ea', '#7c3aed', '#4f46e5', '#312e81', '#78350f',
+    '#475569', '#0f172a'
   ];
 
   // Open modal helpers
@@ -728,18 +732,31 @@ export const RegistersManager: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">Cor da Turma</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {COLOR_PALETTE.map(c => (
                     <button
                       type="button"
                       key={c}
                       onClick={() => setTurmaCor(c)}
                       className={`w-7 h-7 rounded-full transition-transform ${
-                        turmaCor === c ? 'scale-125 ring-2 ring-slate-800' : 'hover:scale-110'
+                        turmaCor === c ? 'scale-125 ring-2 ring-slate-900 shadow-sm' : 'hover:scale-110'
                       }`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
+                  <label
+                    title="Escolher outra cor personalizada"
+                    className="w-7 h-7 rounded-full border-2 border-dashed border-slate-400 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform overflow-hidden relative"
+                    style={{ backgroundColor: turmaCor }}
+                  >
+                    <input
+                      type="color"
+                      value={turmaCor}
+                      onChange={e => setTurmaCor(e.target.value)}
+                      className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                    />
+                    <span className="text-[10px] font-black text-white drop-shadow">+</span>
+                  </label>
                 </div>
               </div>
 
@@ -822,18 +839,31 @@ export const RegistersManager: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">Cor da Matéria</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {COLOR_PALETTE.map(c => (
                     <button
                       type="button"
                       key={c}
                       onClick={() => setMateriaCor(c)}
                       className={`w-7 h-7 rounded-full transition-transform ${
-                        materiaCor === c ? 'scale-125 ring-2 ring-slate-800' : 'hover:scale-110'
+                        materiaCor === c ? 'scale-125 ring-2 ring-slate-900 shadow-sm' : 'hover:scale-110'
                       }`}
                       style={{ backgroundColor: c }}
                     />
                   ))}
+                  <label
+                    title="Escolher outra cor personalizada"
+                    className="w-7 h-7 rounded-full border-2 border-dashed border-slate-400 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform overflow-hidden relative"
+                    style={{ backgroundColor: materiaCor }}
+                  >
+                    <input
+                      type="color"
+                      value={materiaCor}
+                      onChange={e => setMateriaCor(e.target.value)}
+                      className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                    />
+                    <span className="text-[10px] font-black text-white drop-shadow">+</span>
+                  </label>
                 </div>
               </div>
 
