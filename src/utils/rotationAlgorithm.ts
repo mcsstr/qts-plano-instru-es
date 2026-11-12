@@ -190,3 +190,158 @@ export function generatePeriodSchedule(
   return result;
 }
 
+export interface SpecificMonthDaysParams {
+  turmaId: string;
+  ano: number;
+  mes: number; // 1 = Janeiro ... 12 = Dezembro
+  diasDoMes: number[]; // Ex: [3, 7, 15, 22]
+  materiasIds: string[]; // Todas essas matérias serão inseridas em CADA dia selecionado (sem rodízio)
+  estrategiaInstrutor: 'apto_preferencial' | 'rotativo' | 'fixo';
+  instrutorFixoId?: string;
+  turnoPadrao: Turno;
+  horarioPadrao?: string;
+  pularDiasComAulaExistente: boolean;
+}
+
+/**
+ * Modalidade: Dias Específicos do Mês (por vírgula).
+ * Insere a(s) mesma(s) matéria(s) selecionada(s) em todos os dias informados daquele mês, sem fazer rodízio.
+ */
+export function generateSpecificDaysSchedule(
+  params: SpecificMonthDaysParams,
+  existingAulas: Aula[],
+  instrutores: Instrutor[]
+): GeneratedAulaPreview[] {
+  const {
+    turmaId,
+    ano,
+    mes,
+    diasDoMes,
+    materiasIds,
+    estrategiaInstrutor,
+    instrutorFixoId,
+    turnoPadrao,
+    horarioPadrao = '08:00 - 17:00',
+    pularDiasComAulaExistente
+  } = params;
+
+  if (!turmaId || !ano || !mes || diasDoMes.length === 0 || materiasIds.length === 0) {
+    return [];
+  }
+
+  // Quantidade máxima de dias no mês escolhido
+  const maxDayInMonth = new Date(ano, mes, 0).getDate();
+
+  // Filtra e ordena dias válidos (1..maxDayInMonth), sem duplicatas
+  const validDays = Array.from(
+    new Set(
+      diasDoMes
+        .map(d => Math.floor(Number(d)))
+        .filter(d => !isNaN(d) && d >= 1 && d <= maxDayInMonth)
+    )
+  ).sort((a, b) => a - b);
+
+  if (validDays.length === 0) return [];
+
+  const targetDateStrings = validDays.map(d => {
+    const mm = String(mes).padStart(2, '0');
+    const dd = String(d).padStart(2, '0');
+    return `${ano}-${mm}-${dd}`;
+  });
+
+  // Se pularDiasComAulaExistente estiver marcado, verifica datas já ocupadas pela turma
+  const existingDatesForTurma = new Set(
+    existingAulas
+      .filter(a => a.turmaId === turmaId && a.status !== 'cancelada')
+      .map(a => String(a.data).split('T')[0].trim())
+  );
+
+  const availableDates = pularDiasComAulaExistente
+    ? targetDateStrings.filter(dateStr => !existingDatesForTurma.has(dateStr))
+    : targetDateStrings;
+
+  if (availableDates.length === 0) return [];
+
+  // Contabilizar histórico de dias dos instrutores para equilibrar distribuição
+  const instructorDaysMap = new Map<string, Set<string>>();
+  instrutores.forEach(inst => instructorDaysMap.set(inst.id, new Set<string>()));
+  existingAulas
+    .filter(a => a.status !== 'cancelada')
+    .forEach(a => {
+      const set = instructorDaysMap.get(a.instrutorId);
+      if (set) set.add(a.data);
+    });
+
+  const activeInstructors = instrutores.filter(i => i.ativo);
+  const result: GeneratedAulaPreview[] = [];
+
+  let counter = 0;
+
+  // Para CADA data escolhida, insere TODAS as matérias selecionadas (sem rodízio)
+  for (const dateStr of availableDates) {
+    for (const materiaId of materiasIds) {
+      let chosenInstrutorId = '';
+      let isApto = false;
+
+      if (estrategiaInstrutor === 'fixo' && instrutorFixoId) {
+        chosenInstrutorId = instrutorFixoId;
+        const inst = instrutores.find(x => x.id === instrutorFixoId);
+        isApto = inst ? inst.materiasAptas.includes(materiaId) : false;
+      } else if (estrategiaInstrutor === 'apto_preferencial') {
+        const aptos = activeInstructors.filter(inst =>
+          inst.materiasAptas.includes(materiaId)
+        );
+
+        if (aptos.length > 0) {
+          aptos.sort((a, b) => {
+            const daysA = (instructorDaysMap.get(a.id) || new Set()).size;
+            const daysB = (instructorDaysMap.get(b.id) || new Set()).size;
+            return daysA - daysB;
+          });
+          chosenInstrutorId = aptos[0].id;
+          isApto = true;
+        } else if (activeInstructors.length > 0) {
+          const sortedAll = [...activeInstructors].sort((a, b) => {
+            const daysA = (instructorDaysMap.get(a.id) || new Set()).size;
+            const daysB = (instructorDaysMap.get(b.id) || new Set()).size;
+            return daysA - daysB;
+          });
+          chosenInstrutorId = sortedAll[0].id;
+          isApto = false;
+        }
+      } else {
+        const sortedAll = [...activeInstructors].sort((a, b) => {
+          const daysA = (instructorDaysMap.get(a.id) || new Set()).size;
+          const daysB = (instructorDaysMap.get(b.id) || new Set()).size;
+          return daysA - daysB;
+        });
+        if (sortedAll.length > 0) {
+          chosenInstrutorId = sortedAll[0].id;
+          isApto = sortedAll[0].materiasAptas.includes(materiaId);
+        }
+      }
+
+      if (chosenInstrutorId) {
+        const set = instructorDaysMap.get(chosenInstrutorId) || new Set<string>();
+        set.add(dateStr);
+        instructorDaysMap.set(chosenInstrutorId, set);
+      }
+
+      result.push({
+        tempId: `gen-fix-${Date.now()}-${counter++}`,
+        data: dateStr,
+        turmaId,
+        materiaId,
+        instrutorId: chosenInstrutorId || (activeInstructors[0]?.id || ''),
+        turno: turnoPadrao,
+        horario: horarioPadrao,
+        status: 'agendada',
+        observacoes: 'Inserção por Dias Específicos do Mês',
+        instrutorApto: isApto
+      });
+    }
+  }
+
+  return result;
+}
+

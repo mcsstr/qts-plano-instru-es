@@ -185,7 +185,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
              Contém: Barra de Mês/Ano + Botões (Filtro, Histórico, MultiSelect)
              + Card Azul de HOJE. As aulas rolam SOMENTE abaixo deste bloco!
          ========================================================================= */}
-      <div className="md:hidden sticky sticky-below-header z-20 bg-slate-50 pt-1 pb-2.5 space-y-2.5 -mx-3 px-3 shadow-[0_6px_12px_-6px_rgba(15,23,42,0.08)]">
+      <div className={`md:hidden sticky sticky-below-header z-20 ${themePalette.appBg} pt-1 pb-2.5 space-y-2.5 -mx-3 px-3 shadow-[0_6px_12px_-6px_rgba(15,23,42,0.08)] transition-colors duration-200`}>
         {/* Linha de Mês/Ano + Filtro + Histórico + Seleção Múltipla */}
         <div className="flex items-center justify-between bg-white px-2.5 py-2 rounded-2xl border border-slate-200/90 shadow-xs">
           {isMobileHistoryPage && (
