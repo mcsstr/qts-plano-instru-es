@@ -175,38 +175,20 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
   ];
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Header do Gerador */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-600 text-white flex items-center justify-center shadow-md shadow-indigo-500/20">
-              <Layers className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                Gerador de Período & Rodízio Inteligente
-              </h1>
-              <p className="text-xs text-slate-500">
-                Gere blocos de aulas (ex: 15 dias, 1 mês) com distribuição automática e balanceamento de matérias
-              </p>
-            </div>
-          </div>
-
-          <div className="text-right hidden sm:block">
-            <span className="text-xs font-semibold px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full border border-indigo-200">
-              Balanceamento Algorítmico
-            </span>
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-5 max-w-6xl mx-auto">
       {/* Formulário de Configuração do Lote */}
-      <form onSubmit={handleGeneratePreview} className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 space-y-6">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-blue-600" />
-          <span>1. Parâmetros do Período e Turma</span>
-        </h2>
+      <form onSubmit={handleGeneratePreview} className="bg-white rounded-2xl border border-indigo-100 shadow-sm p-5 sm:p-6 space-y-6">
+        <div className="flex items-center justify-between pb-3 border-b border-indigo-100">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-xs">
+              <Calendar className="w-4 h-4" />
+            </div>
+            <span>1. Parâmetros do Período e Turma</span>
+          </h2>
+          <span className="text-[11px] font-bold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full border border-indigo-200 hidden sm:inline-block">
+            Rodízio Inteligente
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Turma */}

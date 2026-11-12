@@ -70,13 +70,17 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-        {/* Cabeçalho dos Dias da Semana (Mais enxuto para caber o calendário na tela) */}
-        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/90 text-center text-[11px] font-bold text-slate-700">
+      <div className="bg-white rounded-2xl border border-indigo-200/80 shadow-md overflow-hidden">
+        {/* Cabeçalho dos Dias da Semana Colorido */}
+        <div className="grid grid-cols-7 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 text-center text-[11px] font-extrabold text-white tracking-wide uppercase">
           {weekDays.map((d, index) => (
             <div
               key={d}
-              className={`py-1.5 ${index === 0 || index === 6 ? 'text-slate-400 bg-slate-100/40' : ''}`}
+              className={`py-2 ${
+                index === 0 || index === 6
+                  ? 'bg-black/20 text-amber-200'
+                  : 'border-r border-white/10'
+              }`}
             >
               <span className="hidden sm:inline">{d}</span>
               <span className="sm:hidden">{weekDaysShort[index]}</span>
@@ -84,8 +88,8 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
           ))}
         </div>
 
-        {/* Grade de Dias do Mês - Altura ajustada para caber o mês inteiro na tela */}
-        <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-slate-100">
+        {/* Grade de Dias do Mês com Cores Alternadas */}
+        <div className="grid grid-cols-7 auto-rows-fr divide-x divide-y divide-indigo-100/80">
           {days.map((day, idx) => {
             const dateStr = format(day, 'yyyy-MM-dd');
             const isCurrentMonth = isSameMonth(day, currentDate);
@@ -96,7 +100,21 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
             const hasMoreThanTwo = dayAulas.length > 2;
             const isExpanded = expandedDates.has(dateStr);
 
-            // Exibe até 2 matérias diretamente dentro do bloco (já que cabem perfeitamente!).
+            // Alternância de cor nos dias (efeito xadrez colorido suave)
+            const isAlternateCell = idx % 2 === 1;
+
+            let cellBgClass = 'bg-white';
+            if (!isCurrentMonth) {
+              cellBgClass = 'bg-slate-100/75 text-slate-400';
+            } else if (isToday) {
+              cellBgClass = 'bg-blue-100/70 ring-2 ring-inset ring-blue-500/60';
+            } else if (isDayWeekend) {
+              cellBgClass = isAlternateCell ? 'bg-amber-50/65' : 'bg-orange-50/45';
+            } else {
+              cellBgClass = isAlternateCell ? 'bg-sky-50/75' : 'bg-indigo-50/30';
+            }
+
+            // Exibe até 2 matérias diretamente dentro do bloco.
             // Se houver 3 ou mais matérias, mostra as 2 primeiras + botão de expandir/modal.
             const visibleAulas = !isExpanded && hasMoreThanTwo ? dayAulas.slice(0, 2) : dayAulas;
             const hiddenCount = dayAulas.length - visibleAulas.length;
@@ -104,19 +122,21 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
             return (
               <div
                 key={idx}
-                className={`min-h-[100px] sm:min-h-[112px] p-1.5 flex flex-col transition-colors group relative ${
-                  !isCurrentMonth ? 'bg-slate-50/60 text-slate-400' : 'bg-white'
-                } ${isDayWeekend && isCurrentMonth ? 'bg-slate-50/30' : ''}`}
+                className={`min-h-[100px] sm:min-h-[112px] p-1.5 flex flex-col transition-colors group relative hover:bg-blue-50/60 ${cellBgClass}`}
               >
                 {/* Topo do dia: Número, Marcador de Múltiplas Matérias e Botão Adicionar */}
                 <div className="flex items-center justify-between mb-1 gap-1">
                   <span
-                    className={`text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-md transition-all shrink-0 ${
+                    className={`text-[11px] font-extrabold w-5 h-5 flex items-center justify-center rounded-md transition-all shrink-0 ${
                       isToday
-                        ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20'
-                        : isCurrentMonth
-                        ? 'text-slate-800 group-hover:bg-slate-100'
-                        : 'text-slate-300'
+                        ? 'bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-sm shadow-blue-500/30 scale-105'
+                        : !isCurrentMonth
+                        ? 'text-slate-400/70'
+                        : isDayWeekend
+                        ? 'text-amber-800 bg-amber-200/50'
+                        : isAlternateCell
+                        ? 'text-blue-900 bg-blue-200/50'
+                        : 'text-indigo-900 bg-indigo-100/70'
                     }`}
                   >
                     {format(day, 'd')}
@@ -130,10 +150,10 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                         setModalDayStr(dateStr);
                       }}
                       title="Clique para abrir todas as aulas deste dia em destaque"
-                      className="flex items-center gap-0.5 text-[9px] font-extrabold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-1.5 py-0.5 rounded transition-colors cursor-pointer leading-none"
+                      className="flex items-center gap-0.5 text-[9px] font-extrabold text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 px-1.5 py-0.5 rounded shadow-2xs transition-all cursor-pointer leading-none"
                     >
                       <span>{dayAulas.length} aulas</span>
-                      <Maximize2 className="w-2.5 h-2.5 text-indigo-600 shrink-0" />
+                      <Maximize2 className="w-2.5 h-2.5 text-indigo-100 shrink-0" />
                     </button>
                   )}
 
@@ -145,7 +165,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                         onAddAulaOnDate(dateStr);
                       }}
                       title={`Adicionar aula em ${formatDateBr(dateStr)}`}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded ml-auto shrink-0"
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 text-blue-600 hover:text-white hover:bg-blue-600 bg-blue-100/80 rounded ml-auto shrink-0"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
@@ -165,12 +185,12 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                   ))}
                 </div>
 
-                {/* Botão de Expansão apenas quando houver 3 ou mais matérias (pois 2 já aparecem inteiras!) */}
+                {/* Botão de Expansão apenas quando houver 3 ou mais matérias */}
                 {hasMoreThanTwo && (
                   <div className="mt-1">
                     <button
                       onClick={e => toggleExpandDay(dateStr, e)}
-                      className="w-full py-0.5 px-1.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200/80 text-[9px] font-bold flex items-center justify-center gap-0.5 transition-colors leading-tight"
+                      className="w-full py-0.5 px-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-bold flex items-center justify-center gap-0.5 transition-colors leading-tight shadow-2xs"
                     >
                       {isExpanded ? (
                         <>
@@ -192,10 +212,10 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                   <div
                     onClick={() => canEdit && onAddAulaOnDate(dateStr)}
                     className={`grow flex items-center justify-center rounded-lg border border-dashed border-transparent transition-colors ${
-                      canEdit ? 'hover:border-slate-200 hover:bg-slate-50/50 cursor-pointer' : ''
+                      canEdit ? 'hover:border-blue-300 hover:bg-white/70 cursor-pointer' : ''
                     }`}
                   >
-                    <span className="text-[10px] text-slate-300 hidden group-hover:block font-medium">
+                    <span className="text-[10px] text-blue-500 hidden group-hover:block font-bold">
                       {canEdit ? '+ Aula' : 'Livre'}
                     </span>
                   </div>

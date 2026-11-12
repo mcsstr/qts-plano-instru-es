@@ -8,7 +8,6 @@ import {
   X,
   Calendar,
   Clock,
-  BookOpen,
   Users,
   User,
   AlertTriangle,
@@ -17,7 +16,7 @@ import {
   Edit2,
   Trash2,
   FileText,
-  Star
+  RotateCcw
 } from 'lucide-react';
 
 interface AulaDetailsModalProps {
@@ -35,7 +34,7 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
   onEdit,
   onOpenPrejuizo
 }) => {
-  const { getTurma, getMateria, getInstrutor, deleteAula, updateAula } = useApp();
+  const { getTurma, getMateria, getInstrutor, deleteAula, updateAula, showToast } = useApp();
   const { canEdit } = useAuth();
 
   if (!isOpen || !aula) return null;
@@ -57,6 +56,44 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
       ...aula,
       status: 'realizada'
     });
+    onClose();
+  };
+
+  const handleClearPrejuizo = () => {
+    // Se houve aula de reposição criada quando marcou prejuízo, pergunta se deseja excluí-la também
+    if (aula.remanejadaParaId) {
+      const removerReposicao = confirm(
+        'Esta aula possuía uma reposição agendada. Deseja remover também a aula de reposição que havia sido criada?'
+      );
+      if (removerReposicao) {
+        deleteAula(aula.remanejadaParaId);
+      }
+    }
+
+    // Limpa o texto de prejuízo das observações se houver
+    const cleanedObs = aula.observacoes
+      ? aula.observacoes
+          .replace(/\s*\|\s*Prejuízo registrado:.*$/i, '')
+          .replace(/\s*\|\s*Remanejada para.*$/i, '')
+          .replace(/^Prejuízo registrado:.*$/i, '')
+          .replace(/^Remanejada para.*$/i, '')
+          .trim()
+      : undefined;
+
+    updateAula({
+      ...aula,
+      status: 'agendada',
+      motivoPrejuizo: undefined,
+      remanejadaParaId: undefined,
+      observacoes: cleanedObs || undefined
+    });
+
+    showToast({
+      type: 'info',
+      title: 'Prejuízo Desmarcado!',
+      message: 'A aula voltou para o status normal (Agendada).'
+    });
+
     onClose();
   };
 
@@ -96,12 +133,24 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
             <StatusBadge status={aula.status} />
           </div>
 
-          {/* Destaque de Prejuízo (se houver) */}
+          {/* Destaque de Prejuízo (se houver) + Botão Rápido para Desmarcar Prejuízo */}
           {aula.status === 'prejudicada' && (
-            <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl space-y-1.5 animate-in fade-in">
-              <div className="flex items-center space-x-2 text-amber-900 font-bold text-xs">
-                <AlertTriangle className="w-4 h-4 text-amber-600" />
-                <span>Ocorrência / Prejuízo Registrado</span>
+            <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl space-y-2 animate-in fade-in">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center space-x-2 text-amber-900 font-bold text-xs">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Ocorrência / Prejuízo Registrado</span>
+                </div>
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={handleClearPrejuizo}
+                    className="flex items-center space-x-1 px-2.5 py-1 bg-white hover:bg-amber-100 text-amber-900 border border-amber-400 rounded-lg text-[11px] font-bold shadow-2xs transition-colors shrink-0"
+                  >
+                    <RotateCcw className="w-3 h-3 text-amber-700" />
+                    <span>Desmarcar Prejuízo</span>
+                  </button>
+                )}
               </div>
               <p className="text-xs text-amber-800">
                 {aula.motivoPrejuizo || 'Aula interrompida ou prejudicada na data.'}
@@ -125,7 +174,7 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
 
           {/* Informações detalhadas */}
           <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100">
               <span className="text-slate-500 block mb-1">Turno / Horário</span>
               <span className="font-semibold text-slate-900 flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5 text-blue-600" />
@@ -133,10 +182,10 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
               </span>
             </div>
 
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
               <span className="text-slate-500 block mb-1">Turma</span>
               <span className="font-semibold text-slate-900 flex items-center gap-1">
-                <Users className="w-3.5 h-3.5 text-blue-600" />
+                <Users className="w-3.5 h-3.5 text-indigo-600" />
                 {turma?.sigla} - {turma?.nome}
               </span>
             </div>
@@ -203,18 +252,29 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
               </button>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onOpenPrejuizo(aula);
-                }}
-                className="flex items-center space-x-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-semibold rounded-xl transition-colors border border-amber-300"
-              >
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
-                <span>Registrar Prejuízo</span>
-              </button>
+            <div className="flex items-center flex-wrap gap-2">
+              {aula.status === 'prejudicada' ? (
+                <button
+                  type="button"
+                  onClick={handleClearPrejuizo}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-900 text-xs font-bold rounded-xl transition-colors border border-blue-300"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-blue-700" />
+                  <span>Desmarcar Prejuízo</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenPrejuizo(aula);
+                  }}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-semibold rounded-xl transition-colors border border-amber-300"
+                >
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Registrar Prejuízo</span>
+                </button>
+              )}
 
               {aula.status !== 'realizada' && (
                 <button
@@ -233,4 +293,3 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
     </div>
   );
 };
-

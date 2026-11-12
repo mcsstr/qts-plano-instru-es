@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs safe-top-header md:pt-0">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-indigo-100 border-t-4 border-t-indigo-600 shadow-xs safe-top-header md:pt-0">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo & Title */}
@@ -48,13 +48,13 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-1">
+            <nav className="hidden md:flex items-center space-x-1.5 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60">
               <button
                 onClick={() => setCurrentTab('calendario')}
-                className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   currentTab === 'calendario'
-                    ? 'bg-blue-50 text-blue-700 font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
                 }`}
               >
                 <Calendar className="w-4 h-4" />
@@ -63,10 +63,10 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
 
               <button
                 onClick={() => setCurrentTab('gerador')}
-                className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   currentTab === 'gerador'
-                    ? 'bg-blue-50 text-blue-700 font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
                 }`}
               >
                 <Layers className="w-4 h-4" />
@@ -75,10 +75,10 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
 
               <button
                 onClick={() => setCurrentTab('metricas')}
-                className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   currentTab === 'metricas'
-                    ? 'bg-blue-50 text-blue-700 font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
                 }`}
               >
                 <BarChart3 className="w-4 h-4" />
@@ -87,10 +87,10 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
 
               <button
                 onClick={() => setCurrentTab('cadastros')}
-                className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   currentTab === 'cadastros'
-                    ? 'bg-blue-50 text-blue-700 font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
                 }`}
               >
                 <Users className="w-4 h-4" />

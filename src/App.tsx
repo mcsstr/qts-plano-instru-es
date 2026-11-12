@@ -26,7 +26,7 @@ const AppContent: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50/40 to-indigo-50/50 flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
       {/* Toast Flutuante de Notificação */}
       <Toast toast={toast} onClose={closeToast} />
 

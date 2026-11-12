@@ -27,6 +27,9 @@ export const ClassCard: React.FC<ClassCardProps> = ({
   const isRealizada = aula.status === 'realizada';
   const isRemanejada = aula.status === 'remanejada';
 
+  const materiaColor = materia?.cor || '#3b82f6';
+  const turmaColor = turma?.cor || '#2563eb';
+
   const handleClick = (e: React.MouseEvent) => {
     if (isMultiSelectMode) {
       e.stopPropagation();
@@ -50,18 +53,22 @@ export const ClassCard: React.FC<ClassCardProps> = ({
             ? 'p-2 flex flex-col justify-between grow'
             : 'px-1.5 py-1'
           : 'p-2.5 sm:p-3 rounded-xl'
-      } text-left transition-all cursor-pointer border select-none ${
+      } text-left transition-all cursor-pointer border select-none hover:scale-[1.01] ${
         isSelected
-          ? 'ring-2 ring-blue-600 bg-blue-50/95 border-blue-500 shadow-xs'
+          ? 'ring-2 ring-blue-600 bg-blue-100/90 border-blue-500 shadow-xs'
           : isPrejudicada
-          ? 'bg-amber-50/95 border-amber-300 hover:border-amber-400 shadow-2xs hover:shadow-xs'
-          : isRealizada
-          ? 'bg-slate-50 border-slate-200/90 hover:border-slate-300 shadow-2xs'
-          : 'bg-white border-slate-200/90 hover:border-blue-400 shadow-2xs hover:shadow-xs'
+          ? 'bg-amber-100/90 border-amber-400 hover:border-amber-500 shadow-xs'
+          : 'shadow-2xs hover:shadow-sm'
       }`}
       style={{
-        borderLeftWidth: compact ? '3.5px' : '5px',
-        borderLeftColor: isPrejudicada ? '#f59e0b' : materia?.cor || '#3b82f6'
+        borderLeftWidth: compact ? '4px' : '5px',
+        borderLeftColor: isPrejudicada ? '#f59e0b' : materiaColor,
+        backgroundColor: isSelected
+          ? undefined
+          : isPrejudicada
+          ? undefined
+          : `${materiaColor}14`,
+        borderColor: isSelected || isPrejudicada ? undefined : `${materiaColor}40`
       }}
     >
       {/* Checkbox quando em modo de seleção múltipla */}
@@ -78,13 +85,12 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         </div>
       )}
 
-      {/* Linha Superior: Turma Badge e Status */}
+      {/* Linha Superior: Turma Badge Colorido e Status */}
       <div className={`flex items-center justify-between gap-1 ${compact ? (singleInDay ? 'mb-1' : 'mb-0.5') : 'mb-1.5'} ${isMultiSelectMode ? 'pr-4' : ''}`}>
         <span
-          className={`${compact ? 'text-[9px] px-1.5 py-0.5' : 'text-[10px] px-2 py-0.5'} font-extrabold rounded shrink-0 tracking-tight leading-none`}
+          className={`${compact ? 'text-[9px] px-1.5 py-0.5' : 'text-[10px] px-2 py-0.5'} font-extrabold rounded shrink-0 tracking-tight leading-none text-white shadow-2xs`}
           style={{
-            backgroundColor: `${turma?.cor || '#2563eb'}18`,
-            color: turma?.cor || '#2563eb'
+            backgroundColor: turmaColor
           }}
         >
           {turma?.sigla || 'TURMA'}
@@ -92,26 +98,26 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
         {isPrejudicada ? (
           <span
-            className="flex items-center text-[9px] text-amber-800 font-bold bg-amber-200/80 px-1 py-0.5 rounded-full border border-amber-300 shrink-0 leading-none"
+            className="flex items-center text-[9px] text-amber-900 font-bold bg-amber-300/90 px-1.5 py-0.5 rounded-full border border-amber-400 shrink-0 leading-none"
             title={aula.motivoPrejuizo || 'Aula com Prejuízo Registrado'}
           >
-            <AlertTriangle className="w-2.5 h-2.5 mr-0.5 text-amber-700 shrink-0" />
+            <AlertTriangle className="w-2.5 h-2.5 mr-0.5 text-amber-800 shrink-0" />
             <span>Prejuízo</span>
           </span>
         ) : isRealizada ? (
           <span
-            className="flex items-center text-[9px] text-emerald-800 font-semibold bg-emerald-100 px-1 py-0.5 rounded-full shrink-0 leading-none"
+            className="flex items-center text-[9px] text-emerald-800 font-bold bg-emerald-200/90 px-1.5 py-0.5 rounded-full shrink-0 leading-none"
             title="Aula Realizada"
           >
-            <CheckCircle2 className="w-2.5 h-2.5 mr-0.5 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-2.5 h-2.5 mr-0.5 text-emerald-700 shrink-0" />
             <span>{compact ? 'OK' : 'Concluída'}</span>
           </span>
         ) : isRemanejada ? (
           <span
-            className="flex items-center text-[9px] text-purple-800 font-semibold bg-purple-100 px-1 py-0.5 rounded-full shrink-0 leading-none"
+            className="flex items-center text-[9px] text-purple-800 font-bold bg-purple-200/90 px-1.5 py-0.5 rounded-full shrink-0 leading-none"
             title="Aula Remanejada"
           >
-            <ArrowRightLeft className="w-2.5 h-2.5 mr-0.5 text-purple-600 shrink-0" />
+            <ArrowRightLeft className="w-2.5 h-2.5 mr-0.5 text-purple-700 shrink-0" />
             <span>Remanej.</span>
           </span>
         ) : null}
