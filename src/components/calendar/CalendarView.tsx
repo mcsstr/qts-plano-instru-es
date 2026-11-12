@@ -707,11 +707,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       {/* =========================================================================
           BOTÕES FLUTUANTES (FAB) NO MOBILE
          ========================================================================= */}
-      {/* Botão de Lixeira Vermelha - aparece ao lado do botão de menu na mesma linha quando multi-select está ativo */}
+      {/* Botão de Lixeira Vermelha - aparece ao lado do botão Add/Menu quando multi-select está ativo */}
       {isMultiSelectMode && selectedAulaIds.size > 0 && (
         <button
           onClick={handleMobileDelete}
-          className="md:hidden fixed left-20 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-rose-600 to-red-600 text-white shadow-xl shadow-rose-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none animate-in zoom-in duration-200 fab-safe-bottom"
+          className="md:hidden fixed left-20 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-rose-600 to-red-600 text-white shadow-xl shadow-rose-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none animate-in zoom-in duration-200 fab-menu-bottom"
           title={`Excluir ${selectedAulaIds.size} aula(s)`}
           aria-label="Excluir selecionadas"
         >
@@ -722,11 +722,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
         </button>
       )}
 
-      {/* Botão FAB Inserir Aula - canto inferior DIREITO (acima da marca d'água do Netlify) */}
+      {/* Botão FAB Inserir Aula - em cima do botão sanduíche no canto inferior esquerdo */}
       {canEdit && (
         <button
           onClick={() => handleOpenNewAula()}
-          className="md:hidden fixed right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none fab-safe-bottom"
+          className="md:hidden fixed left-4 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none fab-add-above-menu"
           title="Inserir Nova Aula"
           aria-label="Inserir Nova Aula"
         >

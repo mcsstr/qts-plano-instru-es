@@ -41,10 +41,12 @@
   top: calc(3.5rem + max(env(safe-area-inset-top, 0px), 12px));
 }
 
-.fab-safe-bottom {
-  bottom: calc(3.25rem + env(safe-area-inset-bottom, 0px));
+/* Botão Menu bem próximo da borda inferior */
+.fab-menu-bottom {
+  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
 }
 
-.fab-trash-safe-bottom {
-  bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
+/* Botão Add (+) exatamente em cima do botão Menu */
+.fab-add-above-menu {
+  bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
 }

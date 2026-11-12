@@ -34,12 +34,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, setCurrentTab,
   return (
     <div className="md:hidden">
       {/* =========================================================================
-          BOTÃO FLUTUANTE DE MENU (FAB) - Lado Inferior Esquerdo
-          Mesmo formato e altura do botão de Adicionar (+), livre da marca d'água
+          BOTÃO FLUTUANTE DE MENU (FAB) - Canto Inferior Esquerdo (Mesma cor Azul)
          ========================================================================= */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed left-4 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-slate-800 to-slate-900 text-white shadow-xl shadow-slate-900/35 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none fab-safe-bottom"
+        className="fixed left-4 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none fab-menu-bottom"
         title="Abrir Menu de Opções"
         aria-label="Abrir Menu de Opções"
       >
