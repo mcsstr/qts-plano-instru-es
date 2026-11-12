@@ -40,8 +40,8 @@
     <rect x="176" y="96" width="22" height="44" rx="11" fill="url(#goldGrad)" />
     <rect x="314" y="96" width="22" height="44" rx="11" fill="url(#goldGrad)" />
 
-    <!--Texto QTS no cabeçalho do calendário -->
-    <text x="256" y="167" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="36" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="4">QTS</text>
+    <!--Texto QTM no cabeçalho do calendário -->
+    <text x="256" y="167" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="36" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="4">QTM</text>
 
     <!-- Grade de Aulas / Blocos Coloridos -->
     <rect x="144" y="210" width="60" height="42" rx="10" fill="#3b82f6" opacity="0.9" />

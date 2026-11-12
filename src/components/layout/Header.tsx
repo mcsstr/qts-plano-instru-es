@@ -42,20 +42,12 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
             <div className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer" onClick={() => setCurrentTab('calendario')}>
               <img
                 src="/favicon.svg"
-                alt="QTS FT"
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl shadow-md shadow-black/20 shrink-0"
+                alt="QTM"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-md shadow-black/20 shrink-0"
               />
-              <div>
-                <div className="flex items-center space-x-1.5 sm:space-x-2">
-                  <span className={`font-bold text-base sm:text-lg ${themePalette.headerText} tracking-tight`}>QTS FT</span>
-                  <span className={`hidden lg:inline-block text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                    isDarkHeader ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-slate-200/70 text-slate-600'
-                  }`}>
-                    19º BPM/I
-                  </span>
-                </div>
-                <p className={`text-[11px] ${themePalette.headerSubtext} hidden sm:block`}>Plano de Aulas, Rodízio e Instrutores</p>
-              </div>
+              <span className={`font-extrabold text-base sm:text-lg ${themePalette.headerText} tracking-tight`}>
+                QTM
+              </span>
             </div>
 
             {/* Desktop Navigation */}
@@ -111,20 +103,19 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
 
             {/* Right Action Area */}
             <div className="flex items-center space-x-1.5 sm:space-x-2">
-              {/* Google Sheets Sync Pill (Desktop) */}
+              {/* Botão Sincronizar (Apenas Ícone + Ponto Verde de Status, em Desktop e Mobile) */}
               {sheetsConfig.scriptUrl && (
                 <button
                   onClick={() => syncSheets()}
                   disabled={isSyncing}
                   title={syncError ? `Erro: ${syncError}` : 'Sincronizar com a Planilha Google agora'}
-                  className={`hidden sm:flex items-center space-x-1.5 px-2.5 py-1.5 text-xs rounded-xl border transition-colors shadow-2xs ${
+                  className={`flex items-center space-x-1.5 px-2.5 py-2 text-xs rounded-xl border transition-colors shadow-2xs ${
                     isDarkHeader
                       ? 'border-white/15 bg-white/10 text-slate-200 hover:bg-white/20'
                       : 'border-slate-200 text-slate-700 hover:bg-slate-50 bg-white'
                   }`}
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-amber-400' : isDarkHeader ? 'text-slate-300' : 'text-slate-500'}`} />
-                  <span className="font-medium">Sincronizar</span>
+                  <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-amber-400' : isDarkHeader ? 'text-slate-200' : 'text-slate-600'}`} />
                   {syncError ? (
                     <span className="w-2 h-2 rounded-full bg-red-500 shrink-0"></span>
                   ) : (
@@ -246,20 +237,6 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                   </button>
                 )}
               </div>
-
-              {/* Botão Sincronizar Rápido no Mobile */}
-              {sheetsConfig.scriptUrl && (
-                <button
-                  onClick={() => syncSheets()}
-                  disabled={isSyncing}
-                  className={`sm:hidden p-2 rounded-xl ${
-                    isDarkHeader ? 'text-slate-200 hover:text-amber-300' : 'text-slate-600 hover:text-blue-600'
-                  }`}
-                  title="Sincronizar Planilha"
-                >
-                  <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin text-amber-400' : ''}`} />
-                </button>
-              )}
 
               {/* Botão Menu Sanduíche (Exclusivo Mobile) */}
               <button

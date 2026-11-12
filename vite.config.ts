@@ -12,9 +12,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'QTS FT - Plano de Aulas e Rodízio',
-        short_name: 'QTS FT',
-        description: 'Plano de aulas inteligente, rodízio de matérias e gestão de instrutores',
+        name: 'QTM - Quadro de Trabalho Mensal',
+        short_name: 'QTM',
+        description: 'Quadro de Trabalho Mensal',
         theme_color: '#1e3a8a',
         background_color: '#f8fafc',
         display: 'standalone',

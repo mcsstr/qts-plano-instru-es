@@ -62,7 +62,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-sm leading-tight">Menu Principal</h3>
-              <p className="text-[11px] text-blue-100">QTS FT</p>
+              <p className="text-[11px] text-blue-100">QTM</p>
             </div>
           </div>
           <button
@@ -216,7 +216,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 
         {/* Drawer Footer */}
         <div className="p-3 bg-slate-50 border-t border-slate-200 text-center text-[11px] text-slate-400 shrink-0">
-          QTS FT • PWA v2.0
+          QTM • Quadro de Trabalho Mensal
         </div>
       </div>
     </div>
