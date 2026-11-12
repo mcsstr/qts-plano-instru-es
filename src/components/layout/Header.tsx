@@ -34,15 +34,14 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
           <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo & Title */}
             <div className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer" onClick={() => setCurrentTab('calendario')}>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 shrink-0">
-                <Calendar className="w-4 h-4 sm:w-6 sm:h-6" />
-              </div>
+              <img
+                src="/favicon.svg"
+                alt="QTS FT"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl shadow-md shadow-blue-500/20 shrink-0"
+              />
               <div>
                 <div className="flex items-center space-x-1.5 sm:space-x-2">
                   <span className="font-bold text-base sm:text-lg text-slate-900 tracking-tight">QTS FT</span>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-sm bg-blue-100 text-blue-700">
-                    PWA
-                  </span>
                 </div>
                 <p className="text-[11px] text-slate-500 hidden sm:block">Plano de Aulas, Rodízio e Instrutores</p>
               </div>

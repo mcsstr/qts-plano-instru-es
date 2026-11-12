@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
 import { LoginModal } from './components/layout/LoginModal';
-import { InstallPwaBanner } from './components/layout/InstallPwaBanner';
 import { CalendarView } from './components/calendar/CalendarView';
 import { BatchGeneratorView } from './components/generator/BatchGeneratorView';
 import { MetricsDashboard } from './components/metrics/MetricsDashboard';
@@ -17,13 +16,19 @@ const AppContent: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { toast, closeToast } = useApp();
 
+  // Impede qualquer pop-up automático do navegador pedindo para instalar PWA
+  useEffect(() => {
+    const preventInstallPrompt = (e: Event) => {
+      e.preventDefault();
+    };
+    window.addEventListener('beforeinstallprompt', preventInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', preventInstallPrompt);
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white">
       {/* Toast Flutuante de Notificação */}
       <Toast toast={toast} onClose={closeToast} />
-
-      {/* Banner PWA de Instalação no Celular */}
-      <InstallPwaBanner />
 
       {/* Header Fixo / Sticky */}
       <Header
