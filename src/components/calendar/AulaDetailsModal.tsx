@@ -214,14 +214,16 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
             )}
           </div>
 
-          {/* Observações */}
-          {aula.observacoes && (
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-              <span className="text-slate-500 block mb-1 flex items-center gap-1">
-                <FileText className="w-3.5 h-3.5 text-slate-400" />
-                Observações
+          {/* Assunto da Aula / Observações */}
+          {(aula.observacoes || materia?.descricao) && (
+            <div className="p-3.5 bg-blue-50/60 rounded-xl border border-blue-200/80 text-xs">
+              <span className="text-blue-800 font-bold block mb-1 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-blue-600" />
+                Assunto que será tratado na Aula
               </span>
-              <p className="text-slate-700 whitespace-pre-wrap">{aula.observacoes}</p>
+              <p className="text-slate-800 font-medium whitespace-pre-wrap">
+                {aula.observacoes || materia?.descricao}
+              </p>
             </div>
           )}
         </div>

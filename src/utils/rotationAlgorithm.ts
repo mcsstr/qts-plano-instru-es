@@ -13,6 +13,7 @@ export interface BatchGenerationParams {
   turnoPadrao: Turno;
   horarioPadrao?: string;
   pularDiasComAulaExistente: boolean;
+  assuntoPadrao?: string;
 }
 
 export interface GeneratedAulaPreview {
@@ -45,7 +46,8 @@ export function generatePeriodSchedule(
     instrutorFixoId,
     turnoPadrao,
     horarioPadrao = '08:00 - 17:00',
-    pularDiasComAulaExistente
+    pularDiasComAulaExistente,
+    assuntoPadrao = ''
   } = params;
 
   if (!turmaId || !dataInicio || !dataFim || materiasIds.length === 0) {
@@ -182,7 +184,7 @@ export function generatePeriodSchedule(
       turno: turnoPadrao,
       horario: horarioPadrao,
       status: 'agendada',
-      observacoes: 'Gerado via Rodízio Automático',
+      observacoes: assuntoPadrao.trim(),
       instrutorApto: isApto
     });
   }
@@ -201,6 +203,7 @@ export interface SpecificMonthDaysParams {
   turnoPadrao: Turno;
   horarioPadrao?: string;
   pularDiasComAulaExistente: boolean;
+  assuntoPadrao?: string;
 }
 
 /**
@@ -222,7 +225,8 @@ export function generateSpecificDaysSchedule(
     instrutorFixoId,
     turnoPadrao,
     horarioPadrao = '08:00 - 17:00',
-    pularDiasComAulaExistente
+    pularDiasComAulaExistente,
+    assuntoPadrao = ''
   } = params;
 
   if (!turmaId || !ano || !mes || diasDoMes.length === 0 || materiasIds.length === 0) {
@@ -336,7 +340,7 @@ export function generateSpecificDaysSchedule(
         turno: turnoPadrao,
         horario: horarioPadrao,
         status: 'agendada',
-        observacoes: 'Inserção por Dias Específicos do Mês',
+        observacoes: assuntoPadrao.trim(),
         instrutorApto: isApto
       });
     }

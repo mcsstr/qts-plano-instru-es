@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { MonthGrid } from './MonthGrid';
 import { AgendaView } from './AgendaView';
+import { getAulaAssunto } from './ClassCard';
 import { AulaFormModal } from './AulaFormModal';
 import { AulaDetailsModal } from './AulaDetailsModal';
 import { PrejuizoModal } from './PrejuizoModal';
@@ -334,6 +335,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                   const materia = getMateria(aula.materiaId);
                   const isPrejudicada = aula.status === 'prejudicada';
                   const isRealizada = aula.status === 'realizada';
+                  const assunto = getAulaAssunto(aula, materia?.descricao);
 
                   return (
                     <div
@@ -366,9 +368,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                           </span>
                         )}
                       </div>
-                      <div className="font-bold text-xs text-slate-900 leading-snug line-clamp-2">
+                      <div className="font-bold text-xs text-slate-900 leading-snug line-clamp-1">
                         {materia?.nome || 'Matéria'}
                       </div>
+                      {assunto && (
+                        <div className="text-[11px] text-slate-600 font-medium leading-tight line-clamp-2 mt-0.5">
+                          {assunto}
+                        </div>
+                      )}
                     </div>
                   );
                 })
@@ -701,6 +708,8 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             aulas={filteredAulas}
             onSelectAula={aula => setSelectedAulaForDetails(aula)}
             onAddAulaOnDate={dateStr => handleOpenNewAula(dateStr)}
+            mode="month-history"
+            currentDate={currentDate}
           />
         )}
       </div>

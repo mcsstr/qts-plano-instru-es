@@ -11,6 +11,26 @@ interface ClassCardProps {
   singleInDay?: boolean;
 }
 
+/**
+ * Extrai o assunto/conteúdo limpo da aula (removendo anotações automáticas de prejuízo/reposição)
+ * ou utiliza a descrição/ementa da matéria caso a aula não tenha assunto específico preenchido.
+ */
+export function getAulaAssunto(aula: Aula, materiaDescricao?: string): string {
+  if (aula.observacoes) {
+    const cleaned = aula.observacoes
+      .replace(/\s*\|\s*Prejuízo registrado:.*$/i, '')
+      .replace(/\s*\|\s*Remanejada para.*$/i, '')
+      .replace(/^Prejuízo registrado:.*$/i, '')
+      .replace(/^Remanejada para.*$/i, '')
+      .replace(/^Aula de reposição referente.*$/i, '')
+      .replace(/^Gerado via Rodízio Automático$/i, '')
+      .replace(/^Inserção por Dias Específicos do Mês$/i, '')
+      .trim();
+    if (cleaned) return cleaned;
+  }
+  return materiaDescricao?.trim() || '';
+}
+
 export const ClassCard: React.FC<ClassCardProps> = ({
   aula,
   onClick,
@@ -29,6 +49,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
 
   const materiaColor = materia?.cor || '#3b82f6';
   const turmaColor = turma?.cor || '#2563eb';
+  const assunto = getAulaAssunto(aula, materia?.descricao);
 
   const handleClick = (e: React.MouseEvent) => {
     if (isMultiSelectMode) {
@@ -123,18 +144,35 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         ) : null}
       </div>
 
-      {/* Nome da Matéria */}
-      <div
-        className={`font-bold text-slate-900 ${
-          compact
-            ? singleInDay
-              ? 'text-xs leading-snug line-clamp-2'
-              : 'text-[10.5px] leading-tight line-clamp-1'
-            : 'text-xs sm:text-sm leading-snug line-clamp-2'
-        }`}
-        title={materia?.nome}
-      >
-        {materia?.nome || 'Matéria'}
+      {/* Bloco de Matéria + Assunto da Aula */}
+      <div>
+        <div
+          className={`font-bold text-slate-900 ${
+            compact
+              ? singleInDay
+                ? 'text-xs leading-snug line-clamp-1'
+                : 'text-[10.5px] leading-tight line-clamp-1'
+              : 'text-xs sm:text-sm leading-snug line-clamp-1'
+          }`}
+          title={materia?.nome}
+        >
+          {materia?.nome || 'Matéria'}
+        </div>
+
+        {assunto && (
+          <div
+            className={`text-slate-600 font-medium ${
+              compact
+                ? singleInDay
+                  ? 'text-[10px] leading-tight line-clamp-2 mt-0.5'
+                  : 'text-[9px] leading-tight line-clamp-1 mt-0.5'
+                : 'text-[11px] leading-snug line-clamp-2 mt-0.5'
+            }`}
+            title={`Assunto: ${assunto}`}
+          >
+            {assunto}
+          </div>
+        )}
       </div>
     </div>
   );

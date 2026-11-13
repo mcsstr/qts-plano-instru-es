@@ -36,20 +36,24 @@
   background: #94a3b8;
 }
 
-/* Safe Area Superior (iPhone / PWA) com leve ajuste fino de 6px abaixo da safe area */
+:root {
+  --safe-top-offset: max(calc(env(safe-area-inset-top, 0px) + 14px), 24px);
+}
+
+/* Safe Area Superior (iPhone / Android / PWA) abaixo da faixa esfumaçada do topo */
 @media (max-width: 767px) {
   .safe-top-header {
-    padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
+    padding-top: var(--safe-top-offset);
   }
 
   .sticky-below-header {
-    top: calc(3.5rem + env(safe-area-inset-top, 0px) + 6px);
+    top: calc(3.5rem + var(--safe-top-offset));
   }
 }
 
 /* Posicionamento do Card de Notificação (Toast) sempre abaixo do menu superior */
 .toast-below-header {
-  top: calc(4.1rem + env(safe-area-inset-top, 0px) + 6px);
+  top: calc(4.1rem + var(--safe-top-offset));
 }
 
 @media (min-width: 768px) {

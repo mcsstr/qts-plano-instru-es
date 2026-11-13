@@ -204,6 +204,23 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
             </select>
           </div>
 
+          {/* Assunto da Aula (exibido no card do calendário) */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Assunto da Aula (Exibido no Card do Calendário)
+            </label>
+            <input
+              type="text"
+              value={observacoes}
+              onChange={e => setObservacoes(e.target.value)}
+              placeholder="Ex: Treino de corrida 5km, Abordagem a veículos, Tiro em baixa luminosidade..."
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+            <p className="text-[11px] text-slate-500 mt-1">
+              Informe o assunto específico desta aula dentro da matéria escolhida.
+            </p>
+          </div>
+
           {/* Instrutor */}
           <div>
             <div className="flex items-center justify-between mb-1">
@@ -242,20 +259,6 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
             <p className="text-[11px] text-slate-500 mt-1">
               Qualquer instrutor pode ser vinculado a qualquer matéria, mesmo sem cadastro prévio no perfil.
             </p>
-          </div>
-
-          {/* Observações */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Observações / Tópicos da Aula (opcional)
-            </label>
-            <textarea
-              rows={2}
-              value={observacoes}
-              onChange={e => setObservacoes(e.target.value)}
-              placeholder="Ex: Treinamento prático no estande, trazer equipamento individual..."
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
           </div>
 
           {/* Footer Actions */}

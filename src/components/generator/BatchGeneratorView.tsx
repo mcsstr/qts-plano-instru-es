@@ -59,6 +59,7 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
   const [estrategiaInstrutor, setEstrategiaInstrutor] = useState<'apto_preferencial' | 'rotativo' | 'fixo'>('apto_preferencial');
   const [instrutorFixoId, setInstrutorFixoId] = useState(instrutores[0]?.id || '');
   const [pularDiasComAulaExistente, setPularDiasComAulaExistente] = useState(true);
+  const [assuntoPadrao, setAssuntoPadrao] = useState('');
 
   // Previews
   const [previewList, setPreviewList] = useState<GeneratedAulaPreview[]>([]);
@@ -129,7 +130,8 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
           instrutorFixoId,
           turnoPadrao: turma?.turnoPadrao || 'Integral',
           horarioPadrao: '08:00 - 17:00',
-          pularDiasComAulaExistente
+          pularDiasComAulaExistente,
+          assuntoPadrao
         },
         aulas,
         instrutores
@@ -157,7 +159,8 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
         instrutorFixoId,
         turnoPadrao: turma?.turnoPadrao || 'Integral',
         horarioPadrao: '08:00 - 17:00',
-        pularDiasComAulaExistente
+        pularDiasComAulaExistente,
+        assuntoPadrao
       },
       aulas,
       materias,
@@ -168,7 +171,7 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
     setHasGenerated(true);
   };
 
-  const handleUpdatePreviewItem = (tempId: string, field: 'materiaId' | 'instrutorId', value: string) => {
+  const handleUpdatePreviewItem = (tempId: string, field: 'materiaId' | 'instrutorId' | 'observacoes', value: string) => {
     setPreviewList(prev =>
       prev.map(item => {
         if (item.tempId !== tempId) return item;
@@ -599,6 +602,20 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
               </select>
             </div>
           )}
+
+          {/* Assunto padrão da aula (Opcional) */}
+          <div className="pt-2">
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Assunto da Aula a ser exibido no card do calendário (Opcional)
+            </label>
+            <input
+              type="text"
+              value={assuntoPadrao}
+              onChange={e => setAssuntoPadrao(e.target.value)}
+              placeholder="Ex: Treino de Corrida / TAF, Abordagem Tática, Tiro Policial (você também pode editar aula por aula na prévia)"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
         </div>
 
         {/* Botão de Gerar Prévia */}
@@ -660,15 +677,13 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
                     <th className="py-2.5 px-3">Data</th>
                     <th className="py-2.5 px-3">Dia</th>
                     <th className="py-2.5 px-3">Matéria</th>
+                    <th className="py-2.5 px-3">Assunto da Aula</th>
                     <th className="py-2.5 px-3">Instrutor Alocado</th>
-                    <th className="py-2.5 px-3">Turno</th>
                     <th className="py-2.5 px-2 text-center">Ação</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {previewList.map(item => {
-                    const materiaObj = materias.find(m => m.id === item.materiaId);
-
                     return (
                       <tr key={item.tempId} className="hover:bg-slate-50/80 transition-colors">
                         <td className="py-2 px-3 font-semibold text-slate-900 whitespace-nowrap">
@@ -689,6 +704,15 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
                               </option>
                             ))}
                           </select>
+                        </td>
+                        <td className="py-2 px-3 min-w-[180px]">
+                          <input
+                            type="text"
+                            value={item.observacoes || ''}
+                            onChange={e => handleUpdatePreviewItem(item.tempId, 'observacoes', e.target.value)}
+                            placeholder="Digite o assunto..."
+                            className="w-full text-xs py-1 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          />
                         </td>
                         <td className="py-2 px-3">
                           <div className="flex items-center space-x-1.5">
@@ -716,9 +740,6 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
                               </span>
                             )}
                           </div>
-                        </td>
-                        <td className="py-2 px-3 text-slate-600 whitespace-nowrap">
-                          {item.turno}
                         </td>
                         <td className="py-2 px-2 text-center">
                           <button
