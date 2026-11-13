@@ -12,7 +12,7 @@ import {
 } from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-import { Plus, ChevronDown, ChevronUp, Maximize2, X, CalendarDays } from 'lucide-react';
+import { Plus, Maximize2, X, CalendarDays } from 'lucide-react';
 
 interface MonthGridProps {
   currentDate: Date;
@@ -34,23 +34,8 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
   const weekDaysShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
   const today = new Date();
 
-  // Dias que foram expandidos inline na própria grade (quando têm 3+ matérias)
-  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
   // Dia aberto no Modal de Expansão Completa
   const [modalDayStr, setModalDayStr] = useState<string | null>(null);
-
-  const toggleExpandDay = (dateStr: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setExpandedDates(prev => {
-      const next = new Set(prev);
-      if (next.has(dateStr)) {
-        next.delete(dateStr);
-      } else {
-        next.add(dateStr);
-      }
-      return next;
-    });
-  };
 
   // Agrupa aulas por data (YYYY-MM-DD com normalização robusta)
   const aulasByDate = React.useMemo(() => {
@@ -101,8 +86,6 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
             const isDayWeekend = isWeekend(day);
             const dayAulas = aulasByDate.get(dateStr) || [];
             const hasMultiple = dayAulas.length > 1;
-            const hasMoreThanTwo = dayAulas.length > 2;
-            const isExpanded = expandedDates.has(dateStr);
 
             let cellBgClass = 'bg-white';
             if (!isCurrentMonth) {
@@ -115,8 +98,8 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
               cellBgClass = themePalette.calDayOddBg;
             }
 
-            // Exibe até 2 matérias diretamente dentro do bloco.
-            const visibleAulas = !isExpanded && hasMoreThanTwo ? dayAulas.slice(0, 2) : dayAulas;
+            // Exibe sempre apenas 1 aula na célula para manter a altura uniforme do calendário.
+            const visibleAulas = dayAulas.slice(0, 1);
             const hiddenCount = dayAulas.length - visibleAulas.length;
 
             return (
@@ -172,37 +155,31 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                   </div>
                 </div>
 
-                {/* Lista de Aulas do Dia */}
-                <div className={`flex flex-col ${dayAulas.length === 1 ? 'grow' : 'space-y-1'}`}>
+                {/* Lista de Aulas do Dia (máximo 1 visível na célula) */}
+                <div className="flex flex-col grow">
                   {visibleAulas.map(aula => (
                     <ClassCard
                       key={aula.id}
                       aula={aula}
                       compact={true}
-                      singleInDay={dayAulas.length === 1}
+                      singleInDay={!hasMultiple}
                       onClick={() => onSelectAula(aula)}
                     />
                   ))}
                 </div>
 
-                {/* Botão de Expansão apenas quando houver 3 ou mais matérias */}
-                {hasMoreThanTwo && (
-                  <div className="mt-1.5">
+                {/* Botão para abrir o Modal com todas as aulas quando houver 2 ou mais no mesmo dia */}
+                {hasMultiple && (
+                  <div className="mt-1">
                     <button
-                      onClick={e => toggleExpandDay(dateStr, e)}
-                      className="w-full py-1 px-2 rounded-md bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors leading-none border border-slate-200/70"
+                      onClick={e => {
+                        e.stopPropagation();
+                        setModalDayStr(dateStr);
+                      }}
+                      className="w-full py-1 px-2 rounded-md bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors leading-none border border-slate-200/80"
                     >
-                      {isExpanded ? (
-                        <>
-                          <ChevronUp className="w-3 h-3 text-slate-500 shrink-0" />
-                          <span>Recolher</span>
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="w-3 h-3 text-slate-500 shrink-0" />
-                          <span>+{hiddenCount} {hiddenCount === 1 ? 'aula' : 'aulas'}</span>
-                        </>
-                      )}
+                      <Maximize2 className="w-2.5 h-2.5 text-slate-500 shrink-0" />
+                      <span>+{hiddenCount} {hiddenCount === 1 ? 'aula' : 'aulas'}</span>
                     </button>
                   </div>
                 )}
@@ -227,16 +204,16 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
       </div>
 
       {/* =========================================================================
-          MODAL DE EXPANSÃO DO DIA (Mostra todas as matérias/aulas do dia selecionado)
+          MODAL DO DIA (Mostra todas as aulas do dia; mantém-se aberto sob o modal da aula clicada)
          ========================================================================= */}
       {modalDayStr && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-40 modal-safe-overlay flex items-center justify-center p-4">
           <div
             className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs animate-in fade-in"
             onClick={() => setModalDayStr(null)}
           />
-          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-10 animate-in zoom-in-95 duration-200">
-            <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-10 animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
+            <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center">
                   <CalendarDays className="w-4 h-4 text-white" />
@@ -258,28 +235,21 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
               </button>
             </div>
 
-            <div className="p-4 max-h-[65vh] overflow-y-auto space-y-2.5 bg-slate-50/60">
+            <div className="p-4 overflow-y-auto space-y-2.5 bg-slate-50/60 grow">
               {modalDayAulas.map(aula => (
                 <ClassCard
                   key={aula.id}
                   aula={aula}
                   compact={false}
-                  onClick={() => {
-                    setModalDayStr(null);
-                    onSelectAula(aula);
-                  }}
+                  onClick={() => onSelectAula(aula)}
                 />
               ))}
             </div>
 
-            <div className="px-4 py-3 bg-white border-t border-slate-200 flex items-center justify-between">
+            <div className="px-4 py-3 bg-white border-t border-slate-200 flex items-center justify-between shrink-0">
               {canEdit ? (
                 <button
-                  onClick={() => {
-                    const targetDate = modalDayStr;
-                    setModalDayStr(null);
-                    onAddAulaOnDate(targetDate);
-                  }}
+                  onClick={() => onAddAulaOnDate(modalDayStr)}
                   className="flex items-center space-x-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-2xs transition-colors"
                 >
                   <Plus className="w-4 h-4" />

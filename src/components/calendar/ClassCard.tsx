@@ -156,9 +156,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         <div
           className={`font-semibold text-slate-900 tracking-[-0.015em] ${
             compact
-              ? singleInDay
-                ? 'text-[11.5px] leading-tight line-clamp-1'
-                : 'text-[10.5px] leading-tight line-clamp-1'
+              ? 'text-[11px] leading-tight line-clamp-1'
               : 'text-[13px] sm:text-sm leading-snug line-clamp-1'
           }`}
           title={materia?.nome}
@@ -170,9 +168,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           <div
             className={`text-slate-500 font-normal ${
               compact
-                ? singleInDay
-                  ? 'text-[10px] leading-tight line-clamp-2 mt-0.5'
-                  : 'text-[9px] leading-tight line-clamp-1'
+                ? 'text-[9.5px] leading-tight line-clamp-1 mt-0.5'
                 : 'text-xs leading-snug line-clamp-2 mt-0.5'
             }`}
             title={`Assunto: ${assunto}`}
@@ -182,9 +178,16 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         )}
       </div>
 
-      {/* Rodapé sutil com Instrutor (exibido apenas nos cards expandidos/lista) */}
-      {instrutor && !compact && (
-        <div className="mt-1.5 pt-1.5 border-t border-slate-100 flex items-center gap-1 text-[10px] text-slate-400 font-medium truncate">
+      {/* Instrutor (sempre visível, compacto na grade e detalhado nos modais/lista) */}
+      {instrutor && (
+        <div
+          className={`flex items-center gap-1 text-slate-400 font-medium truncate ${
+            compact
+              ? 'mt-0.5 text-[9.5px] leading-tight'
+              : 'mt-1.5 pt-1.5 border-t border-slate-100 text-[10px]'
+          }`}
+          title={`Instrutor: ${instrutor.nome}`}
+        >
           <User className="w-2.5 h-2.5 text-slate-400 shrink-0" />
           <span className="truncate">{instrutor.nome}</span>
         </div>

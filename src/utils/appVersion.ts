@@ -4,10 +4,19 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.3.0';
+export const CURRENT_APP_VERSION = 'v2.3.1';
 export const CURRENT_APP_DATE = '12/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.3.1',
+    date: '12/11/2026',
+    highlights: [
+      'Exibição de Matéria, Assunto e Instrutor diretamente nos cards compactos da grade mensal',
+      'Grade limitada a 1 aula visível por dia com botão para abrir o Modal do Dia quando houver múltiplas aulas',
+      'Sobreposição organizada de modais (Modal do Dia -> Detalhes da Aula -> Edição/Prejuízo) com proteção de safe area no celular'
+    ]
+  },
   {
     version: 'v2.3.0',
     date: '12/11/2026',
