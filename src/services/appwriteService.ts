@@ -1,4 +1,4 @@
-import { Turma, Materia, Instrutor, Aula, Gestor, AppTheme } from '../types';
+import { Turma, Materia, Instrutor, Aula, Gestor, AppTheme, AssuntoMateria } from '../types';
 
 export const APPWRITE_ENDPOINT = 'https://nyc.cloud.appwrite.io/v1';
 export const APPWRITE_PROJECT_ID = '6af65532002569934af0';
@@ -151,17 +151,53 @@ export async function fetchAppwriteData(): Promise<AppwriteFetchedData> {
   });
 
   const materias: Materia[] = materiasRows.map(r => {
-    const payload = {
+    let assuntos: AssuntoMateria[] = [];
+    if (r.assuntosJson) {
+      try {
+        const parsed = JSON.parse(r.assuntosJson);
+        if (Array.isArray(parsed)) {
+          assuntos = parsed
+            .map((item: any, idx: number): AssuntoMateria | null => {
+              if (typeof item === 'string') {
+                return { id: `ass_${idx}`, nome: item, peso: 1 };
+              }
+              if (item && typeof item.nome === 'string') {
+                return {
+                  id: String(item.id || `ass_${idx}`),
+                  nome: item.nome,
+                  peso: Number(item.peso || 1)
+                };
+              }
+              return null;
+            })
+            .filter((x): x is AssuntoMateria => x !== null && x.nome.trim().length > 0);
+        }
+      } catch {
+        assuntos = [];
+      }
+    }
+
+    const dbPayload = {
       id: String(r.id || r.$id),
       nome: String(r.nome || ''),
       sigla: String(r.sigla || ''),
       cor: String(r.cor || '#3b82f6'),
       cargaDiasObjetivo: Number(r.cargaDiasObjetivo ?? 10),
       descricao: String(r.descricao || ''),
+      assuntosJson: JSON.stringify(assuntos),
       ativa: Boolean(r.ativa ?? true)
     };
-    syncedRowHashCache.set(`materias:${toAppwriteRowId(payload.id)}`, JSON.stringify(payload));
-    return payload;
+    syncedRowHashCache.set(`materias:${toAppwriteRowId(dbPayload.id)}`, JSON.stringify(dbPayload));
+    return {
+      id: dbPayload.id,
+      nome: dbPayload.nome,
+      sigla: dbPayload.sigla,
+      cor: dbPayload.cor,
+      cargaDiasObjetivo: dbPayload.cargaDiasObjetivo,
+      descricao: dbPayload.descricao,
+      assuntos,
+      ativa: dbPayload.ativa
+    };
   });
 
   const instrutores: Instrutor[] = instrutoresRows.map(r => {
@@ -294,6 +330,7 @@ export async function pushAppwriteData(data: {
         cor: String(m.cor || '#3b82f6'),
         cargaDiasObjetivo: Number(m.cargaDiasObjetivo ?? 10),
         descricao: String(m.descricao || ''),
+        assuntosJson: JSON.stringify(Array.isArray(m.assuntos) ? m.assuntos : []).slice(0, 4950),
         ativa: Boolean(m.ativa ?? true)
       })
     );

@@ -75,12 +75,12 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
       <div className="bg-white rounded-2xl border border-slate-200/85 shadow-[0_2px_12px_-4px_rgba(15,23,42,0.06)] overflow-hidden">
         {/* Cabeçalho dos Dias da Semana (Estilo SaaS Executivo) */}
         <div
-          className={`grid grid-cols-7 ${themePalette.calHeaderBg} ${themePalette.calHeaderText} text-center text-[11px] font-semibold tracking-[0.06em] uppercase divide-x divide-white/10`}
+          className={`grid grid-cols-7 ${themePalette.calHeaderBg} ${themePalette.calHeaderText} text-center text-[10.5px] font-semibold tracking-[0.06em] uppercase divide-x divide-white/10`}
         >
           {weekDays.map((d, index) => (
             <div
               key={d}
-              className={`py-2.5 ${
+              className={`py-1.5 ${
                 index === 0 || index === 6
                   ? `${themePalette.calHeaderWeekendBg} ${themePalette.calHeaderWeekendText}`
                   : ''
@@ -122,12 +122,12 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
             return (
               <div
                 key={idx}
-                className={`min-h-[118px] sm:min-h-[144px] lg:min-h-[154px] p-2 sm:p-2.5 flex flex-col transition-colors duration-150 group relative hover:bg-slate-50/70 ${cellBgClass}`}
+                className={`min-h-[82px] sm:min-h-[92px] lg:min-h-[98px] p-1.5 flex flex-col transition-colors duration-150 group relative hover:bg-slate-50/70 ${cellBgClass}`}
               >
                 {/* Topo da Célula: Número do Dia, Contador de Aulas e Botão + */}
-                <div className="flex items-center justify-between mb-1.5 gap-1">
+                <div className="flex items-center justify-between mb-1 gap-1">
                   <span
-                    className={`text-xs font-bold tabular-nums w-6 h-6 flex items-center justify-center rounded-lg transition-all shrink-0 ${
+                    className={`text-[11px] font-bold tabular-nums w-5 h-5 flex items-center justify-center rounded-md transition-all shrink-0 ${
                       isToday
                         ? `${themePalette.calTodayBadge}`
                         : !isCurrentMonth
@@ -173,7 +173,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                 </div>
 
                 {/* Lista de Aulas do Dia */}
-                <div className={`flex flex-col ${dayAulas.length === 1 ? 'grow' : 'space-y-1.5'}`}>
+                <div className={`flex flex-col ${dayAulas.length === 1 ? 'grow' : 'space-y-1'}`}>
                   {visibleAulas.map(aula => (
                     <ClassCard
                       key={aula.id}

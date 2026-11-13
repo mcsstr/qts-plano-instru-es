@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import { Turma, Materia, Instrutor, Gestor, Turno } from '../../types';
+import { Turma, Materia, AssuntoMateria, Instrutor, Gestor, Turno } from '../../types';
 import {
   Users,
   BookOpen,
@@ -69,6 +69,9 @@ export const RegistersManager: React.FC = () => {
   const [materiaCor, setMateriaCor] = useState('#3b82f6');
   const [materiaMetaDias, setMateriaMetaDias] = useState<number>(10);
   const [materiaDesc, setMateriaDesc] = useState('');
+  const [materiaAssuntos, setMateriaAssuntos] = useState<AssuntoMateria[]>([]);
+  const [novoAssuntoNome, setNovoAssuntoNome] = useState('');
+  const [novoAssuntoPeso, setNovoAssuntoPeso] = useState<number>(1);
 
   // FORM STATES - INSTRUTOR
   const [instNome, setInstNome] = useState('');
@@ -120,6 +123,7 @@ export const RegistersManager: React.FC = () => {
       setMateriaCor(materia.cor);
       setMateriaMetaDias(materia.cargaDiasObjetivo || 10);
       setMateriaDesc(materia.descricao || '');
+      setMateriaAssuntos(Array.isArray(materia.assuntos) ? materia.assuntos.map(a => ({ ...a })) : []);
     } else {
       setEditingMateria(null);
       setMateriaNome('');
@@ -127,8 +131,36 @@ export const RegistersManager: React.FC = () => {
       setMateriaCor(COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)]);
       setMateriaMetaDias(10);
       setMateriaDesc('');
+      setMateriaAssuntos([]);
     }
+    setNovoAssuntoNome('');
+    setNovoAssuntoPeso(1);
     setIsMateriaModalOpen(true);
+  };
+
+  const handleAddAssuntoToMateria = () => {
+    const trimmed = novoAssuntoNome.trim();
+    if (!trimmed) return;
+    setMateriaAssuntos(prev => [
+      ...prev,
+      {
+        id: `ass_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        nome: trimmed,
+        peso: novoAssuntoPeso || 1
+      }
+    ]);
+    setNovoAssuntoNome('');
+    setNovoAssuntoPeso(1);
+  };
+
+  const handleUpdateAssuntoPeso = (assId: string, peso: number) => {
+    setMateriaAssuntos(prev =>
+      prev.map(a => (a.id === assId ? { ...a, peso } : a))
+    );
+  };
+
+  const handleRemoveAssuntoFromMateria = (assId: string) => {
+    setMateriaAssuntos(prev => prev.filter(a => a.id !== assId));
   };
 
   const handleOpenInstrutorModal = (instrutor?: Instrutor) => {
@@ -203,7 +235,8 @@ export const RegistersManager: React.FC = () => {
         sigla: materiaSigla.toUpperCase(),
         cor: materiaCor,
         cargaDiasObjetivo: Number(materiaMetaDias),
-        descricao: materiaDesc
+        descricao: materiaDesc,
+        assuntos: materiaAssuntos
       });
     } else {
       addMateria({
@@ -212,6 +245,7 @@ export const RegistersManager: React.FC = () => {
         cor: materiaCor,
         cargaDiasObjetivo: Number(materiaMetaDias),
         descricao: materiaDesc,
+        assuntos: materiaAssuntos,
         ativa: true
       });
     }
@@ -517,6 +551,37 @@ export const RegistersManager: React.FC = () => {
                 {m.descricao || 'Sem descrição cadastrada'}
               </p>
 
+              {/* Assuntos pré-cadastrados na matéria */}
+              <div>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+                  Assuntos Cadastrados ({m.assuntos?.length || 0})
+                </span>
+                {m.assuntos && m.assuntos.length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {m.assuntos.slice(0, 4).map(ass => (
+                      <span
+                        key={ass.id}
+                        className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80"
+                      >
+                        <span className="truncate max-w-[140px]">{ass.nome}</span>
+                        {(ass.peso || 1) > 1 && (
+                          <span className="text-[9px] font-bold text-blue-700 bg-blue-100 px-1 rounded">
+                            {ass.peso}x
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                    {m.assuntos.length > 4 && (
+                      <span className="text-[10px] text-slate-400 font-medium px-1 py-0.5">
+                        +{m.assuntos.length - 4}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-[11px] text-slate-400 italic">Nenhum assunto pré-cadastrado</span>
+                )}
+              </div>
+
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
                 <span>Meta: <strong>{m.cargaDiasObjetivo || 0} encontros</strong></span>
                 <span className="text-emerald-600 font-semibold">Ativa</span>
@@ -793,12 +858,12 @@ export const RegistersManager: React.FC = () => {
       {/* MODAL MATÉRIA */}
       {isMateriaModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-lg font-bold text-slate-900">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+            <h3 className="text-lg font-bold text-slate-900 shrink-0">
               {editingMateria ? 'Editar Matéria' : 'Cadastrar Nova Matéria'}
             </h3>
 
-            <form onSubmit={handleSaveMateria} className="space-y-3">
+            <form onSubmit={handleSaveMateria} className="space-y-3 overflow-y-auto pr-1">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Nome da Matéria *</label>
                 <input
@@ -877,7 +942,84 @@ export const RegistersManager: React.FC = () => {
                 />
               </div>
 
-              <div className="pt-3 flex justify-end space-x-2">
+              {/* Parametrização de Assuntos Pré-cadastrados */}
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/90 space-y-2.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800">
+                    Assuntos Pré-cadastrados & Importância
+                  </label>
+                  <p className="text-[11px] text-slate-500">
+                    Cadastre os assuntos desta matéria. Assuntos com peso 2x ou 3x se repetem proporcionalmente no gerador de período.
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={novoAssuntoNome}
+                    onChange={e => setNovoAssuntoNome(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddAssuntoToMateria();
+                      }
+                    }}
+                    placeholder="Ex: Tiro em baixa luminosidade..."
+                    className="grow px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <select
+                    value={novoAssuntoPeso}
+                    onChange={e => setNovoAssuntoPeso(Number(e.target.value))}
+                    title="Importância / Repetição no rodízio"
+                    className="px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-800"
+                  >
+                    <option value={1}>1x Normal</option>
+                    <option value={2}>2x Importante</option>
+                    <option value={3}>3x Prioritário</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleAddAssuntoToMateria}
+                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shrink-0"
+                  >
+                    + Add
+                  </button>
+                </div>
+
+                {materiaAssuntos.length > 0 && (
+                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                    {materiaAssuntos.map(ass => (
+                      <div
+                        key={ass.id}
+                        className="flex items-center justify-between gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs"
+                      >
+                        <span className="font-medium text-slate-800 truncate">{ass.nome}</span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <select
+                            value={ass.peso || 1}
+                            onChange={e => handleUpdateAssuntoPeso(ass.id, Number(e.target.value))}
+                            className="text-[11px] font-bold px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-blue-700"
+                          >
+                            <option value={1}>1x</option>
+                            <option value={2}>2x</option>
+                            <option value={3}>3x</option>
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAssuntoFromMateria(ass.id)}
+                            className="p-1 text-slate-400 hover:text-rose-600 rounded"
+                            title="Remover assunto"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-3 flex justify-end space-x-2 shrink-0 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsMateriaModalOpen(false)}

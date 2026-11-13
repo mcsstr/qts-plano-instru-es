@@ -4,10 +4,20 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.2.0';
+export const CURRENT_APP_VERSION = 'v2.3.0';
 export const CURRENT_APP_DATE = '12/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.3.0',
+    date: '12/11/2026',
+    highlights: [
+      'Grade do calendário e cards compactados para caber o mês inteiro na tela sem rolagem excessiva',
+      'Pré-cadastro e parametrização de Assuntos dentro de cada Matéria com nível de importância (1x, 2x, 3x)',
+      'Gerador de Período adaptado para distribuir automaticamente os assuntos cadastrados com seleção rápida na prévia',
+      'Atalho de assuntos pré-cadastrados ao agendar ou editar uma aula individual'
+    ]
+  },
   {
     version: 'v2.2.0',
     date: '12/11/2026',

@@ -14,6 +14,13 @@ export interface Turma {
   ativa: boolean;
 }
 
+export interface AssuntoMateria {
+  id: string;
+  nome: string;
+  /** Peso / importância no rodízio (1 = normal, 2 = importante 2x, 3 = prioritário 3x) */
+  peso?: number;
+}
+
 export interface Materia {
   id: string;
   nome: string;
@@ -21,6 +28,7 @@ export interface Materia {
   cor: string;
   cargaDiasObjetivo?: number; // Meta de dias/encontros
   descricao?: string;
+  assuntos?: AssuntoMateria[];
   ativa: boolean;
 }
 

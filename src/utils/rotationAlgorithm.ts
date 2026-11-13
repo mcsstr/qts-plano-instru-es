@@ -14,6 +14,10 @@ export interface BatchGenerationParams {
   horarioPadrao?: string;
   pularDiasComAulaExistente: boolean;
   assuntoPadrao?: string;
+  /** Mapa opcional: materiaId -> IDs de assuntos selecionados para este período */
+  selectedAssuntosByMateria?: Record<string, string[]>;
+  /** Se true, distribui automaticamente os assuntos pré-cadastrados de cada matéria respeitando o peso */
+  usarAssuntosCadastrados?: boolean;
 }
 
 export interface GeneratedAulaPreview {
@@ -27,6 +31,40 @@ export interface GeneratedAulaPreview {
   status: 'agendada';
   observacoes: string;
   instrutorApto: boolean;
+}
+
+/**
+ * Constrói uma lista cíclica intercalada de nomes de assuntos de acordo com o peso (1x, 2x, 3x).
+ * Ex: A (peso 2) e B (peso 1) -> ['A', 'B', 'A']
+ */
+function buildWeightedAssuntoCycle(
+  materia: Materia | undefined,
+  selectedIds?: string[]
+): string[] {
+  if (!materia || !Array.isArray(materia.assuntos) || materia.assuntos.length === 0) {
+    return [];
+  }
+
+  const activeAssuntos =
+    selectedIds !== undefined
+      ? materia.assuntos.filter(a => selectedIds.includes(a.id))
+      : materia.assuntos;
+
+  if (activeAssuntos.length === 0) return [];
+
+  const maxPeso = Math.max(...activeAssuntos.map(a => Math.max(1, a.peso || 1)));
+  const cycle: string[] = [];
+
+  for (let round = 0; round < maxPeso; round++) {
+    for (const ass of activeAssuntos) {
+      const peso = Math.max(1, ass.peso || 1);
+      if (round < peso) {
+        cycle.push(ass.nome);
+      }
+    }
+  }
+
+  return cycle;
 }
 
 export function generatePeriodSchedule(
@@ -47,7 +85,9 @@ export function generatePeriodSchedule(
     turnoPadrao,
     horarioPadrao = '08:00 - 17:00',
     pularDiasComAulaExistente,
-    assuntoPadrao = ''
+    assuntoPadrao = '',
+    selectedAssuntosByMateria,
+    usarAssuntosCadastrados = true
   } = params;
 
   if (!turmaId || !dataInicio || !dataFim || materiasIds.length === 0) {
@@ -94,6 +134,18 @@ export function generatePeriodSchedule(
 
   const activeInstructors = instrutores.filter(i => i.ativo);
   const result: GeneratedAulaPreview[] = [];
+
+  // Mapa de ciclos de assuntos por matéria e cursor atual
+  const assuntoCycleMap = new Map<string, string[]>();
+  const assuntoCursorMap = new Map<string, number>();
+  if (usarAssuntosCadastrados) {
+    materiasIds.forEach(matId => {
+      const mat = materias.find(m => m.id === matId);
+      const selectedIds = selectedAssuntosByMateria ? selectedAssuntosByMateria[matId] : undefined;
+      assuntoCycleMap.set(matId, buildWeightedAssuntoCycle(mat, selectedIds));
+      assuntoCursorMap.set(matId, 0);
+    });
+  }
 
   let seqIndex = 0;
 
@@ -175,6 +227,17 @@ export function generatePeriodSchedule(
       instructorDaysMap.set(chosenInstrutorId, set);
     }
 
+    // Seleciona o próximo assunto parametrizado da matéria (respeitando pesos 1x/2x/3x)
+    let resolvedAssunto = assuntoPadrao.trim();
+    if (usarAssuntosCadastrados) {
+      const cycle = assuntoCycleMap.get(chosenMateriaId) || [];
+      if (cycle.length > 0) {
+        const cursor = assuntoCursorMap.get(chosenMateriaId) || 0;
+        resolvedAssunto = cycle[cursor % cycle.length];
+        assuntoCursorMap.set(chosenMateriaId, cursor + 1);
+      }
+    }
+
     result.push({
       tempId: `gen-${Date.now()}-${i}`,
       data: day,
@@ -184,7 +247,7 @@ export function generatePeriodSchedule(
       turno: turnoPadrao,
       horario: horarioPadrao,
       status: 'agendada',
-      observacoes: assuntoPadrao.trim(),
+      observacoes: resolvedAssunto,
       instrutorApto: isApto
     });
   }
@@ -204,6 +267,8 @@ export interface SpecificMonthDaysParams {
   horarioPadrao?: string;
   pularDiasComAulaExistente: boolean;
   assuntoPadrao?: string;
+  selectedAssuntosByMateria?: Record<string, string[]>;
+  usarAssuntosCadastrados?: boolean;
 }
 
 /**
@@ -213,7 +278,8 @@ export interface SpecificMonthDaysParams {
 export function generateSpecificDaysSchedule(
   params: SpecificMonthDaysParams,
   existingAulas: Aula[],
-  instrutores: Instrutor[]
+  instrutores: Instrutor[],
+  materias: Materia[] = []
 ): GeneratedAulaPreview[] {
   const {
     turmaId,
@@ -226,7 +292,9 @@ export function generateSpecificDaysSchedule(
     turnoPadrao,
     horarioPadrao = '08:00 - 17:00',
     pularDiasComAulaExistente,
-    assuntoPadrao = ''
+    assuntoPadrao = '',
+    selectedAssuntosByMateria,
+    usarAssuntosCadastrados = true
   } = params;
 
   if (!turmaId || !ano || !mes || diasDoMes.length === 0 || materiasIds.length === 0) {
@@ -278,6 +346,17 @@ export function generateSpecificDaysSchedule(
 
   const activeInstructors = instrutores.filter(i => i.ativo);
   const result: GeneratedAulaPreview[] = [];
+
+  const assuntoCycleMap = new Map<string, string[]>();
+  const assuntoCursorMap = new Map<string, number>();
+  if (usarAssuntosCadastrados) {
+    materiasIds.forEach(matId => {
+      const mat = materias.find(m => m.id === matId);
+      const selectedIds = selectedAssuntosByMateria ? selectedAssuntosByMateria[matId] : undefined;
+      assuntoCycleMap.set(matId, buildWeightedAssuntoCycle(mat, selectedIds));
+      assuntoCursorMap.set(matId, 0);
+    });
+  }
 
   let counter = 0;
 
@@ -331,6 +410,16 @@ export function generateSpecificDaysSchedule(
         instructorDaysMap.set(chosenInstrutorId, set);
       }
 
+      let resolvedAssunto = assuntoPadrao.trim();
+      if (usarAssuntosCadastrados) {
+        const cycle = assuntoCycleMap.get(materiaId) || [];
+        if (cycle.length > 0) {
+          const cursor = assuntoCursorMap.get(materiaId) || 0;
+          resolvedAssunto = cycle[cursor % cycle.length];
+          assuntoCursorMap.set(materiaId, cursor + 1);
+        }
+      }
+
       result.push({
         tempId: `gen-fix-${Date.now()}-${counter++}`,
         data: dateStr,
@@ -340,7 +429,7 @@ export function generateSpecificDaysSchedule(
         turno: turnoPadrao,
         horario: horarioPadrao,
         status: 'agendada',
-        observacoes: assuntoPadrao.trim(),
+        observacoes: resolvedAssunto,
         instrutorApto: isApto
       });
     }

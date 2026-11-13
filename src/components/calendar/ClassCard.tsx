@@ -72,9 +72,9 @@ export const ClassCard: React.FC<ClassCardProps> = ({
       className={`group relative overflow-hidden ${
         compact
           ? singleInDay
-            ? 'p-2.5 rounded-xl flex flex-col justify-between grow'
-            : 'px-2 py-1.5 rounded-lg'
-          : 'p-3 sm:p-3.5 rounded-xl'
+            ? 'px-2 py-1 rounded-lg flex flex-col justify-center grow'
+            : 'px-1.5 py-0.5 rounded-md'
+          : 'p-2.5 sm:p-3 rounded-xl'
       } text-left transition-all duration-150 cursor-pointer border select-none ${
         isSelected
           ? 'ring-2 ring-blue-600 bg-blue-50/95 border-blue-500 shadow-xs'
@@ -83,7 +83,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           : 'bg-white hover:bg-slate-50/80 border-slate-200/85 hover:border-slate-300/90 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:shadow-[0_4px_12px_-2px_rgba(15,23,42,0.08)]'
       }`}
       style={{
-        borderLeftWidth: compact ? '3.5px' : '4px',
+        borderLeftWidth: compact ? '3px' : '4px',
         borderLeftColor: isPrejudicada ? '#f59e0b' : materiaColor
       }}
     >
@@ -91,7 +91,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
       {isMultiSelectMode && (
         <div
           onClick={handleCheckboxClick}
-          className={`absolute top-1.5 right-1.5 w-4 h-4 rounded-md border flex items-center justify-center transition-colors z-10 ${
+          className={`absolute top-1 right-1 w-4 h-4 rounded-md border flex items-center justify-center transition-colors z-10 ${
             isSelected
               ? 'bg-blue-600 border-blue-600 text-white'
               : 'border-slate-300 bg-white hover:border-blue-500'
@@ -104,12 +104,12 @@ export const ClassCard: React.FC<ClassCardProps> = ({
       {/* Topo do Card: Pill da Turma + Status */}
       <div
         className={`flex items-center justify-between gap-1 ${
-          compact ? (singleInDay ? 'mb-1.5' : 'mb-1') : 'mb-2'
+          compact ? 'mb-0.5' : 'mb-1.5'
         } ${isMultiSelectMode ? 'pr-5' : ''}`}
       >
         <span
           className={`inline-flex items-center gap-1 ${
-            compact ? 'text-[9.5px] px-1.5 py-0.5' : 'text-[10.5px] px-2 py-0.5'
+            compact ? 'text-[9px] px-1.5 py-0.5' : 'text-[10.5px] px-2 py-0.5'
           } font-bold rounded-md shrink-0 tracking-tight leading-none`}
           style={{
             backgroundColor: `${turmaColor}14`,
@@ -157,8 +157,8 @@ export const ClassCard: React.FC<ClassCardProps> = ({
           className={`font-semibold text-slate-900 tracking-[-0.015em] ${
             compact
               ? singleInDay
-                ? 'text-[12px] leading-snug line-clamp-1'
-                : 'text-[11px] leading-tight line-clamp-1'
+                ? 'text-[11.5px] leading-tight line-clamp-1'
+                : 'text-[10.5px] leading-tight line-clamp-1'
               : 'text-[13px] sm:text-sm leading-snug line-clamp-1'
           }`}
           title={materia?.nome}
@@ -171,9 +171,9 @@ export const ClassCard: React.FC<ClassCardProps> = ({
             className={`text-slate-500 font-normal ${
               compact
                 ? singleInDay
-                  ? 'text-[10.5px] leading-snug line-clamp-2 mt-0.5'
-                  : 'text-[9.5px] leading-tight line-clamp-1 mt-0.5'
-                : 'text-xs leading-relaxed line-clamp-2 mt-1'
+                  ? 'text-[10px] leading-tight line-clamp-2 mt-0.5'
+                  : 'text-[9px] leading-tight line-clamp-1'
+                : 'text-xs leading-snug line-clamp-2 mt-0.5'
             }`}
             title={`Assunto: ${assunto}`}
           >
@@ -182,9 +182,9 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         )}
       </div>
 
-      {/* Rodapé sutil com Instrutor (exibido em cards únicos no dia ou nos cards expandidos/lista) */}
-      {instrutor && (!compact || singleInDay) && (
-        <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center gap-1 text-[10px] text-slate-400 font-medium truncate">
+      {/* Rodapé sutil com Instrutor (exibido apenas nos cards expandidos/lista) */}
+      {instrutor && !compact && (
+        <div className="mt-1.5 pt-1.5 border-t border-slate-100 flex items-center gap-1 text-[10px] text-slate-400 font-medium truncate">
           <User className="w-2.5 h-2.5 text-slate-400 shrink-0" />
           <span className="truncate">{instrutor.nome}</span>
         </div>

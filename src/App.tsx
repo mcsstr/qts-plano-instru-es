@@ -104,7 +104,7 @@ const AppContent: React.FC = () => {
       />
 
       {/* Conteúdo Principal */}
-      <main className="grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 pb-24 md:pb-6">
+      <main className="grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 pb-24 md:pb-4">
         {currentTab === 'calendario' && (
           <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
         )}

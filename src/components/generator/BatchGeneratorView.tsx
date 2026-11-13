@@ -60,6 +60,32 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
   const [instrutorFixoId, setInstrutorFixoId] = useState(instrutores[0]?.id || '');
   const [pularDiasComAulaExistente, setPularDiasComAulaExistente] = useState(true);
   const [assuntoPadrao, setAssuntoPadrao] = useState('');
+  const [usarAssuntosCadastrados, setUsarAssuntosCadastrados] = useState(true);
+  const [selectedAssuntosByMateria, setSelectedAssuntosByMateria] = useState<Record<string, string[]>>({});
+
+  // Inicializa todos os assuntos das matérias selecionadas por padrão
+  React.useEffect(() => {
+    setSelectedAssuntosByMateria(prev => {
+      const next = { ...prev };
+      materias.forEach(m => {
+        if (next[m.id] === undefined) {
+          next[m.id] = (m.assuntos || []).map(a => a.id);
+        }
+      });
+      return next;
+    });
+  }, [materias]);
+
+  const toggleAssuntoInMateria = (materiaId: string, assuntoId: string) => {
+    setSelectedAssuntosByMateria(prev => {
+      const current = prev[materiaId] || [];
+      const exists = current.includes(assuntoId);
+      return {
+        ...prev,
+        [materiaId]: exists ? current.filter(id => id !== assuntoId) : [...current, assuntoId]
+      };
+    });
+  };
 
   // Previews
   const [previewList, setPreviewList] = useState<GeneratedAulaPreview[]>([]);
@@ -131,10 +157,13 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
           turnoPadrao: turma?.turnoPadrao || 'Integral',
           horarioPadrao: '08:00 - 17:00',
           pularDiasComAulaExistente,
-          assuntoPadrao
+          assuntoPadrao,
+          selectedAssuntosByMateria,
+          usarAssuntosCadastrados
         },
         aulas,
-        instrutores
+        instrutores,
+        materias
       );
 
       setPreviewList(previews);
@@ -160,7 +189,9 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
         turnoPadrao: turma?.turnoPadrao || 'Integral',
         horarioPadrao: '08:00 - 17:00',
         pularDiasComAulaExistente,
-        assuntoPadrao
+        assuntoPadrao,
+        selectedAssuntosByMateria,
+        usarAssuntosCadastrados
       },
       aulas,
       materias,
@@ -509,6 +540,7 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
             {materias.map(m => {
               const selected = selectedMateriaIds.includes(m.id);
+              const assuntosCount = m.assuntos?.length || 0;
               return (
                 <div
                   key={m.id}
@@ -519,18 +551,23 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
                       : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
                   }`}
                 >
-                  <div className="flex items-center space-x-2 truncate">
+                  <div className="flex items-center space-x-2 truncate min-w-0">
                     <span
                       className="w-3 h-3 rounded-full shrink-0"
                       style={{ backgroundColor: m.cor }}
                     />
-                    <span className="text-xs font-medium truncate">{m.nome}</span>
+                    <div className="min-w-0">
+                      <span className="text-xs font-semibold block truncate">{m.nome}</span>
+                      <span className="text-[10px] text-slate-400 block">
+                        {assuntosCount > 0 ? `${assuntosCount} assunto(s)` : 'Sem assuntos'}
+                      </span>
+                    </div>
                   </div>
                   <input
                     type="checkbox"
                     checked={selected}
                     onChange={() => {}}
-                    className="w-3.5 h-3.5 text-blue-600 rounded shrink-0 pointer-events-none"
+                    className="w-3.5 h-3.5 text-blue-600 rounded shrink-0 pointer-events-none ml-1"
                   />
                 </div>
               );
@@ -603,18 +640,92 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
             </div>
           )}
 
-          {/* Assunto padrão da aula (Opcional) */}
-          <div className="pt-2">
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Assunto da Aula a ser exibido no card do calendário (Opcional)
-            </label>
-            <input
-              type="text"
-              value={assuntoPadrao}
-              onChange={e => setAssuntoPadrao(e.target.value)}
-              placeholder="Ex: Treino de Corrida / TAF, Abordagem Tática, Tiro Policial (você também pode editar aula por aula na prévia)"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
+          {/* 3. Parametrização de Assuntos das Matérias Selecionadas */}
+          <div className="pt-2 space-y-3">
+            <div className="p-3.5 rounded-2xl bg-slate-50/90 border border-slate-200/90 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <span className="text-xs font-bold text-slate-900 block">
+                    3. Distribuição dos Assuntos Pré-cadastrados
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Os assuntos cadastrados em cada matéria são distribuídos automaticamente respeitando a importância (1x, 2x, 3x).
+                  </span>
+                </div>
+
+                <label className="flex items-center space-x-2 cursor-pointer bg-white px-3 py-1.5 rounded-xl border border-slate-200 shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={usarAssuntosCadastrados}
+                    onChange={e => setUsarAssuntosCadastrados(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <span className="text-xs font-semibold text-slate-800">
+                    Usar Assuntos Cadastrados
+                  </span>
+                </label>
+              </div>
+
+              {usarAssuntosCadastrados && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1">
+                  {materias
+                    .filter(m => selectedMateriaIds.includes(m.id) && m.assuntos && m.assuntos.length > 0)
+                    .map(m => {
+                      const activeIds = selectedAssuntosByMateria[m.id] || [];
+                      return (
+                        <div key={m.id} className="bg-white p-2.5 rounded-xl border border-slate-200/85 space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 truncate">
+                              <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: m.cor }} />
+                              <span className="truncate">{m.nome}</span>
+                            </span>
+                            <span className="text-[10px] font-semibold text-slate-400 shrink-0">
+                              {activeIds.length}/{m.assuntos?.length}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {m.assuntos!.map(ass => {
+                              const checked = activeIds.includes(ass.id);
+                              return (
+                                <button
+                                  key={ass.id}
+                                  type="button"
+                                  onClick={() => toggleAssuntoInMateria(m.id, ass.id)}
+                                  className={`text-[10.5px] font-medium px-2 py-0.5 rounded-md border transition-all flex items-center gap-1 ${
+                                    checked
+                                      ? 'bg-blue-50 text-blue-800 border-blue-300'
+                                      : 'bg-slate-50 text-slate-400 border-slate-200 line-through'
+                                  }`}
+                                >
+                                  <span>{ass.nome}</span>
+                                  {(ass.peso || 1) > 1 && (
+                                    <span className="text-[9px] font-bold bg-blue-100 text-blue-700 px-1 rounded">
+                                      {ass.peso}x
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Assunto Padrão de Apoio (usado quando a matéria não tiver assuntos cadastrados — Opcional)
+              </label>
+              <input
+                type="text"
+                value={assuntoPadrao}
+                onChange={e => setAssuntoPadrao(e.target.value)}
+                placeholder="Ex: Instrução Geral (você também pode editar aula por aula na prévia)"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
           </div>
         </div>
 
@@ -705,14 +816,39 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
                             ))}
                           </select>
                         </td>
-                        <td className="py-2 px-3 min-w-[180px]">
-                          <input
-                            type="text"
-                            value={item.observacoes || ''}
-                            onChange={e => handleUpdatePreviewItem(item.tempId, 'observacoes', e.target.value)}
-                            placeholder="Digite o assunto..."
-                            className="w-full text-xs py-1 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          />
+                        <td className="py-2 px-3 min-w-[200px]">
+                          <div className="flex flex-col gap-1">
+                            {(() => {
+                              const mat = materias.find(m => m.id === item.materiaId);
+                              const matAssuntos = mat?.assuntos || [];
+                              if (matAssuntos.length === 0) return null;
+                              return (
+                                <select
+                                  value={matAssuntos.some(a => a.nome === item.observacoes) ? item.observacoes : ''}
+                                  onChange={e => {
+                                    if (e.target.value) {
+                                      handleUpdatePreviewItem(item.tempId, 'observacoes', e.target.value);
+                                    }
+                                  }}
+                                  className="w-full text-[11px] py-1 px-2 rounded-lg border border-blue-200 bg-blue-50/50 text-blue-900 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                >
+                                  <option value="">Escolher assunto cadastrado...</option>
+                                  {matAssuntos.map(a => (
+                                    <option key={a.id} value={a.nome}>
+                                      {a.nome} {(a.peso || 1) > 1 ? `(${a.peso}x)` : ''}
+                                    </option>
+                                  ))}
+                                </select>
+                              );
+                            })()}
+                            <input
+                              type="text"
+                              value={item.observacoes || ''}
+                              onChange={e => handleUpdatePreviewItem(item.tempId, 'observacoes', e.target.value)}
+                              placeholder="Digite o assunto..."
+                              className="w-full text-xs py-1 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                          </div>
                         </td>
                         <td className="py-2 px-3">
                           <div className="flex items-center space-x-1.5">

@@ -180,7 +180,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
   };
 
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-2.5 sm:space-y-3">
       {/* =========================================================================
           1. VERSÃO MOBILE: BARRA SUPERIOR FIXA (STICKY) APENAS COM MÊS/ANO E FILTROS
          ========================================================================= */}
@@ -506,7 +506,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       {/* =========================================================================
           2. VERSÃO DESKTOP: BARRA DE COMANDO EXECUTIVA (Estilo Notion Calendar / Linear)
          ========================================================================= */}
-      <div className="hidden md:flex bg-white rounded-2xl border border-slate-200/85 shadow-[0_1px_3px_rgba(15,23,42,0.04)] px-4 py-3 items-center justify-between gap-4">
+      <div className="hidden md:flex bg-white rounded-2xl border border-slate-200/85 shadow-[0_1px_3px_rgba(15,23,42,0.04)] px-3.5 py-2 items-center justify-between gap-4">
         {/* Navegação de Data e Título do Mês */}
         <div className="flex items-center space-x-3">
           <div className="flex items-center bg-slate-100/80 p-0.5 rounded-xl border border-slate-200/70">
