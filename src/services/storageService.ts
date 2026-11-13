@@ -1,12 +1,17 @@
 import { AppState } from '../types';
 import { INITIAL_TURMAS, INITIAL_MATERIAS, INITIAL_INSTRUTORES, INITIAL_AULAS, INITIAL_GESTORES } from './mockData';
-import { fetchGoogleSheetsData, pushGoogleSheetsData } from './googleSheetsService';
+import {
+  fetchAppwriteData,
+  pushAppwriteData,
+  deleteAppwriteRow,
+  APPWRITE_ENDPOINT,
+  APPWRITE_PROJECT_ID
+} from './appwriteService';
 
 const STORAGE_KEY = 'qts_plano_aulas_state_v2';
 const DELETED_IDS_KEY = 'qts_deleted_ids_v2';
 
-export const DEFAULT_SCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbxwJ1ZcRqf80D0mQ4ZwwYB9pfZoBmvbw_6QkDLVehHuODFZYjXsxbMzuVWCGjxWswyUQg/exec';
+export const DEFAULT_SCRIPT_URL = `${APPWRITE_ENDPOINT} (Projeto: ${APPWRITE_PROJECT_ID})`;
 
 export const DEFAULT_STATE: AppState = {
   turmas: INITIAL_TURMAS,
@@ -22,7 +27,6 @@ export const DEFAULT_STATE: AppState = {
   }
 };
 
-// Normaliza datas de Aula para garantir formato YYYY-MM-DD puro
 function normalizeAulasDates(aulas: any[]): any[] {
   if (!Array.isArray(aulas)) return [];
   return aulas.map(a => ({
@@ -31,7 +35,6 @@ function normalizeAulasDates(aulas: any[]): any[] {
   }));
 }
 
-// Normaliza Gestores para garantir que login e senha sejam sempre strings
 function normalizeGestores(gestores: any[]): any[] {
   if (!Array.isArray(gestores)) return [];
   return gestores.map(g => ({
@@ -41,8 +44,7 @@ function normalizeGestores(gestores: any[]): any[] {
   }));
 }
 
-// Carrega lista de IDs excluídos intencionalmente pelo usuário
-function getDeletedIds(): Set<string> {
+export function getDeletedIds(): Set<string> {
   try {
     const raw = localStorage.getItem(DELETED_IDS_KEY);
     if (raw) {
@@ -54,70 +56,95 @@ function getDeletedIds(): Set<string> {
   return new Set();
 }
 
-// Registra IDs que foram excluídos intencionalmente para não voltarem no merge
-export function markIdsAsDeleted(ids: string[]): void {
+export function markIdsAsDeleted(
+  ids: string[],
+  tableId?: 'aulas' | 'turmas' | 'materias' | 'instrutores' | 'gestores'
+): void {
   try {
     const current = getDeletedIds();
     ids.forEach(id => current.add(id));
     localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(current)));
+
+    // Remove imediatamente do Appwrite para todos os dispositivos
+    ids.forEach(id => {
+      if (tableId) {
+        deleteAppwriteRow(tableId, id);
+      } else {
+        // Detecta a tabela pelo prefixo ou tenta remover das tabelas
+        if (id.startsWith('aula')) deleteAppwriteRow('aulas', id);
+        else if (id.startsWith('turma')) deleteAppwriteRow('turmas', id);
+        else if (id.startsWith('mat')) deleteAppwriteRow('materias', id);
+        else if (id.startsWith('inst')) deleteAppwriteRow('instrutores', id);
+        else if (id.startsWith('gestor')) deleteAppwriteRow('gestores', id);
+        else {
+          deleteAppwriteRow('aulas', id);
+        }
+      }
+    });
   } catch {
     // ignore
   }
 }
 
 /**
- * Mesclagem Blindada Anti-Perda de Dados:
- * Une todos os registros da planilha com os registros locais (dando preferência à versão local mais recente)
- * e filtra apenas os IDs que foram explicitamente excluídos pelo usuário.
- * Assim, NENHUMA aula ou cadastro jamais some por falha de rede ou leitura concorrente!
+ * Mesclagem Segura Anti-Perda de Dados:
+ * Une os registros do Appwrite com os registros locais e filtra IDs excluídos.
  */
 function mergeSafeCollection<T extends { id: string }>(
   localList: T[],
   remoteList: T[],
-  deletedIds: Set<string>
+  deletedIds: Set<string>,
+  preferRemote = true
 ): T[] {
   const map = new Map<string, T>();
 
-  if (Array.isArray(remoteList)) {
-    remoteList.forEach(item => {
-      if (item && item.id && !deletedIds.has(item.id)) {
-        map.set(item.id, item);
-      }
-    });
-  }
-
-  if (Array.isArray(localList)) {
-    localList.forEach(item => {
-      if (item && item.id && !deletedIds.has(item.id)) {
-        map.set(item.id, item);
-      }
-    });
+  if (preferRemote) {
+    if (Array.isArray(localList)) {
+      localList.forEach(item => {
+        if (item && item.id && !deletedIds.has(item.id)) {
+          map.set(item.id, item);
+        }
+      });
+    }
+    if (Array.isArray(remoteList)) {
+      remoteList.forEach(item => {
+        if (item && item.id && !deletedIds.has(item.id)) {
+          map.set(item.id, item);
+        }
+      });
+    }
+  } else {
+    if (Array.isArray(remoteList)) {
+      remoteList.forEach(item => {
+        if (item && item.id && !deletedIds.has(item.id)) {
+          map.set(item.id, item);
+        }
+      });
+    }
+    if (Array.isArray(localList)) {
+      localList.forEach(item => {
+        if (item && item.id && !deletedIds.has(item.id)) {
+          map.set(item.id, item);
+        }
+      });
+    }
   }
 
   return Array.from(map.values());
 }
 
-// Controle de fila para evitar múltiplas gravações simultâneas na planilha
 let isPushingNow = false;
-let pendingPushState: { state: AppState; url: string } | null = null;
+let pendingPushState: AppState | null = null;
 
 export const storageService = {
   loadState(): AppState {
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const dbParam = urlParams.get('db');
-
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         const sheetsConfig = parsed.sheetsConfig || DEFAULT_STATE.sheetsConfig;
-        if (dbParam && dbParam.startsWith('http')) {
-          sheetsConfig.scriptUrl = dbParam.trim();
-          sheetsConfig.autoSync = true;
-        } else if (!sheetsConfig.scriptUrl) {
-          sheetsConfig.scriptUrl = DEFAULT_SCRIPT_URL;
-          sheetsConfig.autoSync = true;
-        }
+        sheetsConfig.scriptUrl = DEFAULT_SCRIPT_URL;
+        sheetsConfig.autoSync = true;
         if (!sheetsConfig.theme) {
           sheetsConfig.theme = 'ft-19bpm';
         }
@@ -128,15 +155,6 @@ export const storageService = {
           aulas: normalizeAulasDates(parsed.aulas?.length ? parsed.aulas : INITIAL_AULAS),
           gestores: normalizeGestores(parsed.gestores?.length ? parsed.gestores : INITIAL_GESTORES),
           sheetsConfig
-        };
-      } else if (dbParam && dbParam.startsWith('http')) {
-        return {
-          ...DEFAULT_STATE,
-          sheetsConfig: {
-            scriptUrl: dbParam.trim(),
-            autoSync: true,
-            theme: 'ft-19bpm'
-          }
         };
       }
     } catch (e) {
@@ -169,26 +187,22 @@ export const storageService = {
   },
 
   /**
-   * Sincronização Bidirecional Blindada:
-   * 1. Busca os dados da Planilha Google
-   * 2. Mescla de forma segura com os dados locais (sem nunca apagar aulas se um lado vier vazio)
-   * 3. Se o estado mesclado tiver itens locais que ainda não estavam na planilha, envia para a planilha!
+   * Sincronização em Nuvem com Appwrite (QTM-FT)
    */
-  async syncWithSheets(state: AppState, customScriptUrl?: string): Promise<AppState> {
-    const targetUrl = (customScriptUrl || state.sheetsConfig.scriptUrl || DEFAULT_SCRIPT_URL).trim();
-    if (!targetUrl) {
-      throw new Error('URL do Google Sheets não configurada.');
-    }
-
+  async syncWithSheets(state: AppState): Promise<AppState> {
     try {
-      const fetched = await fetchGoogleSheetsData(targetUrl);
+      const fetched = await fetchAppwriteData();
       const deletedIds = getDeletedIds();
+      if (Array.isArray(fetched.remoteDeletedIds)) {
+        fetched.remoteDeletedIds.forEach(id => deletedIds.add(id));
+        localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(Array.from(deletedIds)));
+      }
 
-      const mergedTurmas = mergeSafeCollection(state.turmas, fetched.turmas, deletedIds);
-      const mergedMaterias = mergeSafeCollection(state.materias, fetched.materias, deletedIds);
-      const mergedInstrutores = mergeSafeCollection(state.instrutores, fetched.instrutores, deletedIds);
-      const mergedAulas = normalizeAulasDates(mergeSafeCollection(state.aulas, fetched.aulas, deletedIds));
-      const mergedGestores = normalizeGestores(mergeSafeCollection(state.gestores, fetched.gestores, deletedIds));
+      const mergedTurmas = mergeSafeCollection(state.turmas, fetched.turmas, deletedIds, true);
+      const mergedMaterias = mergeSafeCollection(state.materias, fetched.materias, deletedIds, true);
+      const mergedInstrutores = mergeSafeCollection(state.instrutores, fetched.instrutores, deletedIds, true);
+      const mergedAulas = normalizeAulasDates(mergeSafeCollection(state.aulas, fetched.aulas, deletedIds, true));
+      const mergedGestores = normalizeGestores(mergeSafeCollection(state.gestores, fetched.gestores, deletedIds, true));
 
       const updatedState: AppState = {
         turmas: mergedTurmas.length > 0 ? mergedTurmas : INITIAL_TURMAS,
@@ -198,17 +212,16 @@ export const storageService = {
         gestores: mergedGestores.length > 0 ? mergedGestores : INITIAL_GESTORES,
         sheetsConfig: {
           ...state.sheetsConfig,
-          scriptUrl: targetUrl,
+          scriptUrl: DEFAULT_SCRIPT_URL,
           autoSync: true,
-          theme: state.sheetsConfig.theme || 'ft-19bpm',
+          theme: fetched.theme || state.sheetsConfig.theme || 'ft-19bpm',
           ultimaSincronizacao: new Date().toISOString()
         }
       };
 
       storageService.saveState(updatedState);
 
-      // Se tínhamos aulas/dados locais que não estavam na planilha (ex: planilha tinha menos aulas),
-      // já garante a gravação na planilha em background!
+      // Se havia itens locais novos que ainda não estavam no Appwrite, envia de forma diferencial
       if (
         updatedState.aulas.length !== fetched.aulas.length ||
         updatedState.materias.length !== fetched.materias.length ||
@@ -216,46 +229,46 @@ export const storageService = {
         updatedState.instrutores.length !== fetched.instrutores.length ||
         updatedState.gestores.length !== fetched.gestores.length
       ) {
-        storageService.pushToSheets(updatedState, targetUrl).catch(() => {});
+        storageService.pushToSheets(updatedState).catch(() => {});
       }
 
       return updatedState;
     } catch (err: any) {
-      console.error('Erro na sincronização com Google Sheets:', err);
+      console.error('Erro na sincronização com Appwrite:', err);
       throw err;
     }
   },
 
   /**
-   * Envia (push) em fila ordenada (Mutex) para nunca haver concorrência no Google Apps Script.
+   * Envia alterações diferenciais para o Appwrite em fila ordenada (Mutex).
    */
-  async pushToSheets(state: AppState, customScriptUrl?: string): Promise<void> {
-    const targetUrl = (customScriptUrl || state.sheetsConfig.scriptUrl || DEFAULT_SCRIPT_URL).trim();
-    if (!targetUrl) return;
-
+  async pushToSheets(state: AppState): Promise<void> {
     if (isPushingNow) {
-      pendingPushState = { state, url: targetUrl };
+      pendingPushState = state;
       return;
     }
 
     isPushingNow = true;
     try {
-      await pushGoogleSheetsData(targetUrl, {
+      const deletedIds = Array.from(getDeletedIds());
+      await pushAppwriteData({
         turmas: state.turmas,
         materias: state.materias,
         instrutores: state.instrutores,
         aulas: normalizeAulasDates(state.aulas),
-        gestores: normalizeGestores(state.gestores)
+        gestores: normalizeGestores(state.gestores),
+        theme: state.sheetsConfig.theme || 'ft-19bpm',
+        deletedIds
       });
     } catch (err: any) {
-      console.error('Erro no auto-sync (push) com Google Sheets:', err);
+      console.error('Erro no auto-sync (push) com Appwrite:', err);
       throw err;
     } finally {
       isPushingNow = false;
       if (pendingPushState) {
         const next = pendingPushState;
         pendingPushState = null;
-        await storageService.pushToSheets(next.state, next.url);
+        await storageService.pushToSheets(next);
       }
     }
   }

@@ -131,7 +131,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
               <button
                 onClick={() => syncSheets()}
                 disabled={isSyncing}
-                title={syncError ? `Erro: ${syncError}` : 'Sincronizar com a Planilha Google agora'}
+                title={syncError ? `Erro: ${syncError}` : 'Sincronizar com o Appwrite Cloud agora'}
                 className={`flex items-center space-x-1.5 px-2.5 py-2 text-xs rounded-xl border transition-colors shadow-2xs ${
                   isDarkHeader
                     ? 'border-white/15 bg-white/10 text-slate-200 hover:bg-white/20'
@@ -312,7 +312,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                           >
                             <span className="flex items-center gap-2">
                               <Settings className="w-4 h-4 text-blue-600" />
-                              <span>Configurações & Planilha Google</span>
+                              <span>Configurações & Banco Appwrite</span>
                             </span>
                             <span className="text-[10px] text-slate-400">Abrir</span>
                           </button>

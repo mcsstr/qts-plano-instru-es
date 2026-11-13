@@ -11,6 +11,7 @@ import {
   AppTheme
 } from '../types';
 import { storageService, markIdsAsDeleted } from '../services/storageService';
+import { subscribeAppwriteRealtime } from '../services/appwriteService';
 import { GeneratedAulaPreview } from '../utils/rotationAlgorithm';
 import { ToastMessage } from '../components/common/Toast';
 import { THEMES, ThemePalette } from '../utils/themeConfig';
@@ -147,17 +148,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     storageService.saveState(state);
   }, [state]);
 
-  // Ao abrir o aplicativo, se já houver URL da planilha configurada, busca os dados mais recentes da planilha
+  // Ao abrir o aplicativo, busca os dados mais recentes do Appwrite e conecta ao WebSocket Realtime
   useEffect(() => {
-    if (stateRef.current.sheetsConfig.scriptUrl) {
-      syncSheets(stateRef.current.sheetsConfig.scriptUrl);
-    }
+    syncSheets();
+
+    const unsubscribe = subscribeAppwriteRealtime(() => {
+      storageService
+        .syncWithSheets(stateRef.current)
+        .then(updated => {
+          skipAutoPush.current = true;
+          setState(updated);
+        })
+        .catch(() => {});
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   // =========================================================================
-  // AUTO-PUSH RÁPIDO EM SEGUNDO PLANO (DEBOUNCED):
-  // Agrupa alterações rápidas em 400ms e envia em background com trava sequencial,
-  // mantendo a interface instantânea e garantindo persistência total na planilha.
+  // AUTO-PUSH DIFERENCIAL INSTANTÂNEO PARA O APPWRITE (DEBOUNCED 250ms):
+  // Envia apenas os registros criados/alterados em paralelo para o Appwrite.
   // =========================================================================
   useEffect(() => {
     if (isFirstRender.current) {
@@ -168,7 +180,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       skipAutoPush.current = false;
       return;
     }
-    if (!state.sheetsConfig.scriptUrl) return;
 
     const timer = setTimeout(() => {
       setIsSyncing(true);
@@ -183,65 +194,73 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           });
           showToast({
             type: 'success',
-            title: 'Salvo na Planilha!',
-            message: `Dados persistidos no banco às ${timeStr}.`
+            title: 'Salvo no Appwrite!',
+            message: `Sincronizado na nuvem (QTM-FT) às ${timeStr}.`,
+            duration: 2500
           });
         })
         .catch(err => {
-          console.error('Auto-sync push falhou:', err);
-          setSyncError(err?.message || 'Erro ao salvar na planilha');
+          console.error('Auto-sync push Appwrite falhou:', err);
+          setSyncError(err?.message || 'Erro ao salvar no Appwrite');
           showToast({
             type: 'error',
-            title: 'Erro ao salvar na planilha',
+            title: 'Erro ao salvar na nuvem',
             message: 'Salvo no dispositivo; tentaremos sincronizar novamente em breve.'
           });
         })
         .finally(() => {
           setIsSyncing(false);
         });
-    }, 400);
+    }, 250);
 
     return () => clearTimeout(timer);
-  }, [state.turmas, state.materias, state.instrutores, state.aulas, state.gestores]);
+  }, [
+    state.turmas,
+    state.materias,
+    state.instrutores,
+    state.aulas,
+    state.gestores,
+    state.sheetsConfig.theme
+  ]);
 
-  // Se autoSync estiver ativo e tiver URL, sincroniza periodicamente (fetch completo)
+  // Sincronização periódica de segurança com o Appwrite
   useEffect(() => {
-    if (state.sheetsConfig.autoSync && state.sheetsConfig.scriptUrl) {
+    if (state.sheetsConfig.autoSync) {
       const interval = setInterval(() => {
-        syncSheets(stateRef.current.sheetsConfig.scriptUrl);
-      }, 2 * 60 * 1000);
+        storageService
+          .syncWithSheets(stateRef.current)
+          .then(updated => {
+            skipAutoPush.current = true;
+            setState(updated);
+          })
+          .catch(() => {});
+      }, 60 * 1000);
       return () => clearInterval(interval);
     }
-  }, [state.sheetsConfig.autoSync, state.sheetsConfig.scriptUrl]);
+  }, [state.sheetsConfig.autoSync]);
 
-  // Sincronizar (Buscar dados da Planilha Google para este dispositivo)
-  const syncSheets = async (customUrl?: string) => {
+  // Sincronizar (Buscar dados do Appwrite para este dispositivo)
+  const syncSheets = async (_customUrl?: string) => {
     const currentState = stateRef.current;
-    const targetUrl = (customUrl || currentState.sheetsConfig.scriptUrl || '').trim();
-    if (!targetUrl) {
-      const err = 'URL da Planilha Google não foi configurada.';
-      setSyncError(err);
-      showToast({
-        type: 'error',
-        title: 'Planilha não configurada',
-        message: 'Insira a URL do Google Apps Script em Ajustes.'
-      });
-      return;
-    }
     setIsSyncing(true);
     setSyncError(null);
     try {
-      const updated = await storageService.syncWithSheets(currentState, targetUrl);
+      const updated = await storageService.syncWithSheets(currentState);
       skipAutoPush.current = true;
       setState(updated);
-      const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const timeStr = new Date().toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
       showToast({
         type: 'success',
-        title: 'Planilha Sincronizada com Sucesso!',
-        message: `${updated.aulas.length} aulas, ${updated.materias.length} matérias e ${updated.gestores.length} gestores carregados às ${timeStr}.`
+        title: 'Appwrite Sincronizado!',
+        message: `${updated.aulas.length} aulas, ${updated.materias.length} matérias e ${updated.gestores.length} gestores carregados às ${timeStr}.`,
+        duration: 2800
       });
     } catch (err: any) {
-      const msg = err?.message || 'Falha ao sincronizar com Google Sheets';
+      const msg = err?.message || 'Falha ao sincronizar com o Appwrite';
       setSyncError(msg);
       showToast({
         type: 'error',
@@ -253,30 +272,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Força o envio (push) de todos os dados deste dispositivo para a Planilha Google
-  const forcePushToSheets = async (customUrl?: string) => {
+  // Força o envio (push) de todos os dados deste dispositivo para o Appwrite
+  const forcePushToSheets = async (_customUrl?: string) => {
     const currentState = stateRef.current;
-    const targetUrl = (customUrl || currentState.sheetsConfig.scriptUrl || '').trim();
-    if (!targetUrl) {
-      showToast({
-        type: 'error',
-        title: 'Planilha não configurada',
-        message: 'Insira a URL do Google Apps Script antes de enviar.'
-      });
-      return;
-    }
     setIsSyncing(true);
     setSyncError(null);
     try {
-      await storageService.pushToSheets(currentState, targetUrl);
-      const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      await storageService.pushToSheets(currentState);
+      const timeStr = new Date().toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
       showToast({
         type: 'success',
-        title: 'Dados Enviados para a Planilha!',
-        message: `Todas as ${currentState.materias.length} matérias, ${currentState.aulas.length} aulas e ${currentState.gestores.length} gestores deste dispositivo foram gravados na planilha às ${timeStr}.`
+        title: 'Dados Enviados para o Appwrite!',
+        message: `Todos os registros foram gravados no banco QTM-FT às ${timeStr}.`
       });
     } catch (err: any) {
-      const msg = err?.message || 'Falha ao enviar dados para a planilha';
+      const msg = err?.message || 'Falha ao enviar dados para o Appwrite';
       setSyncError(msg);
       showToast({
         type: 'error',
@@ -369,7 +383,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteAula = (id: string) => {
-    markIdsAsDeleted([id]);
+    markIdsAsDeleted([id], 'aulas');
     setState(prev => ({
       ...prev,
       aulas: prev.aulas.filter(a => a.id !== id)
@@ -377,7 +391,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteBulkAulas = (ids: string[]) => {
-    markIdsAsDeleted(ids);
+    markIdsAsDeleted(ids, 'aulas');
     const idSet = new Set(ids);
     setState(prev => ({
       ...prev,
@@ -486,7 +500,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteTurma = (id: string) => {
-    markIdsAsDeleted([id]);
+    markIdsAsDeleted([id], 'turmas');
     setState(prev => ({
       ...prev,
       turmas: prev.turmas.filter(t => t.id !== id)
@@ -514,7 +528,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteMateria = (id: string) => {
-    markIdsAsDeleted([id]);
+    markIdsAsDeleted([id], 'materias');
     setState(prev => ({
       ...prev,
       materias: prev.materias.filter(m => m.id !== id)
@@ -542,7 +556,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteInstrutor = (id: string) => {
-    markIdsAsDeleted([id]);
+    markIdsAsDeleted([id], 'instrutores');
     setState(prev => ({
       ...prev,
       instrutores: prev.instrutores.filter(i => i.id !== id)
@@ -570,7 +584,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteGestor = (id: string) => {
-    markIdsAsDeleted([id]);
+    markIdsAsDeleted([id], 'gestores');
     setState(prev => ({
       ...prev,
       gestores: prev.gestores.filter(g => g.id !== id)
