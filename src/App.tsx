@@ -9,7 +9,6 @@ import { BatchGeneratorView } from './components/generator/BatchGeneratorView';
 import { MetricsDashboard } from './components/metrics/MetricsDashboard';
 import { RegistersManager } from './components/registers/RegistersManager';
 import { Toast } from './components/common/Toast';
-import { CURRENT_APP_VERSION, CURRENT_APP_DATE } from './utils/appVersion';
 
 const AppContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<'calendario' | 'gerador' | 'metricas' | 'cadastros'>('calendario');
@@ -26,7 +25,7 @@ const AppContent: React.FC = () => {
 
   // Sincroniza a cor do safe-area / barra de status com a mesma cor do menu do tema escolhido
   useEffect(() => {
-    const hex = themePalette.headerHex || '#0f172a';
+    const hex = themePalette.headerHex || '#090d16';
     document.documentElement.style.backgroundColor = hex;
     document.body.style.backgroundColor = hex;
     let metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -105,7 +104,7 @@ const AppContent: React.FC = () => {
       />
 
       {/* Conteúdo Principal */}
-      <main className="grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 pb-24 md:pb-4">
+      <main className="grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 pb-24 md:pb-6">
         {currentTab === 'calendario' && (
           <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
         )}
@@ -122,11 +121,6 @@ const AppContent: React.FC = () => {
           <RegistersManager />
         )}
       </main>
-
-      {/* Rodapé Discreto com a Versão do App (Exclusivo Desktop) */}
-      <footer className="hidden md:flex max-w-7xl w-full mx-auto px-6 pb-3 items-center justify-end text-[11px] text-slate-500">
-        <span>QTM • Versão {CURRENT_APP_VERSION} ({CURRENT_APP_DATE})</span>
-      </footer>
 
       {/* Navegação Inferior para Telas Mobile */}
       <BottomNav

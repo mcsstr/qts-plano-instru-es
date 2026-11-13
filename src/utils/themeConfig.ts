@@ -5,25 +5,26 @@ export interface ThemePalette {
   name: string;
   subtitle: string;
   previewColors: string[];
+  // Cor exata em HEX do cabeçalho para sincronizar com o safe-area do celular
+  headerHex: string;
   // Fundo geral da aplicação
   appBg: string;
-  // Header superior
-  headerHex: string;
+  // Header Superior
   headerBg: string;
+  headerBorderTop: string;
   headerText: string;
   headerSubtext: string;
-  headerBorderTop: string;
+  headerBadgeBg: string;
+  headerBadgeText: string;
   navContainerBg: string;
   navActiveBg: string;
-  navActiveText: string;
   navInactiveText: string;
-  // Calendário (MonthGrid)
-  calBorder: string;
+  // Cabeçalho dos dias da semana no Calendário
   calHeaderBg: string;
   calHeaderText: string;
   calHeaderWeekendBg: string;
   calHeaderWeekendText: string;
-  calDivider: string;
+  // Células dos dias no Calendário
   calDayEvenBg: string;
   calDayOddBg: string;
   calWeekendBg: string;
@@ -33,151 +34,137 @@ export interface ThemePalette {
   calDayNumEven: string;
   calDayNumOdd: string;
   calDayNumWeekend: string;
-  // Botões principais e FAB
-  primaryBtn: string;
-  secondaryBadge: string;
+  // Card de Hoje (Mobile / Agenda)
   todayCardGradient: string;
 }
 
 export const THEMES: Record<AppTheme, ThemePalette> = {
   'ft-19bpm': {
     id: 'ft-19bpm',
-    name: '19º BPM/I • Força Tática',
-    subtitle: 'Grafite tático, ouro imperial, azul e rubro',
-    previewColors: ['#0f172a', '#eab308', '#dc2626', '#0284c7'],
-    appBg: 'bg-slate-300',
-    headerHex: '#0f172a',
-    headerBg: 'bg-slate-900',
+    name: 'Obsidian Pro',
+    subtitle: 'Grafite profundo e estética executiva estilo Linear & Vercel',
+    previewColors: ['#090d16', '#3b82f6', '#f3f4f6', '#ffffff'],
+    headerHex: '#090d16',
+    appBg: 'bg-[#f1f3f5]',
+    headerBg: 'bg-[#090d16] border-b border-white/10 shadow-sm',
+    headerBorderTop: '',
     headerText: 'text-white',
-    headerSubtext: 'text-amber-400/90 font-medium',
-    headerBorderTop: 'border-b-2 border-b-amber-400',
-    navContainerBg: 'bg-slate-800/90 border border-slate-700',
-    navActiveBg: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-bold shadow-xs',
-    navActiveText: 'text-slate-950',
-    navInactiveText: 'text-slate-300 hover:text-white hover:bg-slate-700/60',
-    calBorder: 'border-slate-300',
-    calHeaderBg: 'bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b-2 border-amber-400',
-    calHeaderText: 'text-white',
-    calHeaderWeekendBg: 'bg-red-950/60',
-    calHeaderWeekendText: 'text-amber-300',
-    calDivider: 'divide-slate-200/90',
+    headerSubtext: 'text-slate-400',
+    headerBadgeBg: 'bg-white/10 border border-white/15',
+    headerBadgeText: 'text-slate-200',
+    navContainerBg: 'bg-white/[0.06] border-white/10',
+    navActiveBg: 'bg-white text-slate-950 shadow-xs font-semibold',
+    navInactiveText: 'text-slate-300 hover:text-white hover:bg-white/[0.06]',
+    calHeaderBg: 'bg-slate-900 border-b border-slate-800',
+    calHeaderText: 'text-slate-300',
+    calHeaderWeekendBg: 'bg-slate-950/60',
+    calHeaderWeekendText: 'text-slate-400',
     calDayEvenBg: 'bg-white',
-    calDayOddBg: 'bg-slate-100/90',
-    calWeekendBg: 'bg-amber-50/45',
-    calTodayBg: 'bg-sky-50/80',
-    calTodayRing: 'ring-2 ring-inset ring-sky-600/60',
-    calTodayBadge: 'bg-sky-600 text-white shadow-xs',
-    calDayNumEven: 'text-slate-800 bg-slate-100',
-    calDayNumOdd: 'text-slate-800 bg-white border border-slate-200/80',
-    calDayNumWeekend: 'text-red-800 bg-amber-100/70',
-    primaryBtn: 'bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-700 hover:to-blue-800 text-white',
-    secondaryBadge: 'bg-slate-900 text-amber-400 border border-amber-400/40',
-    todayCardGradient: 'bg-gradient-to-r from-slate-900 via-slate-800 to-sky-950 border-amber-400/40'
+    calDayOddBg: 'bg-white',
+    calWeekendBg: 'bg-slate-50/80',
+    calTodayBg: 'bg-blue-50/40',
+    calTodayRing: 'ring-1 ring-inset ring-blue-500/30',
+    calTodayBadge: 'bg-blue-600 text-white shadow-xs',
+    calDayNumEven: 'text-slate-700',
+    calDayNumOdd: 'text-slate-700',
+    calDayNumWeekend: 'text-slate-400',
+    todayCardGradient: 'bg-gradient-to-br from-[#090d16] via-slate-900 to-slate-800'
   },
 
   'azul-operacional': {
     id: 'azul-operacional',
-    name: 'Azul Operacional',
-    subtitle: 'Azul marinho e celeste institucional leve',
-    previewColors: ['#1e3a8a', '#0284c7', '#e0f2fe', '#ffffff'],
-    appBg: 'bg-slate-100',
-    headerHex: '#1e3a8a',
-    headerBg: 'bg-blue-900',
+    name: 'Sapphire Corporate',
+    subtitle: 'Azul marinho corporativo inspirado no Stripe & Notion',
+    previewColors: ['#0f172a', '#4f46e5', '#eef2f6', '#ffffff'],
+    headerHex: '#0f172a',
+    appBg: 'bg-[#eef2f6]',
+    headerBg: 'bg-[#0f172a] border-b border-indigo-500/20 shadow-sm',
+    headerBorderTop: '',
     headerText: 'text-white',
-    headerSubtext: 'text-sky-200',
-    headerBorderTop: 'border-b-2 border-b-sky-400',
-    navContainerBg: 'bg-blue-950/70 border border-blue-800',
-    navActiveBg: 'bg-sky-500 text-white font-bold shadow-xs',
-    navActiveText: 'text-white',
-    navInactiveText: 'text-blue-100 hover:text-white hover:bg-blue-800/60',
-    calBorder: 'border-blue-200/80',
-    calHeaderBg: 'bg-gradient-to-r from-blue-800 via-blue-700 to-sky-700',
-    calHeaderText: 'text-white',
-    calHeaderWeekendBg: 'bg-blue-950/35',
-    calHeaderWeekendText: 'text-sky-200',
-    calDivider: 'divide-blue-100/80',
+    headerSubtext: 'text-indigo-200',
+    headerBadgeBg: 'bg-indigo-500/20 border border-indigo-400/30',
+    headerBadgeText: 'text-indigo-200',
+    navContainerBg: 'bg-slate-800/90 border-slate-700/80',
+    navActiveBg: 'bg-indigo-600 text-white shadow-xs font-semibold',
+    navInactiveText: 'text-slate-300 hover:text-white hover:bg-slate-700/60',
+    calHeaderBg: 'bg-[#0f172a] border-b border-slate-800',
+    calHeaderText: 'text-slate-200',
+    calHeaderWeekendBg: 'bg-slate-950/50',
+    calHeaderWeekendText: 'text-indigo-300/80',
     calDayEvenBg: 'bg-white',
-    calDayOddBg: 'bg-sky-50/45',
+    calDayOddBg: 'bg-white',
     calWeekendBg: 'bg-slate-50/80',
-    calTodayBg: 'bg-blue-50/80',
-    calTodayRing: 'ring-2 ring-inset ring-blue-600/50',
-    calTodayBadge: 'bg-blue-600 text-white shadow-xs',
-    calDayNumEven: 'text-slate-700 bg-slate-100/80',
-    calDayNumOdd: 'text-blue-900 bg-blue-100/50',
-    calDayNumWeekend: 'text-slate-500 bg-slate-200/50',
-    primaryBtn: 'bg-blue-600 hover:bg-blue-700 text-white',
-    secondaryBadge: 'bg-blue-700 text-white',
-    todayCardGradient: 'bg-gradient-to-r from-blue-800 via-blue-700 to-sky-700 border-blue-500/30'
+    calTodayBg: 'bg-indigo-50/45',
+    calTodayRing: 'ring-1 ring-inset ring-indigo-500/30',
+    calTodayBadge: 'bg-indigo-600 text-white shadow-xs',
+    calDayNumEven: 'text-slate-700',
+    calDayNumOdd: 'text-slate-700',
+    calDayNumWeekend: 'text-slate-400',
+    todayCardGradient: 'bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900'
   },
 
   'rubro-ouro': {
     id: 'rubro-ouro',
-    name: 'Heráldico Rubro & Ouro',
-    subtitle: 'Vermelho rubro, dourado e grafite sóbrio',
-    previewColors: ['#991b1b', '#dc2626', '#eab308', '#1e293b'],
-    appBg: 'bg-stone-100',
-    headerHex: '#7f1d1d',
-    headerBg: 'bg-red-900',
+    name: 'Emerald Executive',
+    subtitle: 'Verde floresta sofisticado com acentos esmeralda modernos',
+    previewColors: ['#062019', '#10b981', '#f0f4f2', '#ffffff'],
+    headerHex: '#062019',
+    appBg: 'bg-[#eff3f1]',
+    headerBg: 'bg-[#062019] border-b border-emerald-500/20 shadow-sm',
+    headerBorderTop: '',
     headerText: 'text-white',
-    headerSubtext: 'text-amber-300 font-medium',
-    headerBorderTop: 'border-b-2 border-b-amber-400',
-    navContainerBg: 'bg-red-950/70 border border-red-800',
-    navActiveBg: 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-bold shadow-xs',
-    navActiveText: 'text-slate-950',
-    navInactiveText: 'text-red-100 hover:text-white hover:bg-red-800/60',
-    calBorder: 'border-stone-300',
-    calHeaderBg: 'bg-gradient-to-r from-red-900 via-red-800 to-stone-900 border-b-2 border-amber-400',
-    calHeaderText: 'text-white',
+    headerSubtext: 'text-emerald-200',
+    headerBadgeBg: 'bg-emerald-500/20 border border-emerald-400/30',
+    headerBadgeText: 'text-emerald-200',
+    navContainerBg: 'bg-white/[0.07] border-white/10',
+    navActiveBg: 'bg-emerald-500 text-slate-950 shadow-xs font-bold',
+    navInactiveText: 'text-emerald-100/80 hover:text-white hover:bg-white/10',
+    calHeaderBg: 'bg-[#062019] border-b border-emerald-950',
+    calHeaderText: 'text-emerald-100',
     calHeaderWeekendBg: 'bg-black/25',
-    calHeaderWeekendText: 'text-amber-300',
-    calDivider: 'divide-stone-200/80',
+    calHeaderWeekendText: 'text-emerald-300/80',
     calDayEvenBg: 'bg-white',
-    calDayOddBg: 'bg-stone-50/90',
-    calWeekendBg: 'bg-amber-50/40',
-    calTodayBg: 'bg-red-50/60',
-    calTodayRing: 'ring-2 ring-inset ring-red-700/50',
-    calTodayBadge: 'bg-red-700 text-amber-300 shadow-xs',
-    calDayNumEven: 'text-stone-800 bg-stone-100',
-    calDayNumOdd: 'text-red-950 bg-red-50/80',
-    calDayNumWeekend: 'text-amber-900 bg-amber-100/70',
-    primaryBtn: 'bg-gradient-to-r from-red-700 to-red-800 hover:from-red-800 hover:to-red-900 text-white',
-    secondaryBadge: 'bg-red-800 text-amber-300',
-    todayCardGradient: 'bg-gradient-to-r from-red-900 via-red-800 to-stone-900 border-amber-400/40'
+    calDayOddBg: 'bg-white',
+    calWeekendBg: 'bg-slate-50/80',
+    calTodayBg: 'bg-emerald-50/45',
+    calTodayRing: 'ring-1 ring-inset ring-emerald-500/30',
+    calTodayBadge: 'bg-emerald-600 text-white shadow-xs',
+    calDayNumEven: 'text-slate-700',
+    calDayNumOdd: 'text-slate-700',
+    calDayNumWeekend: 'text-slate-400',
+    todayCardGradient: 'bg-gradient-to-br from-[#062019] via-emerald-950 to-teal-900'
   },
 
   'clean-slate': {
     id: 'clean-slate',
-    name: 'Minimalista Sóbrio',
-    subtitle: 'Tons neutros de alto contraste e leitura leve',
-    previewColors: ['#334155', '#64748b', '#f1f5f9', '#ffffff'],
-    appBg: 'bg-slate-100',
+    name: 'Minimalist Daylight',
+    subtitle: 'Visual claro, arejado e minimalista estilo Apple & Cron',
+    previewColors: ['#ffffff', '#0f172a', '#2563eb', '#f8fafc'],
     headerHex: '#ffffff',
-    headerBg: 'bg-white',
+    appBg: 'bg-[#f5f7fa]',
+    headerBg: 'bg-white border-b border-slate-200/90 shadow-2xs',
+    headerBorderTop: '',
     headerText: 'text-slate-900',
     headerSubtext: 'text-slate-500',
-    headerBorderTop: 'border-b-2 border-b-slate-800',
-    navContainerBg: 'bg-slate-100 border border-slate-200',
-    navActiveBg: 'bg-slate-800 text-white font-semibold shadow-xs',
-    navActiveText: 'text-white',
-    navInactiveText: 'text-slate-600 hover:text-slate-900 hover:bg-white',
-    calBorder: 'border-slate-200',
-    calHeaderBg: 'bg-slate-800',
-    calHeaderText: 'text-slate-100',
-    calHeaderWeekendBg: 'bg-slate-900/50',
-    calHeaderWeekendText: 'text-slate-300',
-    calDivider: 'divide-slate-200/80',
+    headerBadgeBg: 'bg-slate-100 border border-slate-200',
+    headerBadgeText: 'text-slate-700',
+    navContainerBg: 'bg-slate-100/90 border-slate-200/70',
+    navActiveBg: 'bg-slate-900 text-white shadow-2xs font-semibold',
+    navInactiveText: 'text-slate-600 hover:text-slate-900 hover:bg-white/60',
+    calHeaderBg: 'bg-slate-50 border-b border-slate-200/90',
+    calHeaderText: 'text-slate-500',
+    calHeaderWeekendBg: 'bg-slate-100/70',
+    calHeaderWeekendText: 'text-slate-400',
     calDayEvenBg: 'bg-white',
-    calDayOddBg: 'bg-slate-50/70',
-    calWeekendBg: 'bg-slate-100/60',
-    calTodayBg: 'bg-blue-50/50',
-    calTodayRing: 'ring-2 ring-inset ring-slate-800',
-    calTodayBadge: 'bg-slate-900 text-white',
-    calDayNumEven: 'text-slate-700 bg-slate-100',
-    calDayNumOdd: 'text-slate-700 bg-white border border-slate-200',
-    calDayNumWeekend: 'text-slate-500 bg-slate-200/60',
-    primaryBtn: 'bg-slate-900 hover:bg-slate-800 text-white',
-    secondaryBadge: 'bg-slate-800 text-white',
-    todayCardGradient: 'bg-gradient-to-r from-slate-800 via-slate-700 to-slate-900 border-slate-600'
+    calDayOddBg: 'bg-white',
+    calWeekendBg: 'bg-slate-50/70',
+    calTodayBg: 'bg-blue-50/35',
+    calTodayRing: 'ring-1 ring-inset ring-blue-500/25',
+    calTodayBadge: 'bg-blue-600 text-white shadow-xs',
+    calDayNumEven: 'text-slate-700',
+    calDayNumOdd: 'text-slate-700',
+    calDayNumWeekend: 'text-slate-400',
+    todayCardGradient: 'bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950'
   }
 };
 

@@ -18,7 +18,8 @@ import {
   Sparkles,
   History,
   ChevronRight,
-  ChevronDown
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -30,22 +31,204 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
   const { user, canEdit, isAdmin, openLoginModal, logout } = useAuth();
   const { theme, themePalette, setTheme } = useApp();
 
-  // Estados do Menu Sanduíche (Mobile) e Sub-menu de Tema
-  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
-  const [isMobileThemeSubmenuOpen, setIsMobileThemeSubmenuOpen] = useState(false);
+  // Estados unificados para o Menu de Configurações (Engrenagem no Desktop / Sanduíche no Mobile)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isThemeSubmenuOpen, setIsThemeSubmenuOpen] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
-
-  // Estado do dropdown de Tema no Desktop
-  const [isDesktopThemeOpen, setIsDesktopThemeOpen] = useState(false);
 
   const isDarkHeader = theme !== 'clean-slate';
   const currentThemeObj = THEME_LIST.find(t => t.id === theme) || THEME_LIST[0];
 
-  const handleCloseHamburger = () => {
-    setIsHamburgerOpen(false);
-    setIsMobileThemeSubmenuOpen(false);
+  const handleCloseMenu = () => {
+    setIsMenuOpen(false);
+    setIsThemeSubmenuOpen(false);
     setShowVersionHistory(false);
   };
+
+  const renderSettingsDropdown = () => (
+    <>
+      {/* Backdrop invisível para fechar ao clicar fora */}
+      <div
+        className="fixed inset-0 z-40"
+        onClick={handleCloseMenu}
+      />
+
+      {/* Painel Dropdown (Engrenagem Desktop / Sanduíche Mobile) */}
+      <div className="absolute right-0 mt-2.5 w-80 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-[0_12px_36px_-4px_rgba(15,23,42,0.18)] border border-slate-200/90 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 text-slate-800">
+        {/* 1. Usuário Logado / Login e Botão Sair */}
+        <div className="p-3.5 bg-slate-50/90 border-b border-slate-200/80">
+          {canEdit ? (
+            <div className="flex items-center justify-between gap-2.5">
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs font-bold text-slate-900 block truncate">
+                    {user.nome}
+                  </span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 rounded-md leading-none">
+                      {isAdmin ? 'Administrador' : 'Gestor'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  logout();
+                  handleCloseMenu();
+                }}
+                className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-slate-200 hover:border-rose-200 text-xs font-semibold transition-all shrink-0 shadow-2xs"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sair</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <span className="text-xs font-bold text-slate-900 block">Modo Consulta</span>
+                <span className="text-[11px] text-slate-500">Faça login para editar o QTM</span>
+              </div>
+              <button
+                onClick={() => {
+                  handleCloseMenu();
+                  openLoginModal();
+                }}
+                className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-2xs transition-colors shrink-0"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Entrar</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="p-2.5 space-y-2 max-h-[72vh] overflow-y-auto">
+          {/* 2. Sub-menu Tema (Exclusivo Admin) */}
+          {isAdmin && (
+            <div className="rounded-xl border border-slate-200/80 overflow-hidden bg-white">
+              <button
+                type="button"
+                onClick={() => setIsThemeSubmenuOpen(!isThemeSubmenuOpen)}
+                className="w-full flex items-center justify-between p-2.5 bg-white hover:bg-slate-50/80 text-left transition-colors"
+              >
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 border border-slate-200/80 flex items-center justify-center shrink-0">
+                    <Palette className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block leading-tight">
+                      Tema do Sistema
+                    </span>
+                    <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
+                      {currentThemeObj.name}
+                    </span>
+                  </div>
+                </div>
+                {isThemeSubmenuOpen ? (
+                  <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+                )}
+              </button>
+
+              {isThemeSubmenuOpen && (
+                <div className="p-2 bg-slate-50/80 border-t border-slate-200/70 space-y-1.5 animate-in fade-in duration-150">
+                  {THEME_LIST.map(t => {
+                    const active = theme === t.id;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => {
+                          setTheme(t.id);
+                        }}
+                        className={`w-full flex items-center justify-between p-2 rounded-xl border text-left transition-all ${
+                          active
+                            ? 'border-blue-600 bg-blue-50/80 shadow-2xs'
+                            : 'border-slate-200/80 bg-white hover:bg-slate-100/70'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2.5 min-w-0">
+                          <div className="flex -space-x-1 shrink-0">
+                            {t.previewColors.map((hex, i) => (
+                              <span
+                                key={i}
+                                className="w-4 h-4 rounded-full border border-white shadow-2xs"
+                                style={{ backgroundColor: hex }}
+                              />
+                            ))}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-xs font-bold text-slate-900 block leading-tight truncate">
+                              {t.name}
+                            </span>
+                            <span className="text-[10px] text-slate-500 block leading-tight mt-0.5 truncate">
+                              {t.subtitle}
+                            </span>
+                          </div>
+                        </div>
+                        {active && <Check className="w-4 h-4 text-blue-600 shrink-0 ml-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 3. Versão do App + Histórico de Atualizações */}
+          <div className="bg-slate-50/80 rounded-xl p-2.5 border border-slate-200/80">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 border border-blue-200/60 flex items-center justify-center shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-slate-900 block leading-tight">
+                    Versão {CURRENT_APP_VERSION}
+                  </span>
+                  <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
+                    Atualizado em {CURRENT_APP_DATE}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowVersionHistory(!showVersionHistory)}
+                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+              >
+                <History className="w-3.5 h-3.5" />
+                <span>{showVersionHistory ? 'Ocultar' : 'Notas'}</span>
+              </button>
+            </div>
+
+            {showVersionHistory && (
+              <div className="mt-2.5 pt-2.5 border-t border-slate-200/80 space-y-2.5 max-h-44 overflow-y-auto pr-1">
+                {APP_VERSION_HISTORY.map(entry => (
+                  <div key={entry.version} className="text-[11px]">
+                    <div className="flex items-center justify-between font-bold text-slate-800 mb-0.5">
+                      <span>{entry.version}</span>
+                      <span className="text-[10px] text-slate-400 font-normal">{entry.date}</span>
+                    </div>
+                    <ul className="list-disc list-inside text-[10px] text-slate-600 space-y-0.5">
+                      {entry.highlights.map((h, idx) => (
+                        <li key={idx} className="leading-snug">{h}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
 
   return (
     <header
@@ -58,180 +241,91 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo & Title (Sem versão ao lado do logotipo) */}
+          {/* Logo & Title */}
           <div
-            className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer"
+            className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer group"
             onClick={() => setCurrentTab('calendario')}
           >
             <img
               src="/favicon.svg"
               alt="QTM"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-md shadow-black/20 shrink-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-sm shrink-0 transition-transform group-hover:scale-105"
             />
-            <span className={`font-extrabold text-base sm:text-lg ${themePalette.headerText} tracking-tight`}>
-              QTM
-            </span>
+            <div className="flex flex-col">
+              <span className={`font-extrabold text-base sm:text-lg ${themePalette.headerText} tracking-tight leading-none`}>
+                QTM
+              </span>
+              <span className={`hidden sm:inline text-[10px] font-medium ${themePalette.headerSubtext} tracking-wide mt-0.5`}>
+                Quadro de Trabalho Mensal
+              </span>
+            </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className={`hidden md:flex items-center space-x-1.5 p-1 rounded-xl border ${themePalette.navContainerBg}`}>
+          <nav className={`hidden md:flex items-center space-x-1 p-1 rounded-xl border ${themePalette.navContainerBg}`}>
             <button
               onClick={() => setCurrentTab('calendario')}
-              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 currentTab === 'calendario'
                   ? themePalette.navActiveBg
                   : themePalette.navInactiveText
               }`}
             >
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-3.5 h-3.5" />
               <span>Calendário</span>
             </button>
 
             <button
               onClick={() => setCurrentTab('gerador')}
-              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 currentTab === 'gerador'
                   ? themePalette.navActiveBg
                   : themePalette.navInactiveText
               }`}
             >
-              <Layers className="w-4 h-4" />
+              <Layers className="w-3.5 h-3.5" />
               <span>Gerador de Período</span>
             </button>
 
             <button
               onClick={() => setCurrentTab('metricas')}
-              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 currentTab === 'metricas'
                   ? themePalette.navActiveBg
                   : themePalette.navInactiveText
               }`}
             >
-              <BarChart3 className="w-4 h-4" />
+              <BarChart3 className="w-3.5 h-3.5" />
               <span>Métricas & Gráficos</span>
             </button>
 
             <button
               onClick={() => setCurrentTab('cadastros')}
-              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 currentTab === 'cadastros'
                   ? themePalette.navActiveBg
                   : themePalette.navInactiveText
               }`}
             >
-              <Users className="w-4 h-4" />
+              <Users className="w-3.5 h-3.5" />
               <span>Cadastros</span>
             </button>
           </nav>
 
           {/* =================================================================
-              ÁREA DIREITA DESKTOP (Tema para Admin + Entrar/Sair)
+              ÁREA DIREITA:
+              - Desktop: Botão Engrenagem (Settings) contendo Login/Usuário, Sair, Tema e Versão
+              - Mobile: Menu Sanduíche (Menu) contendo Login/Usuário, Sair, Tema e Versão
              ================================================================= */}
-          <div className="hidden md:flex items-center space-x-2">
-            {isAdmin && (
-              <div className="relative">
-                <button
-                  onClick={() => setIsDesktopThemeOpen(!isDesktopThemeOpen)}
-                  title="Escolher Tema Visual (Admin)"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors ${
-                    isDarkHeader
-                      ? 'border-white/15 bg-white/10 text-amber-300 hover:bg-white/20'
-                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  <Palette className="w-4 h-4" />
-                  <span>Tema</span>
-                </button>
-
-                {isDesktopThemeOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setIsDesktopThemeOpen(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
-                      <div className="pb-2 mb-2 border-b border-slate-100">
-                        <span className="text-xs font-extrabold text-slate-900 block">Tema Visual da Unidade</span>
-                        <span className="text-[10px] text-slate-500">Exclusivo Administrador</span>
-                      </div>
-                      <div className="space-y-1.5">
-                        {THEME_LIST.map(t => {
-                          const active = theme === t.id;
-                          return (
-                            <button
-                              key={t.id}
-                              onClick={() => {
-                                setTheme(t.id);
-                                setIsDesktopThemeOpen(false);
-                              }}
-                              className={`w-full flex items-center justify-between p-2 rounded-xl border text-left transition-all ${
-                                active
-                                  ? 'border-blue-600 bg-blue-50/70 shadow-2xs'
-                                  : 'border-slate-200/80 hover:bg-slate-50'
-                              }`}
-                            >
-                              <div className="flex items-center space-x-2.5">
-                                <div className="flex -space-x-1 shrink-0">
-                                  {t.previewColors.map((hex, i) => (
-                                    <span
-                                      key={i}
-                                      className="w-4 h-4 rounded-full border border-white shadow-2xs"
-                                      style={{ backgroundColor: hex }}
-                                    />
-                                  ))}
-                                </div>
-                                <div>
-                                  <span className="text-xs font-bold text-slate-900 block leading-tight">
-                                    {t.name}
-                                  </span>
-                                  <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
-                                    {t.subtitle}
-                                  </span>
-                                </div>
-                              </div>
-                              {active && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {canEdit ? (
-              <div className="flex items-center space-x-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-medium">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span className="font-semibold">{user.nome}</span>
-                <button
-                  onClick={logout}
-                  title="Sair da conta"
-                  className="text-rose-700 hover:text-rose-950 px-1.5 py-0.5 rounded-md hover:bg-rose-100/80 flex items-center gap-1 font-bold transition-colors"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Sair</span>
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={openLoginModal}
-                className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-xs transition-colors"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Entrar</span>
-              </button>
-            )}
-          </div>
-
-          {/* =================================================================
-              ÁREA DIREITA MOBILE (Menu Sanduíche exclusivo para Mobile)
-             ================================================================= */}
-          <div className="flex md:hidden items-center space-x-2">
+          <div className="flex items-center space-x-2">
             {!canEdit && (
               <button
                 onClick={openLoginModal}
-                className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs transition-colors shrink-0"
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+                  isDarkHeader
+                    ? 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
+                    : 'bg-slate-900 hover:bg-slate-800 text-white shadow-2xs'
+                }`}
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Entrar</span>
@@ -239,208 +333,44 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
             )}
 
             <div className="relative">
+              {/* Botão Engrenagem (Desktop) / Sanduíche (Mobile) */}
               <button
                 onClick={() => {
-                  if (isHamburgerOpen) {
-                    handleCloseHamburger();
+                  if (isMenuOpen) {
+                    handleCloseMenu();
                   } else {
-                    setIsHamburgerOpen(true);
+                    setIsMenuOpen(true);
                   }
                 }}
-                title="Abrir Menu"
-                className={`relative p-2 rounded-xl border transition-colors flex items-center justify-center ${
+                title="Configurações, Conta, Tema e Versão"
+                className={`relative p-2 rounded-xl border transition-all flex items-center justify-center ${
                   isDarkHeader
-                    ? 'border-white/15 bg-white/10 text-white hover:bg-white/20'
-                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+                    ? 'border-white/15 bg-white/[0.07] text-slate-200 hover:text-white hover:bg-white/15'
+                    : 'border-slate-200/90 bg-slate-100/80 text-slate-700 hover:text-slate-950 hover:bg-slate-200/70'
                 }`}
               >
-                {isHamburgerOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {/* Ícone no Desktop: Engrenagem */}
+                <Settings
+                  className={`hidden md:block w-4 h-4 transition-transform duration-300 ${
+                    isMenuOpen ? 'rotate-90' : ''
+                  }`}
+                />
+                {/* Ícone no Mobile: Sanduíche / X */}
+                <span className="md:hidden">
+                  {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </span>
+
                 {canEdit && (
                   <span
-                    className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-slate-900"
-                    title="Gestor Autenticado"
+                    className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 ${
+                      isDarkHeader ? 'border-slate-900' : 'border-white'
+                    }`}
+                    title={`Conectado como ${user.nome}`}
                   />
                 )}
               </button>
 
-              {isHamburgerOpen && (
-                <>
-                  {/* Backdrop */}
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={handleCloseHamburger}
-                  />
-
-                  {/* Painel do Menu Sanduíche Mobile */}
-                  <div className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 text-slate-800">
-                    {/* 1. Status da Conta e Botão Sair / Entrar */}
-                    <div className="p-3.5 bg-slate-50 border-b border-slate-200/80">
-                      {canEdit ? (
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center space-x-2.5 min-w-0">
-                            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200">
-                              <ShieldCheck className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <span className="text-xs font-extrabold text-slate-900 block truncate">
-                                {user.nome}
-                              </span>
-                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-md inline-block mt-0.5">
-                                {isAdmin ? 'Admin' : 'Gestor'}
-                              </span>
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={() => {
-                              logout();
-                              handleCloseHamburger();
-                            }}
-                            className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-colors shrink-0"
-                          >
-                            <LogOut className="w-3.5 h-3.5" />
-                            <span>Sair</span>
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="text-xs font-bold text-slate-800 block">Modo Consulta</span>
-                            <span className="text-[10px] text-slate-500">Entre para gerenciar aulas</span>
-                          </div>
-                          <button
-                            onClick={() => {
-                              handleCloseHamburger();
-                              openLoginModal();
-                            }}
-                            className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-colors"
-                          >
-                            <LogIn className="w-3.5 h-3.5" />
-                            <span>Entrar</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-2.5 space-y-2 max-h-[70vh] overflow-y-auto">
-                      {/* 2. Sub-menu Tema (Somente Admin — fechado por padrão, abre ao clicar) */}
-                      {isAdmin && (
-                        <div className="rounded-xl border border-slate-200/80 overflow-hidden">
-                          <button
-                            type="button"
-                            onClick={() => setIsMobileThemeSubmenuOpen(!isMobileThemeSubmenuOpen)}
-                            className="w-full flex items-center justify-between p-2.5 bg-white hover:bg-slate-50 text-left transition-colors"
-                          >
-                            <div className="flex items-center space-x-2.5">
-                              <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center shrink-0">
-                                <Palette className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <span className="text-xs font-bold text-slate-900 block leading-tight">
-                                  Tema
-                                </span>
-                                <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
-                                  Atual: {currentThemeObj.name}
-                                </span>
-                              </div>
-                            </div>
-                            {isMobileThemeSubmenuOpen ? (
-                              <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
-                            ) : (
-                              <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
-                            )}
-                          </button>
-
-                          {isMobileThemeSubmenuOpen && (
-                            <div className="p-2 bg-slate-50 border-t border-slate-200/80 space-y-1.5 animate-in fade-in duration-150">
-                              {THEME_LIST.map(t => {
-                                const active = theme === t.id;
-                                return (
-                                  <button
-                                    key={t.id}
-                                    type="button"
-                                    onClick={() => {
-                                      setTheme(t.id);
-                                      setIsMobileThemeSubmenuOpen(false);
-                                    }}
-                                    className={`w-full flex items-center justify-between p-2 rounded-xl border text-left transition-all ${
-                                      active
-                                        ? 'border-blue-600 bg-blue-50/90 shadow-2xs'
-                                        : 'border-slate-200/80 bg-white hover:bg-slate-100'
-                                    }`}
-                                  >
-                                    <div className="flex items-center space-x-2">
-                                      <div className="flex -space-x-1 shrink-0">
-                                        {t.previewColors.map((hex, i) => (
-                                          <span
-                                            key={i}
-                                            className="w-3.5 h-3.5 rounded-full border border-white shadow-2xs"
-                                            style={{ backgroundColor: hex }}
-                                          />
-                                        ))}
-                                      </div>
-                                      <span className="text-xs font-bold text-slate-900 leading-tight">
-                                        {t.name}
-                                      </span>
-                                    </div>
-                                    {active && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* 3. Versão do App (No menu sanduíche mobile) */}
-                      <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-200/80">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                              <Sparkles className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <span className="text-xs font-extrabold text-slate-900 block leading-tight">
-                                Versão {CURRENT_APP_VERSION}
-                              </span>
-                              <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
-                                Atualizado em {CURRENT_APP_DATE}
-                              </span>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => setShowVersionHistory(!showVersionHistory)}
-                            className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-                          >
-                            <History className="w-3.5 h-3.5" />
-                            <span>{showVersionHistory ? 'Ocultar' : 'Notas'}</span>
-                          </button>
-                        </div>
-
-                        {showVersionHistory && (
-                          <div className="mt-2.5 pt-2.5 border-t border-slate-200/80 space-y-2 max-h-40 overflow-y-auto pr-1">
-                            {APP_VERSION_HISTORY.map(entry => (
-                              <div key={entry.version} className="text-[11px]">
-                                <div className="flex items-center justify-between font-bold text-slate-800 mb-0.5">
-                                  <span>{entry.version}</span>
-                                  <span className="text-[10px] text-slate-400 font-normal">{entry.date}</span>
-                                </div>
-                                <ul className="list-disc list-inside text-[10px] text-slate-600 space-y-0.5">
-                                  {entry.highlights.map((h, idx) => (
-                                    <li key={idx} className="leading-snug">{h}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
+              {isMenuOpen && renderSettingsDropdown()}
             </div>
           </div>
         </div>

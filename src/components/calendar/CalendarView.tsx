@@ -150,7 +150,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
-  // Aulas de Hoje para o Card Fixo no Mobile
+  // Aulas de Hoje para o Card no Mobile
   const todayAulas = useMemo(() => {
     return filteredAulas.filter(a => {
       const clean = a.data ? String(a.data).split('T')[0].split(' ')[0].trim() : '';
@@ -184,9 +184,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       {/* =========================================================================
           1. VERSÃO MOBILE: BARRA SUPERIOR FIXA (STICKY) APENAS COM MÊS/ANO E FILTROS
          ========================================================================= */}
-      <div className={`md:hidden sticky sticky-below-header z-20 ${themePalette.appBg} pt-1 pb-2 -mx-3 px-3 shadow-[0_6px_12px_-6px_rgba(15,23,42,0.08)] transition-colors duration-200`}>
+      <div className={`md:hidden sticky sticky-below-header z-20 ${themePalette.appBg} pt-1 pb-2 -mx-3 px-3 shadow-[0_6px_12px_-6px_rgba(15,23,42,0.06)] transition-colors duration-200`}>
         {/* Linha de Mês/Ano + Filtro + Histórico + Seleção Múltipla */}
-        <div className="flex items-center justify-between bg-white px-2.5 py-2 rounded-2xl border border-slate-200/90 shadow-xs">
+        <div className="flex items-center justify-between bg-white px-2.5 py-2 rounded-2xl border border-slate-200/85 shadow-2xs">
           {isMobileHistoryPage && (
             <button
               onClick={() => setIsMobileHistoryPage(false)}
@@ -202,15 +202,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
           <div className="flex items-center space-x-1">
             <button
               onClick={handlePrevMonth}
-              className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
               title="Mês Anterior"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
 
             <button
               onClick={handleToday}
-              className="text-sm font-bold text-slate-900 capitalize tracking-tight px-1"
+              className="text-sm font-bold text-slate-900 capitalize tracking-tight px-1.5"
               title="Ir para o mês atual"
             >
               {formatMonthYear(currentDate)}
@@ -218,10 +218,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
 
             <button
               onClick={handleNextMonth}
-              className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
               title="Próximo Mês"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
@@ -238,7 +238,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
               }}
               className={`p-2 rounded-xl transition-colors relative ${
                 hasActiveFilters
-                  ? 'text-blue-700 bg-blue-100 border border-blue-300'
+                  ? 'text-blue-700 bg-blue-50 border border-blue-200'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
               title={hasActiveFilters ? 'Limpar Filtros' : 'Abrir Filtros'}
@@ -254,7 +254,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
               onClick={() => setIsMobileHistoryPage(!isMobileHistoryPage)}
               className={`p-2 rounded-xl transition-colors flex items-center gap-1 text-xs font-semibold ${
                 isMobileHistoryPage
-                  ? 'text-white bg-indigo-600 shadow-xs'
+                  ? 'text-white bg-slate-900 shadow-2xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
               title={isMobileHistoryPage ? 'Sair do Histórico' : 'Ver Histórico do Mês'}
@@ -275,7 +275,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                 }}
                 className={`p-2 rounded-xl transition-colors ${
                   isMultiSelectMode
-                    ? 'text-white bg-blue-600 shadow-xs'
+                    ? 'text-white bg-blue-600 shadow-2xs'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
                 title={isMultiSelectMode ? 'Desativar Seleção' : 'Seleção Múltipla'}
@@ -290,22 +290,22 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       {/* Card de HOJE no Mobile (Rola junto com os demais cards da lista) */}
       <div className="md:hidden">
         {!isMobileHistoryPage ? (
-          <div className={`${themePalette.todayCardGradient} text-white rounded-2xl shadow-md border border-white/15 p-3.5 transition-colors duration-200`}>
-            <div className="flex items-center justify-between pb-2 border-b border-white/15">
-              <div className="flex items-center space-x-2">
-                <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+          <div className={`${themePalette.todayCardGradient} text-white rounded-2xl shadow-md border border-white/10 p-3.5 transition-colors duration-200`}>
+            <div className="flex items-center justify-between pb-2.5 border-b border-white/10">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
                   <CalendarDays className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <div className="flex items-center space-x-1.5">
-                    <span className="text-[10px] uppercase font-extrabold tracking-wider bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] uppercase font-bold tracking-wider bg-blue-500 text-white px-2 py-0.5 rounded-md">
                       HOJE
                     </span>
-                    <span className="text-xs text-white/85 capitalize font-medium">
+                    <span className="text-xs text-slate-300 capitalize font-medium">
                       {formatDayOfWeek(todayStr)}
                     </span>
                   </div>
-                  <h2 className="text-sm font-black tracking-tight mt-0.5">
+                  <h2 className="text-sm font-bold tracking-tight mt-0.5">
                     {formatDateBr(todayStr)}
                   </h2>
                 </div>
@@ -314,20 +314,20 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
               {canEdit && (
                 <button
                   onClick={() => handleOpenNewAula(todayStr)}
-                  className="flex items-center space-x-1 px-2.5 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-xl text-[11px] font-semibold transition-all border border-white/20 shrink-0"
+                  className="flex items-center space-x-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[11px] font-semibold transition-all border border-white/15 shrink-0"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Inserir Aula Hoje</span>
+                  <span>Nova Aula</span>
                 </button>
               )}
             </div>
 
-            {/* Cards das Aulas de Hoje (com rolagem interna caso haja muitas aulas no mesmo dia) */}
-            <div className="mt-2.5 max-h-36 overflow-y-auto space-y-2 pr-0.5">
+            {/* Cards das Aulas de Hoje */}
+            <div className="mt-2.5 max-h-40 overflow-y-auto space-y-2 pr-0.5">
               {todayAulas.length === 0 ? (
-                <div className="p-2.5 bg-white/10 rounded-xl text-center text-xs text-blue-100 flex items-center justify-center space-x-2">
-                  <Sparkles className="w-3.5 h-3.5 text-blue-200 shrink-0" />
-                  <span>Nenhuma aula programada para hoje. Cronograma livre!</span>
+                <div className="p-2.5 bg-white/[0.06] rounded-xl text-center text-xs text-slate-300 flex items-center justify-center space-x-2">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span>Nenhuma aula programada para hoje.</span>
                 </div>
               ) : (
                 todayAulas.map(aula => {
@@ -336,6 +336,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                   const isPrejudicada = aula.status === 'prejudicada';
                   const isRealizada = aula.status === 'realizada';
                   const assunto = getAulaAssunto(aula, materia?.descricao);
+                  const turmaColor = turma?.cor || '#2563eb';
 
                   return (
                     <div
@@ -344,35 +345,40 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                       className="p-2.5 rounded-xl bg-white text-slate-900 shadow-xs cursor-pointer transition-all border-l-4 text-left"
                       style={{ borderLeftColor: isPrejudicada ? '#f59e0b' : materia?.cor || '#2563eb' }}
                     >
-                      <div className="flex items-center justify-between mb-0.5">
+                      <div className="flex items-center justify-between mb-1">
                         <span
-                          className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
-                          style={{ backgroundColor: `${turma?.cor || '#2563eb'}20`, color: turma?.cor || '#2563eb' }}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                          style={{
+                            backgroundColor: `${turmaColor}14`,
+                            color: turmaColor,
+                            border: `1px solid ${turmaColor}30`
+                          }}
                         >
-                          {turma?.sigla || 'TURMA'}
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: turmaColor }} />
+                          <span>{turma?.sigla || 'TURMA'}</span>
                         </span>
                         {isPrejudicada ? (
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="text-[10px] font-semibold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded-md flex items-center gap-1">
                             <AlertTriangle className="w-2.5 h-2.5 text-amber-600" />
                             Prejuízo
                           </span>
                         ) : isRealizada ? (
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center gap-1">
                             <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
                             Concluída
                           </span>
                         ) : (
-                          <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-md flex items-center gap-1">
                             <Clock className="w-2.5 h-2.5 text-blue-600" />
                             Hoje
                           </span>
                         )}
                       </div>
-                      <div className="font-bold text-xs text-slate-900 leading-snug line-clamp-1">
+                      <div className="font-semibold text-xs text-slate-900 leading-snug line-clamp-1">
                         {materia?.nome || 'Matéria'}
                       </div>
                       {assunto && (
-                        <div className="text-[11px] text-slate-600 font-medium leading-tight line-clamp-2 mt-0.5">
+                        <div className="text-[11px] text-slate-500 font-normal leading-tight line-clamp-2 mt-0.5">
                           {assunto}
                         </div>
                       )}
@@ -383,15 +389,15 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             </div>
           </div>
         ) : (
-          <div className="bg-indigo-600 text-white px-3.5 py-2.5 rounded-2xl shadow-xs flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <History className="w-4 h-4 text-indigo-200 shrink-0" />
+          <div className="bg-slate-900 text-white px-3.5 py-2.5 rounded-2xl shadow-2xs flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <History className="w-4 h-4 text-slate-400 shrink-0" />
               <div>
                 <span className="text-xs font-bold block">Histórico Mensal Completo</span>
-                <span className="text-[11px] text-indigo-100 capitalize">{formatMonthYear(currentDate)}</span>
+                <span className="text-[11px] text-slate-400 capitalize">{formatMonthYear(currentDate)}</span>
               </div>
             </div>
-            <span className="text-[11px] bg-white/20 px-2 py-0.5 rounded-lg font-semibold">
+            <span className="text-[10px] bg-white/10 border border-white/15 px-2 py-0.5 rounded-md font-semibold">
               Mês Inteiro
             </span>
           </div>
@@ -471,10 +477,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                   className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm"
                 >
                   <option value="all">Todos os Status</option>
-                  <option value="agendada">📅 Agendadas</option>
-                  <option value="realizada">✅ Realizadas</option>
-                  <option value="prejudicada">⚠️ Prejudicadas</option>
-                  <option value="remanejada">🔄 Remanejadas</option>
+                  <option value="agendada">Agendadas</option>
+                  <option value="realizada">Realizadas</option>
+                  <option value="prejudicada">Prejudicadas</option>
+                  <option value="remanejada">Remanejadas</option>
                 </select>
               </div>
             </div>
@@ -482,13 +488,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             <div className="flex gap-3 mt-5">
               <button
                 onClick={() => setShowFilterModal(false)}
-                className="flex-1 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={applyFilters}
-                className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20"
+                className="flex-1 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors shadow-sm"
               >
                 Aplicar Filtros
               </button>
@@ -498,37 +504,37 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       )}
 
       {/* =========================================================================
-          2. VERSÃO DESKTOP: CONTROLES COMPLETOS (Mês, Grade, Filtros, Inserir)
+          2. VERSÃO DESKTOP: BARRA DE COMANDO EXECUTIVA (Estilo Notion Calendar / Linear)
          ========================================================================= */}
-      <div className="hidden md:flex bg-white/95 rounded-2xl border border-indigo-200/80 shadow-xs px-4 py-2.5 items-center justify-between gap-4">
-        {/* Navegação de Data */}
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-1">
+      <div className="hidden md:flex bg-white rounded-2xl border border-slate-200/85 shadow-[0_1px_3px_rgba(15,23,42,0.04)] px-4 py-3 items-center justify-between gap-4">
+        {/* Navegação de Data e Título do Mês */}
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center bg-slate-100/80 p-0.5 rounded-xl border border-slate-200/70">
             <button
               onClick={handlePrevMonth}
-              className="p-2 rounded-xl text-indigo-700 hover:text-indigo-900 hover:bg-indigo-50 transition-colors"
+              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition-all"
               title="Mês Anterior"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
 
             <button
               onClick={handleToday}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200/80 transition-colors"
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-white transition-all"
             >
               Hoje
             </button>
 
             <button
               onClick={handleNextMonth}
-              className="p-2 rounded-xl text-indigo-700 hover:text-indigo-900 hover:bg-indigo-50 transition-colors"
+              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white transition-all"
               title="Próximo Mês"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
-          <h1 className="text-lg font-extrabold bg-gradient-to-r from-blue-800 to-indigo-700 bg-clip-text text-transparent capitalize tracking-tight ml-2">
+          <h1 className="text-lg font-extrabold text-slate-900 capitalize tracking-tight">
             {formatMonthYear(currentDate)}
           </h1>
         </div>
@@ -536,25 +542,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
         {/* Controles Desktop */}
         <div className="flex items-center flex-wrap gap-2">
           {/* Alternador de Visão no Desktop */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl">
+          <div className="flex items-center bg-slate-100/90 p-1 rounded-xl border border-slate-200/60">
             <button
               onClick={() => setViewMode('mes')}
-              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 viewMode === 'mes'
-                  ? 'bg-white text-blue-600 shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <CalendarIcon className="w-3.5 h-3.5" />
-              <span>Grade Mês</span>
+              <span>Grade</span>
             </button>
 
             <button
               onClick={() => setViewMode('lista')}
-              className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 viewMode === 'lista'
-                  ? 'bg-white text-blue-600 shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <List className="w-3.5 h-3.5" />
@@ -565,14 +571,17 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
           {/* Toggle de Filtros Desktop */}
           <button
             onClick={() => setShowFiltersDesktop(!showFiltersDesktop)}
-            className={`flex items-center space-x-1 px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl border text-xs font-semibold transition-all ${
               hasActiveFilters || showFiltersDesktop
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                ? 'border-blue-600/30 bg-blue-50/80 text-blue-700'
+                : 'border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50'
             }`}
           >
             <Filter className="w-3.5 h-3.5" />
             <span>Filtros</span>
+            {hasActiveFilters && (
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+            )}
           </button>
 
           {/* Modo Seleção Múltipla Desktop */}
@@ -581,12 +590,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
               onClick={() => setIsMultiSelectMode(!isMultiSelectMode)}
               className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
                 isMultiSelectMode
-                  ? 'bg-blue-600 border-blue-600 text-white shadow-xs'
-                  : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-2xs'
+                  : 'bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50'
               }`}
             >
-              <CheckSquare className="w-4 h-4" />
-              <span>Seleção Múltipla</span>
+              <CheckSquare className="w-3.5 h-3.5" />
+              <span>Selecionar</span>
             </button>
           )}
 
@@ -594,9 +603,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
           {canEdit && (
             <button
               onClick={onGoToGenerator}
-              className="flex items-center space-x-1.5 px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs font-semibold border border-indigo-200 transition-colors"
+              className="flex items-center space-x-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-xl text-xs font-semibold border border-slate-200/80 transition-colors"
             >
-              <Layers className="w-4 h-4" />
+              <Layers className="w-3.5 h-3.5 text-slate-600" />
               <span>Gerar Período</span>
             </button>
           )}
@@ -605,10 +614,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
           {canEdit && (
             <button
               onClick={() => handleOpenNewAula()}
-              className="flex items-center space-x-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-blue-500/20 transition-all"
+              className="flex items-center space-x-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-2xs transition-all"
             >
               <Plus className="w-4 h-4" />
-              <span>Inserir Aula</span>
+              <span>Nova Aula</span>
             </button>
           )}
         </div>
@@ -616,7 +625,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
 
       {/* Barra de Filtros Desktop */}
       {showFiltersDesktop && (
-        <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 animate-in fade-in">
+        <div className="hidden md:block bg-white rounded-2xl border border-slate-200/85 shadow-2xs p-3.5 animate-in fade-in">
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mr-1">
               <Filter className="w-3.5 h-3.5 text-slate-400" />
@@ -626,7 +635,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             <select
               value={selectedTurmaId}
               onChange={e => setSelectedTurmaId(e.target.value)}
-              className="text-xs py-1.5 px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800"
+              className="text-xs py-1.5 px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium"
             >
               <option value="all">Todas as Turmas</option>
               {turmas.map(t => (
@@ -637,7 +646,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             <select
               value={selectedMateriaId}
               onChange={e => setSelectedMateriaId(e.target.value)}
-              className="text-xs py-1.5 px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800"
+              className="text-xs py-1.5 px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium"
             >
               <option value="all">Todas as Matérias</option>
               {materias.map(m => (
@@ -648,7 +657,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             <select
               value={selectedInstrutorId}
               onChange={e => setSelectedInstrutorId(e.target.value)}
-              className="text-xs py-1.5 px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800"
+              className="text-xs py-1.5 px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium"
             >
               <option value="all">Todos os Instrutores</option>
               {instrutores.map(i => (
@@ -659,19 +668,19 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             <select
               value={selectedStatus}
               onChange={e => setSelectedStatus(e.target.value)}
-              className="text-xs py-1.5 px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800"
+              className="text-xs py-1.5 px-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium"
             >
               <option value="all">Todos os Status</option>
-              <option value="agendada">📅 Agendadas</option>
-              <option value="realizada">✅ Realizadas</option>
-              <option value="prejudicada">⚠️ Prejudicadas</option>
-              <option value="remanejada">🔄 Remanejadas</option>
+              <option value="agendada">Agendadas</option>
+              <option value="realizada">Realizadas</option>
+              <option value="prejudicada">Prejudicadas</option>
+              <option value="remanejada">Remanejadas</option>
             </select>
 
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="text-xs text-rose-600 hover:text-rose-700 flex items-center space-x-1 py-1 px-2 rounded-lg hover:bg-rose-50 transition-colors ml-auto"
+                className="text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center space-x-1 py-1 px-2 rounded-lg hover:bg-rose-50 transition-colors ml-auto"
               >
                 <RotateCcw className="w-3 h-3" />
                 <span>Limpar Filtros</span>
@@ -717,15 +726,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       {/* =========================================================================
           BOTÕES FLUTUANTES (FAB) NO MOBILE (Lado Direito, acima do Menu Inferior)
          ========================================================================= */}
-      {/* Botão de Lixeira Vermelha - aparece ao lado do botão (+) quando itens estão selecionados */}
       {isMultiSelectMode && selectedAulaIds.size > 0 && (
         <button
           onClick={handleMobileDelete}
-          className="md:hidden fixed right-20 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-rose-600 to-red-600 text-white shadow-xl shadow-rose-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none animate-in zoom-in duration-200 fab-above-bottom-nav"
+          className="md:hidden fixed right-20 z-40 w-14 h-14 rounded-full bg-rose-600 hover:bg-rose-700 text-white shadow-xl shadow-rose-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border border-white/20 focus:outline-none animate-in zoom-in duration-200 fab-above-bottom-nav"
           title={`Excluir ${selectedAulaIds.size} aula(s)`}
           aria-label="Excluir selecionadas"
         >
-          <Trash2 className="w-6 h-6 stroke-[2.5]" />
+          <Trash2 className="w-6 h-6 stroke-[2.2]" />
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-rose-700 rounded-full text-[10px] font-black flex items-center justify-center shadow-sm border border-rose-200">
             {selectedAulaIds.size}
           </span>
@@ -736,11 +744,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       {canEdit && (
         <button
           onClick={() => handleOpenNewAula()}
-          className="md:hidden fixed right-4 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-600/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border-2 border-white/40 focus:outline-none fab-above-bottom-nav"
+          className="md:hidden fixed right-4 z-40 w-14 h-14 rounded-full bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-900/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all border border-white/15 focus:outline-none fab-above-bottom-nav"
           title="Inserir Nova Aula"
           aria-label="Inserir Nova Aula"
         >
-          <Plus className="w-7 h-7 stroke-[2.5]" />
+          <Plus className="w-7 h-7 stroke-[2.2]" />
         </button>
       )}
 
