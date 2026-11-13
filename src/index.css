@@ -41,7 +41,13 @@
 }
 
 :root {
-  --safe-top-offset: max(calc(env(safe-area-inset-top, 0px) + 14px), 24px);
+  --safe-top-offset: max(calc(env(safe-area-inset-top, 0px) + 4px), 12px);
+}
+
+input[type="date"] {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Safe Area Superior (iPhone / Android / PWA) abaixo da faixa esfumaçada do topo */

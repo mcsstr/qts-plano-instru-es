@@ -284,31 +284,31 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
   return (
     <div className="space-y-5 max-w-6xl mx-auto">
       {/* Formulário de Configuração do Lote */}
-      <form onSubmit={handleGeneratePreview} className="bg-white rounded-2xl border border-indigo-100 shadow-sm p-5 sm:p-6 space-y-6">
+      <form onSubmit={handleGeneratePreview} className="bg-white rounded-2xl border border-indigo-100 shadow-sm p-4 sm:p-6 space-y-5 overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-100">
           <h2 className="text-sm font-bold uppercase tracking-wider text-indigo-900 flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-xs">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
               <Calendar className="w-4 h-4" />
             </div>
             <span>1. Parâmetros do Período e Turma</span>
           </h2>
 
-          {/* Seletor de Modalidade: Rodízio por Dias da Semana vs. Mês + Dias por Vírgula (Sem Rodízio) */}
-          <div className="flex flex-wrap items-center bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1">
+          {/* Seletor Compacto de Modalidade */}
+          <div className="grid grid-cols-2 sm:inline-flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1">
             <button
               type="button"
               onClick={() => {
                 setModoGeracao('periodo_rodizio');
                 setPularDiasComAulaExistente(true);
               }}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 modoGeracao === 'periodo_rodizio'
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Por Dias da Semana (Rodízio)</span>
+              <Calendar className="w-3.5 h-3.5 shrink-0" />
+              <span>Dias da semana</span>
             </button>
 
             <button
@@ -317,32 +317,45 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
                 setModoGeracao('dias_mes_fixo');
                 setPularDiasComAulaExistente(false);
               }}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 modoGeracao === 'dias_mes_fixo'
                   ? 'bg-indigo-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <CalendarCheck2 className="w-3.5 h-3.5" />
-              <span>Por Mês e Dias por Vírgula (Mesmas Matérias)</span>
+              <CalendarCheck2 className="w-3.5 h-3.5 shrink-0" />
+              <span>Dias do mês</span>
             </button>
           </div>
+        </div>
+
+        {/* Explicação da modalidade escolhida */}
+        <div
+          className={`px-3.5 py-2.5 rounded-xl border text-xs font-medium ${
+            modoGeracao === 'periodo_rodizio'
+              ? 'bg-blue-50/70 border-blue-200/80 text-blue-900'
+              : 'bg-indigo-50/70 border-indigo-200/80 text-indigo-900'
+          }`}
+        >
+          {modoGeracao === 'periodo_rodizio'
+            ? 'Modo Rodízio: distribui e alterna as matérias selecionadas ao longo dos dias da semana dentro do período informado.'
+            : 'Modo Matérias Fixas: insere todas as matérias selecionadas em cada dia do mês informado, sem fazer rodízio.'}
         </div>
 
         {/* MODO 1: PERÍODO + DIAS DA SEMANA (RODÍZIO) */}
         {modoGeracao === 'periodo_rodizio' ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 min-w-0">
               {/* Turma */}
-              <div>
+              <div className="min-w-0">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
-                  <Users className="w-3.5 h-3.5 text-blue-600" />
+                  <Users className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                   Turma Beneficiária *
                 </label>
                 <select
                   value={turmaId}
                   onChange={e => setTurmaId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full min-w-0 max-w-full px-3 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
                   {turmas.map(t => (
                     <option key={t.id} value={t.id}>
@@ -353,7 +366,7 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
               </div>
 
               {/* Data Início */}
-              <div>
+              <div className="min-w-0">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Data de Início do Período *
                 </label>
@@ -362,12 +375,12 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
                   required
                   value={dataInicio}
                   onChange={e => setDataInicio(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full min-w-0 max-w-full block box-border px-3 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
 
               {/* Data Fim */}
-              <div>
+              <div className="min-w-0">
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Data de Término do Período *
                 </label>
@@ -376,7 +389,7 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
                   required
                   value={dataFim}
                   onChange={e => setDataFim(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full min-w-0 max-w-full block box-border px-3 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -511,26 +524,19 @@ export const BatchGeneratorView: React.FC<BatchGeneratorViewProps> = ({ onSucces
 
         {/* 2. Seleção de Matérias e Estratégia */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-blue-600" />
-                <span>
-                  {modoGeracao === 'dias_mes_fixo'
-                    ? `2. Matéria(s) Fixa(s) para Inserir nos Dias Escolhidos (${selectedMateriaIds.length} selecionada(s))`
-                    : `2. Matérias do Rodízio (${selectedMateriaIds.length} selecionadas)`}
-                </span>
-              </h2>
-              {modoGeracao === 'dias_mes_fixo' && (
-                <p className="text-[11px] text-indigo-700 font-medium mt-0.5">
-                  Nesta modalidade não há rodízio: a(s) mesma(s) matéria(s) marcada(s) abaixo será(ão) inserida(s) em todos os dias informados.
-                </p>
-              )}
-            </div>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2 min-w-0">
+              <BookOpen className="w-4 h-4 text-blue-600 shrink-0" />
+              <span className="truncate">
+                {modoGeracao === 'dias_mes_fixo'
+                  ? `2. Matérias Fixas (${selectedMateriaIds.length})`
+                  : `2. Matérias do Rodízio (${selectedMateriaIds.length})`}
+              </span>
+            </h2>
             <button
               type="button"
               onClick={handleSelectAllMaterias}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+              className="text-xs font-semibold text-blue-600 hover:text-blue-700 shrink-0 whitespace-nowrap"
             >
               {selectedMateriaIds.length === materias.length ? 'Desmarcar Todas' : 'Selecionar Todas'}
             </button>
