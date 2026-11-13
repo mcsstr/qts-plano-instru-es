@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Shield, Lock, X, ArrowRight, User } from 'lucide-react';
+import { Shield, X, ArrowRight, User, Eye, EyeOff } from 'lucide-react';
 
 export const LoginModal: React.FC = () => {
   const { isLoginModalOpen, closeLoginModal, login } = useAuth();
 
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false);
 
   if (!isLoginModalOpen) return null;
@@ -74,7 +75,7 @@ export const LoginModal: React.FC = () => {
               </label>
               <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   value={senha}
                   onChange={e => {
@@ -82,11 +83,19 @@ export const LoginModal: React.FC = () => {
                     if (error) setError(false);
                   }}
                   placeholder="Digite sua senha"
-                  className={`w-full px-4 py-2.5 rounded-xl border ${
+                  className={`w-full pl-4 pr-11 py-2.5 rounded-xl border ${
                     error ? 'border-red-500 focus:ring-red-400' : 'border-slate-300 focus:ring-blue-500'
                   } focus:outline-none focus:ring-2 text-slate-900 placeholder-slate-400 text-base sm:text-sm`}
                 />
-                <Lock className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(prev => !prev)}
+                  title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
               {error && (
                 <p className="text-xs text-red-600 mt-1.5 font-medium">

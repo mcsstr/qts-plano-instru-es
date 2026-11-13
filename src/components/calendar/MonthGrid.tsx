@@ -168,22 +168,6 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                   ))}
                 </div>
 
-                {/* Botão para abrir o Modal com todas as aulas quando houver 2 ou mais no mesmo dia */}
-                {hasMultiple && (
-                  <div className="mt-1">
-                    <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        setModalDayStr(dateStr);
-                      }}
-                      className="w-full py-1 px-2 rounded-md bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors leading-none border border-slate-200/80"
-                    >
-                      <Maximize2 className="w-2.5 h-2.5 text-slate-500 shrink-0" />
-                      <span>+{hiddenCount} {hiddenCount === 1 ? 'aula' : 'aulas'}</span>
-                    </button>
-                  </div>
-                )}
-
                 {/* Área clicável limpa para dias vazios */}
                 {dayAulas.length === 0 && isCurrentMonth && !isDayWeekend && (
                   <div

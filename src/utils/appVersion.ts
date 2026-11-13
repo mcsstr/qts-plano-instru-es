@@ -4,10 +4,18 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.3.1';
+export const CURRENT_APP_VERSION = 'v2.3.2';
 export const CURRENT_APP_DATE = '12/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.3.2',
+    date: '12/11/2026',
+    highlights: [
+      'Remoção do botão inferior duplicado nos dias com múltiplas aulas (mantendo apenas o indicador superior ao lado da data)',
+      'Botão de visualizar/ocultar senha (olho) na tela de Login para facilitar a conferência'
+    ]
+  },
   {
     version: 'v2.3.1',
     date: '12/11/2026',
