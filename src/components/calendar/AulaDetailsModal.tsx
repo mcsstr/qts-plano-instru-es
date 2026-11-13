@@ -89,9 +89,8 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
     });
 
     showToast({
-      type: 'info',
-      title: 'Prejuízo Desmarcado!',
-      message: 'A aula voltou para o status normal (Agendada).'
+      type: 'success',
+      title: 'Atualizado com sucesso'
     });
 
     onClose();

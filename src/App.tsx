@@ -8,12 +8,11 @@ import { CalendarView } from './components/calendar/CalendarView';
 import { BatchGeneratorView } from './components/generator/BatchGeneratorView';
 import { MetricsDashboard } from './components/metrics/MetricsDashboard';
 import { RegistersManager } from './components/registers/RegistersManager';
-import { GoogleSheetsSettingsModal } from './components/settings/GoogleSheetsSettingsModal';
 import { Toast } from './components/common/Toast';
+import { CURRENT_APP_VERSION, CURRENT_APP_DATE } from './utils/appVersion';
 
 const AppContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<'calendario' | 'gerador' | 'metricas' | 'cadastros'>('calendario');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { toast, closeToast, themePalette } = useApp();
 
   // Impede qualquer pop-up automático do navegador pedindo para instalar PWA
@@ -96,18 +95,17 @@ const AppContent: React.FC = () => {
 
   return (
     <div className={`min-h-screen ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
-      {/* Toast Flutuante de Notificação */}
+      {/* Toast Compacto de Status */}
       <Toast toast={toast} onClose={closeToast} />
 
-      {/* Header Sticky (não desce ao puxar para atualizar, mas permite o teclado subir nos modais) */}
+      {/* Header Sticky */}
       <Header
         currentTab={currentTab}
         setCurrentTab={(tab: any) => setCurrentTab(tab)}
-        openSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Conteúdo Principal */}
-      <main className="grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 pb-24 md:pb-6">
+      <main className="grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 pb-24 md:pb-4">
         {currentTab === 'calendario' && (
           <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
         )}
@@ -125,19 +123,19 @@ const AppContent: React.FC = () => {
         )}
       </main>
 
+      {/* Rodapé Discreto com a Versão do App (Exclusivo Desktop) */}
+      <footer className="hidden md:flex max-w-7xl w-full mx-auto px-6 pb-3 items-center justify-end text-[11px] text-slate-500">
+        <span>QTM • Versão {CURRENT_APP_VERSION} ({CURRENT_APP_DATE})</span>
+      </footer>
+
       {/* Navegação Inferior para Telas Mobile */}
       <BottomNav
         currentTab={currentTab}
         setCurrentTab={(tab: any) => setCurrentTab(tab)}
-        openSettings={() => setIsSettingsOpen(true)}
       />
 
-      {/* Modais Globais */}
+      {/* Modal de Login */}
       <LoginModal />
-      <GoogleSheetsSettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-      />
     </div>
   );
 };

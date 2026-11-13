@@ -8,33 +8,44 @@ import {
   Layers,
   BarChart3,
   Users,
-  Settings,
   LogIn,
   LogOut,
-  RefreshCw,
   ShieldCheck,
   Palette,
   Check,
   Menu,
   X,
   Sparkles,
-  History
+  History,
+  ChevronRight,
+  ChevronDown
 } from 'lucide-react';
 
 interface HeaderProps {
   currentTab: string;
   setCurrentTab: (tab: string) => void;
-  openSettings: () => void;
-  onOpenNewAula?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openSettings }) => {
+export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => {
   const { user, canEdit, isAdmin, openLoginModal, logout } = useAuth();
-  const { syncSheets, isSyncing, syncError, sheetsConfig, theme, themePalette, setTheme } = useApp();
+  const { theme, themePalette, setTheme } = useApp();
+
+  // Estados do Menu Sanduíche (Mobile) e Sub-menu de Tema
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
+  const [isMobileThemeSubmenuOpen, setIsMobileThemeSubmenuOpen] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
 
+  // Estado do dropdown de Tema no Desktop
+  const [isDesktopThemeOpen, setIsDesktopThemeOpen] = useState(false);
+
   const isDarkHeader = theme !== 'clean-slate';
+  const currentThemeObj = THEME_LIST.find(t => t.id === theme) || THEME_LIST[0];
+
+  const handleCloseHamburger = () => {
+    setIsHamburgerOpen(false);
+    setIsMobileThemeSubmenuOpen(false);
+    setShowVersionHistory(false);
+  };
 
   return (
     <header
@@ -47,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo & Title */}
+          {/* Logo & Title (Sem versão ao lado do logotipo) */}
           <div
             className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer"
             onClick={() => setCurrentTab('calendario')}
@@ -57,20 +68,9 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
               alt="QTM"
               className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-md shadow-black/20 shrink-0"
             />
-            <div className="flex items-baseline space-x-2">
-              <span className={`font-extrabold text-base sm:text-lg ${themePalette.headerText} tracking-tight`}>
-                QTM
-              </span>
-              <span
-                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                  isDarkHeader
-                    ? 'bg-white/10 text-slate-300 border border-white/10'
-                    : 'bg-slate-100 text-slate-600 border border-slate-200'
-                }`}
-              >
-                {CURRENT_APP_VERSION}
-              </span>
-            </div>
+            <span className={`font-extrabold text-base sm:text-lg ${themePalette.headerText} tracking-tight`}>
+              QTM
+            </span>
           </div>
 
           {/* Desktop Navigation */}
@@ -124,53 +124,130 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
             </button>
           </nav>
 
-          {/* Right Action Area: Botão Sincronizar + Entrar (se deslogado) + Menu Sanduíche */}
-          <div className="flex items-center space-x-2">
-            {/* Botão Sincronizar (Apenas Ícone + Ponto Verde de Status) */}
-            {sheetsConfig.scriptUrl && (
-              <button
-                onClick={() => syncSheets()}
-                disabled={isSyncing}
-                title={syncError ? `Erro: ${syncError}` : 'Sincronizar com o Appwrite Cloud agora'}
-                className={`flex items-center space-x-1.5 px-2.5 py-2 text-xs rounded-xl border transition-colors shadow-2xs ${
-                  isDarkHeader
-                    ? 'border-white/15 bg-white/10 text-slate-200 hover:bg-white/20'
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50 bg-white'
-                }`}
-              >
-                <RefreshCw
-                  className={`w-4 h-4 ${
-                    isSyncing
-                      ? 'animate-spin text-amber-400'
-                      : isDarkHeader
-                      ? 'text-slate-200'
-                      : 'text-slate-600'
+          {/* =================================================================
+              ÁREA DIREITA DESKTOP (Tema para Admin + Entrar/Sair)
+             ================================================================= */}
+          <div className="hidden md:flex items-center space-x-2">
+            {isAdmin && (
+              <div className="relative">
+                <button
+                  onClick={() => setIsDesktopThemeOpen(!isDesktopThemeOpen)}
+                  title="Escolher Tema Visual (Admin)"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors ${
+                    isDarkHeader
+                      ? 'border-white/15 bg-white/10 text-amber-300 hover:bg-white/20'
+                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
                   }`}
-                />
-                {syncError ? (
-                  <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-                ) : (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                >
+                  <Palette className="w-4 h-4" />
+                  <span>Tema</span>
+                </button>
+
+                {isDesktopThemeOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsDesktopThemeOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
+                      <div className="pb-2 mb-2 border-b border-slate-100">
+                        <span className="text-xs font-extrabold text-slate-900 block">Tema Visual da Unidade</span>
+                        <span className="text-[10px] text-slate-500">Exclusivo Administrador</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {THEME_LIST.map(t => {
+                          const active = theme === t.id;
+                          return (
+                            <button
+                              key={t.id}
+                              onClick={() => {
+                                setTheme(t.id);
+                                setIsDesktopThemeOpen(false);
+                              }}
+                              className={`w-full flex items-center justify-between p-2 rounded-xl border text-left transition-all ${
+                                active
+                                  ? 'border-blue-600 bg-blue-50/70 shadow-2xs'
+                                  : 'border-slate-200/80 hover:bg-slate-50'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-2.5">
+                                <div className="flex -space-x-1 shrink-0">
+                                  {t.previewColors.map((hex, i) => (
+                                    <span
+                                      key={i}
+                                      className="w-4 h-4 rounded-full border border-white shadow-2xs"
+                                      style={{ backgroundColor: hex }}
+                                    />
+                                  ))}
+                                </div>
+                                <div>
+                                  <span className="text-xs font-bold text-slate-900 block leading-tight">
+                                    {t.name}
+                                  </span>
+                                  <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
+                                    {t.subtitle}
+                                  </span>
+                                </div>
+                              </div>
+                              {active && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
                 )}
-              </button>
+              </div>
             )}
 
-            {/* Se não estiver logado, mantém acesso rápido ao botão Entrar */}
+            {canEdit ? (
+              <div className="flex items-center space-x-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-medium">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-semibold">{user.nome}</span>
+                <button
+                  onClick={logout}
+                  title="Sair da conta"
+                  className="text-rose-700 hover:text-rose-950 px-1.5 py-0.5 rounded-md hover:bg-rose-100/80 flex items-center gap-1 font-bold transition-colors"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sair</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={openLoginModal}
+                className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold shadow-xs transition-colors"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Entrar</span>
+              </button>
+            )}
+          </div>
+
+          {/* =================================================================
+              ÁREA DIREITA MOBILE (Menu Sanduíche exclusivo para Mobile)
+             ================================================================= */}
+          <div className="flex md:hidden items-center space-x-2">
             {!canEdit && (
               <button
                 onClick={openLoginModal}
-                className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-semibold shadow-xs transition-colors shrink-0"
+                className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xs transition-colors shrink-0"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Entrar</span>
               </button>
             )}
 
-            {/* Menu Sanduíche Superior (Contém Tema, Configurações, Sair e Versões do App) */}
             <div className="relative">
               <button
-                onClick={() => setIsHamburgerOpen(!isHamburgerOpen)}
-                title="Abrir Menu de Opções, Tema e Versão"
+                onClick={() => {
+                  if (isHamburgerOpen) {
+                    handleCloseHamburger();
+                  } else {
+                    setIsHamburgerOpen(true);
+                  }
+                }}
+                title="Abrir Menu"
                 className={`relative p-2 rounded-xl border transition-colors flex items-center justify-center ${
                   isDarkHeader
                     ? 'border-white/15 bg-white/10 text-white hover:bg-white/20'
@@ -191,25 +268,25 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                   {/* Backdrop */}
                   <div
                     className="fixed inset-0 z-40"
-                    onClick={() => setIsHamburgerOpen(false)}
+                    onClick={handleCloseHamburger}
                   />
 
-                  {/* Painel do Menu Sanduíche */}
-                  <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 text-slate-800">
-                    {/* 1. Cabeçalho da Conta / Status do Gestor */}
+                  {/* Painel do Menu Sanduíche Mobile */}
+                  <div className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150 text-slate-800">
+                    {/* 1. Status da Conta e Botão Sair / Entrar */}
                     <div className="p-3.5 bg-slate-50 border-b border-slate-200/80">
                       {canEdit ? (
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center space-x-2.5 min-w-0">
-                            <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200">
-                              <ShieldCheck className="w-5 h-5" />
+                            <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200">
+                              <ShieldCheck className="w-4 h-4" />
                             </div>
                             <div className="min-w-0">
                               <span className="text-xs font-extrabold text-slate-900 block truncate">
                                 {user.nome}
                               </span>
                               <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-md inline-block mt-0.5">
-                                {isAdmin ? 'Administrador Geral' : 'Gestor Autenticado'}
+                                {isAdmin ? 'Admin' : 'Gestor'}
                               </span>
                             </div>
                           </div>
@@ -217,10 +294,9 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                           <button
                             onClick={() => {
                               logout();
-                              setIsHamburgerOpen(false);
+                              handleCloseHamburger();
                             }}
                             className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-colors shrink-0"
-                            title="Sair da conta"
                           >
                             <LogOut className="w-3.5 h-3.5" />
                             <span>Sair</span>
@@ -229,12 +305,12 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                       ) : (
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-xs font-bold text-slate-800 block">Modo Consulta Pública</span>
-                            <span className="text-[11px] text-slate-500">Entre para editar o cronograma</span>
+                            <span className="text-xs font-bold text-slate-800 block">Modo Consulta</span>
+                            <span className="text-[10px] text-slate-500">Entre para gerenciar aulas</span>
                           </div>
                           <button
                             onClick={() => {
-                              setIsHamburgerOpen(false);
+                              handleCloseHamburger();
                               openLoginModal();
                             }}
                             className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-colors"
@@ -246,130 +322,120 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, openS
                       )}
                     </div>
 
-                    <div className="p-3 space-y-3 max-h-[75vh] overflow-y-auto">
-                      {/* 2. Seletor de Tema (Exclusivo Admin) */}
+                    <div className="p-2.5 space-y-2 max-h-[70vh] overflow-y-auto">
+                      {/* 2. Sub-menu Tema (Somente Admin — fechado por padrão, abre ao clicar) */}
                       {isAdmin && (
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between px-1">
-                            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                              <Palette className="w-3.5 h-3.5 text-amber-500" />
-                              Tema Visual da Unidade
-                            </span>
-                            <span className="text-[10px] text-blue-600 font-bold">Admin</span>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            {THEME_LIST.map(t => {
-                              const active = theme === t.id;
-                              return (
-                                <button
-                                  key={t.id}
-                                  onClick={() => {
-                                    setTheme(t.id);
-                                  }}
-                                  className={`w-full flex items-center justify-between p-2 rounded-xl border text-left transition-all ${
-                                    active
-                                      ? 'border-blue-600 bg-blue-50/70 shadow-2xs'
-                                      : 'border-slate-200/80 hover:bg-slate-50'
-                                  }`}
-                                >
-                                  <div className="flex items-center space-x-2.5">
-                                    <div className="flex -space-x-1 shrink-0">
-                                      {t.previewColors.map((hex, i) => (
-                                        <span
-                                          key={i}
-                                          className="w-4 h-4 rounded-full border border-white shadow-2xs"
-                                          style={{ backgroundColor: hex }}
-                                        />
-                                      ))}
-                                    </div>
-                                    <div>
-                                      <span className="text-xs font-bold text-slate-900 block leading-tight">
-                                        {t.name}
-                                      </span>
-                                      <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
-                                        {t.subtitle}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  {active && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 3. Configurações da Planilha (Exclusivo Admin) */}
-                      {isAdmin && (
-                        <div className="pt-1 border-t border-slate-100">
+                        <div className="rounded-xl border border-slate-200/80 overflow-hidden">
                           <button
-                            onClick={() => {
-                              setIsHamburgerOpen(false);
-                              openSettings();
-                            }}
-                            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-700 transition-colors"
+                            type="button"
+                            onClick={() => setIsMobileThemeSubmenuOpen(!isMobileThemeSubmenuOpen)}
+                            className="w-full flex items-center justify-between p-2.5 bg-white hover:bg-slate-50 text-left transition-colors"
                           >
-                            <span className="flex items-center gap-2">
-                              <Settings className="w-4 h-4 text-blue-600" />
-                              <span>Configurações & Banco Appwrite</span>
-                            </span>
-                            <span className="text-[10px] text-slate-400">Abrir</span>
-                          </button>
-                        </div>
-                      )}
-
-                      {/* 4. Versão do App e Notas de Atualização */}
-                      <div className="pt-2 border-t border-slate-100">
-                        <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-200/80">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                                <Sparkles className="w-4 h-4" />
+                            <div className="flex items-center space-x-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center shrink-0">
+                                <Palette className="w-4 h-4" />
                               </div>
                               <div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-xs font-extrabold text-slate-900">
-                                    Versão {CURRENT_APP_VERSION}
-                                  </span>
-                                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full">
-                                    Atualizado
-                                  </span>
-                                </div>
-                                <span className="text-[10px] text-slate-500 block">
-                                  Build: {CURRENT_APP_DATE}
+                                <span className="text-xs font-bold text-slate-900 block leading-tight">
+                                  Tema
+                                </span>
+                                <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
+                                  Atual: {currentThemeObj.name}
                                 </span>
                               </div>
                             </div>
+                            {isMobileThemeSubmenuOpen ? (
+                              <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+                            )}
+                          </button>
 
-                            <button
-                              type="button"
-                              onClick={() => setShowVersionHistory(!showVersionHistory)}
-                              className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-                            >
-                              <History className="w-3.5 h-3.5" />
-                              <span>{showVersionHistory ? 'Ocultar' : 'Notas'}</span>
-                            </button>
-                          </div>
-
-                          {showVersionHistory && (
-                            <div className="mt-2.5 pt-2.5 border-t border-slate-200/80 space-y-2.5 max-h-44 overflow-y-auto pr-1">
-                              {APP_VERSION_HISTORY.map(entry => (
-                                <div key={entry.version} className="text-[11px]">
-                                  <div className="flex items-center justify-between font-bold text-slate-800 mb-0.5">
-                                    <span>{entry.version}</span>
-                                    <span className="text-[10px] text-slate-400 font-normal">{entry.date}</span>
-                                  </div>
-                                  <ul className="list-disc list-inside text-[10px] text-slate-600 space-y-0.5">
-                                    {entry.highlights.map((h, idx) => (
-                                      <li key={idx} className="leading-snug">{h}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              ))}
+                          {isMobileThemeSubmenuOpen && (
+                            <div className="p-2 bg-slate-50 border-t border-slate-200/80 space-y-1.5 animate-in fade-in duration-150">
+                              {THEME_LIST.map(t => {
+                                const active = theme === t.id;
+                                return (
+                                  <button
+                                    key={t.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setTheme(t.id);
+                                      setIsMobileThemeSubmenuOpen(false);
+                                    }}
+                                    className={`w-full flex items-center justify-between p-2 rounded-xl border text-left transition-all ${
+                                      active
+                                        ? 'border-blue-600 bg-blue-50/90 shadow-2xs'
+                                        : 'border-slate-200/80 bg-white hover:bg-slate-100'
+                                    }`}
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <div className="flex -space-x-1 shrink-0">
+                                        {t.previewColors.map((hex, i) => (
+                                          <span
+                                            key={i}
+                                            className="w-3.5 h-3.5 rounded-full border border-white shadow-2xs"
+                                            style={{ backgroundColor: hex }}
+                                          />
+                                        ))}
+                                      </div>
+                                      <span className="text-xs font-bold text-slate-900 leading-tight">
+                                        {t.name}
+                                      </span>
+                                    </div>
+                                    {active && <Check className="w-4 h-4 text-blue-600 shrink-0" />}
+                                  </button>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
+                      )}
+
+                      {/* 3. Versão do App (No menu sanduíche mobile) */}
+                      <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-200/80">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                              <Sparkles className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <span className="text-xs font-extrabold text-slate-900 block leading-tight">
+                                Versão {CURRENT_APP_VERSION}
+                              </span>
+                              <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
+                                Atualizado em {CURRENT_APP_DATE}
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowVersionHistory(!showVersionHistory)}
+                            className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                          >
+                            <History className="w-3.5 h-3.5" />
+                            <span>{showVersionHistory ? 'Ocultar' : 'Notas'}</span>
+                          </button>
+                        </div>
+
+                        {showVersionHistory && (
+                          <div className="mt-2.5 pt-2.5 border-t border-slate-200/80 space-y-2 max-h-40 overflow-y-auto pr-1">
+                            {APP_VERSION_HISTORY.map(entry => (
+                              <div key={entry.version} className="text-[11px]">
+                                <div className="flex items-center justify-between font-bold text-slate-800 mb-0.5">
+                                  <span>{entry.version}</span>
+                                  <span className="text-[10px] text-slate-400 font-normal">{entry.date}</span>
+                                </div>
+                                <ul className="list-disc list-inside text-[10px] text-slate-600 space-y-0.5">
+                                  {entry.highlights.map((h, idx) => (
+                                    <li key={idx} className="leading-snug">{h}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

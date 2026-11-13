@@ -72,21 +72,33 @@
   bottom: 4.5rem;
 }
 
-/* Quando o teclado virtual é ativado no celular, os modais acompanham o espaço visível restante */
+/* Garante que nenhum modal invada a safe area superior no celular e acompanhe o teclado quando ativado */
 @media (max-width: 767px) {
+  .fixed.inset-0.z-50 {
+    padding-top: calc(var(--safe-top-offset) + 3.75rem) !important;
+    padding-bottom: 1.25rem !important;
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+  }
+
+  .fixed.inset-0.z-50 > div:not(.fixed) {
+    max-height: calc(100dvh - var(--safe-top-offset) - 5rem) !important;
+    overflow-y: auto !important;
+  }
+
   body.keyboard-open .fixed.inset-0.z-50 {
     height: var(--vvh, 100dvh) !important;
     max-height: var(--vvh, 100dvh) !important;
     top: var(--vv-top, 0px) !important;
     bottom: auto !important;
     align-items: flex-start !important;
-    padding-top: 0.5rem !important;
+    padding-top: calc(var(--safe-top-offset) + 0.75rem) !important;
     padding-bottom: 0.5rem !important;
     overflow-y: auto !important;
   }
 
   body.keyboard-open .fixed.inset-0.z-50 > div:not(.fixed) {
-    max-height: calc(var(--vvh, 100dvh) - 1rem) !important;
+    max-height: calc(var(--vvh, 100dvh) - var(--safe-top-offset) - 1.25rem) !important;
     overflow-y: auto !important;
   }
 }

@@ -186,27 +186,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSyncError(null);
       storageService
         .pushToSheets(stateRef.current)
-        .then(() => {
-          const timeStr = new Date().toLocaleTimeString('pt-BR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          });
-          showToast({
-            type: 'success',
-            title: 'Salvo no Appwrite!',
-            message: `Sincronizado na nuvem (QTM-FT) às ${timeStr}.`,
-            duration: 2500
-          });
-        })
         .catch(err => {
           console.error('Auto-sync push Appwrite falhou:', err);
           setSyncError(err?.message || 'Erro ao salvar no Appwrite');
-          showToast({
-            type: 'error',
-            title: 'Erro ao salvar na nuvem',
-            message: 'Salvo no dispositivo; tentaremos sincronizar novamente em breve.'
-          });
         })
         .finally(() => {
           setIsSyncing(false);
@@ -239,7 +221,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [state.sheetsConfig.autoSync]);
 
-  // Sincronizar (Buscar dados do Appwrite para este dispositivo)
+  // Sincronizar silenciosamente com o Appwrite
   const syncSheets = async (_customUrl?: string) => {
     const currentState = stateRef.current;
     setIsSyncing(true);
@@ -248,25 +230,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const updated = await storageService.syncWithSheets(currentState);
       skipAutoPush.current = true;
       setState(updated);
-      const timeStr = new Date().toLocaleTimeString('pt-BR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-      showToast({
-        type: 'success',
-        title: 'Appwrite Sincronizado!',
-        message: `${updated.aulas.length} aulas, ${updated.materias.length} matérias e ${updated.gestores.length} gestores carregados às ${timeStr}.`,
-        duration: 2800
-      });
     } catch (err: any) {
       const msg = err?.message || 'Falha ao sincronizar com o Appwrite';
       setSyncError(msg);
-      showToast({
-        type: 'error',
-        title: 'Erro na Sincronização',
-        message: msg
-      });
     } finally {
       setIsSyncing(false);
     }
@@ -279,24 +245,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSyncError(null);
     try {
       await storageService.pushToSheets(currentState);
-      const timeStr = new Date().toLocaleTimeString('pt-BR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
       showToast({
         type: 'success',
-        title: 'Dados Enviados para o Appwrite!',
-        message: `Todos os registros foram gravados no banco QTM-FT às ${timeStr}.`
+        title: 'Atualizado com sucesso'
       });
     } catch (err: any) {
-      const msg = err?.message || 'Falha ao enviar dados para o Appwrite';
+      const msg = err?.message || 'Erro ao atualizar';
       setSyncError(msg);
-      showToast({
-        type: 'error',
-        title: 'Erro ao Enviar',
-        message: msg
-      });
     } finally {
       setIsSyncing(false);
     }
@@ -325,9 +280,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }));
     showToast({
-      type: 'info',
-      title: `Tema: ${THEMES[newTheme].name}`,
-      message: THEMES[newTheme].subtitle
+      type: 'success',
+      title: 'Atualizado com sucesso'
     });
   };
 
@@ -372,6 +326,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       aulas: [newAula, ...prev.aulas]
     }));
 
+    showToast({ type: 'success', title: 'Salvo com sucesso' });
     return newAula;
   };
 
@@ -380,6 +335,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       aulas: prev.aulas.map(a => (a.id === aula.id ? aula : a))
     }));
+    showToast({ type: 'success', title: 'Alterado com sucesso' });
   };
 
   const deleteAula = (id: string) => {
@@ -388,6 +344,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       aulas: prev.aulas.filter(a => a.id !== id)
     }));
+    showToast({ type: 'success', title: 'Excluído com sucesso' });
   };
 
   const deleteBulkAulas = (ids: string[]) => {
@@ -397,6 +354,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       aulas: prev.aulas.filter(a => !idSet.has(a.id))
     }));
+    showToast({ type: 'success', title: 'Excluído com sucesso' });
   };
 
   const remanejarAula = (
@@ -441,6 +399,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ]
     }));
 
+    showToast({ type: 'success', title: 'Atualizado com sucesso' });
     return novaAula;
   };
 
@@ -457,6 +416,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
       })
     }));
+    showToast({ type: 'success', title: 'Atualizado com sucesso' });
   };
 
   const batchInsertAulas = (generatedAulas: GeneratedAulaPreview[]) => {
@@ -477,6 +437,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       aulas: [...newAulas, ...prev.aulas]
     }));
+    showToast({ type: 'success', title: 'Salvo com sucesso' });
   };
 
   // TURMAS CRUD
@@ -489,6 +450,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       turmas: [...prev.turmas, newTurma]
     }));
+    showToast({ type: 'success', title: 'Salvo com sucesso' });
     return newTurma;
   };
 
@@ -497,6 +459,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       turmas: prev.turmas.map(t => (t.id === turma.id ? turma : t))
     }));
+    showToast({ type: 'success', title: 'Alterado com sucesso' });
   };
 
   const deleteTurma = (id: string) => {
@@ -505,6 +468,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       turmas: prev.turmas.filter(t => t.id !== id)
     }));
+    showToast({ type: 'success', title: 'Excluído com sucesso' });
   };
 
   // MATERIAS CRUD
@@ -517,6 +481,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       materias: [...prev.materias, newMateria]
     }));
+    showToast({ type: 'success', title: 'Salvo com sucesso' });
     return newMateria;
   };
 
@@ -525,6 +490,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       materias: prev.materias.map(m => (m.id === materia.id ? materia : m))
     }));
+    showToast({ type: 'success', title: 'Alterado com sucesso' });
   };
 
   const deleteMateria = (id: string) => {
@@ -533,6 +499,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       materias: prev.materias.filter(m => m.id !== id)
     }));
+    showToast({ type: 'success', title: 'Excluído com sucesso' });
   };
 
   // INSTRUTORES CRUD
@@ -545,6 +512,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       instrutores: [...prev.instrutores, newInstrutor]
     }));
+    showToast({ type: 'success', title: 'Salvo com sucesso' });
     return newInstrutor;
   };
 
@@ -553,6 +521,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       instrutores: prev.instrutores.map(i => (i.id === instrutor.id ? instrutor : i))
     }));
+    showToast({ type: 'success', title: 'Alterado com sucesso' });
   };
 
   const deleteInstrutor = (id: string) => {
@@ -561,6 +530,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       instrutores: prev.instrutores.filter(i => i.id !== id)
     }));
+    showToast({ type: 'success', title: 'Excluído com sucesso' });
   };
 
   // GESTORES CRUD
@@ -573,6 +543,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       gestores: [...prev.gestores, newGestor]
     }));
+    showToast({ type: 'success', title: 'Salvo com sucesso' });
     return newGestor;
   };
 
@@ -581,6 +552,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       gestores: prev.gestores.map(g => (g.id === gestor.id ? gestor : g))
     }));
+    showToast({ type: 'success', title: 'Alterado com sucesso' });
   };
 
   const deleteGestor = (id: string) => {
@@ -589,6 +561,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       gestores: prev.gestores.filter(g => g.id !== id)
     }));
+    showToast({ type: 'success', title: 'Excluído com sucesso' });
   };
 
   const validateGestorLogin = (loginOrNome: string, senhaInput: string): Gestor | null => {
