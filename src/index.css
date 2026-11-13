@@ -45,9 +45,13 @@
 }
 
 input[type="date"] {
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 /* Safe Area Superior (iPhone / Android / PWA) abaixo da faixa esfumaçada do topo */

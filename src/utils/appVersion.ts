@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.3.3';
+export const CURRENT_APP_VERSION = 'v2.3.4';
 export const CURRENT_APP_DATE = '13/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.3.4',
+    date: '13/11/2026',
+    highlights: [
+      'Correção definitiva da largura dos campos de data (Início/Término) no Gerador de Período para iOS/Mobile'
+    ]
+  },
   {
     version: 'v2.3.3',
     date: '13/11/2026',
