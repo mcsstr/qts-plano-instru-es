@@ -240,32 +240,14 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-11 sm:h-15">
-          {/* Logo & Title */}
+          {/* Título (Sem logotipo no cabeçalho) */}
           <div
-            className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer group min-w-0"
+            className="flex items-center cursor-pointer min-w-0"
             onClick={() => setCurrentTab('calendario')}
           >
-            <img
-              src="/logo-glass.png"
-              alt="Quadro de Instruções FT"
-              className={`w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 rounded-[10px] shrink-0 border transition-transform group-hover:scale-105 ${
-                isDarkHeader ? 'border-[#2d3a52]' : 'border-slate-300'
-              }`}
-            />
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className={`font-extrabold text-sm sm:text-base ${themePalette.headerText} tracking-tight leading-tight truncate`}>
-                Quadro de Instruções
-              </span>
-              <span
-                className={`px-1.5 py-0.5 rounded-md text-[11px] sm:text-xs font-black tracking-wider leading-none border shrink-0 ${
-                  isDarkHeader
-                    ? 'bg-[#162844] text-[#38bdf8] border-[#26436e]'
-                    : 'bg-sky-50 text-sky-700 border-sky-200'
-                }`}
-              >
-                FT
-              </span>
-            </div>
+            <span className={`font-extrabold text-sm sm:text-base ${themePalette.headerText} tracking-tight leading-tight truncate`}>
+              Quadro de Instruções FT
+            </span>
           </div>
 
           {/* Desktop Navigation */}

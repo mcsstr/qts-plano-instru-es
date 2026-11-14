@@ -4,10 +4,18 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.5.0';
+export const CURRENT_APP_VERSION = 'v2.5.1';
 export const CURRENT_APP_DATE = '14/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.5.1',
+    date: '14/11/2026',
+    highlights: [
+      'Cabeçalho limpo apenas com o texto contínuo "Quadro de Instruções FT" (sem logotipo no topo do site)',
+      'Novo ícone exclusivo para salvar o PWA seguindo o padrão ortográfico em camadas de vidro fosco dos apps nativos do iOS 27 (Icon Composer)'
+    ]
+  },
   {
     version: 'v2.5.0',
     date: '14/11/2026',
