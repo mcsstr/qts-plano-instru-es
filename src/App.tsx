@@ -209,36 +209,62 @@ const AppContent: React.FC = () => {
   }, []);
 
   return (
-    <div className={`h-dvh max-h-dvh overflow-hidden ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
+    <div className={`min-h-screen ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
+      {/* Faixa sólida fixa no topo (truque estrutural WebKit iOS 26 para desativar o blur automático da barra de status) */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '10px',
+          backgroundColor: themePalette.headerHex,
+          zIndex: 45,
+          pointerEvents: 'none'
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 'env(safe-area-inset-top, 0px)',
+          backgroundColor: themePalette.headerHex,
+          zIndex: 44,
+          pointerEvents: 'none'
+        }}
+      />
+
       {/* Toast Compacto de Status */}
       <Toast toast={toast} onClose={closeToast} />
 
-      {/* Header Fixo no Topo do App Shell (fora do container de rolagem para evitar esfumaçado do iOS) */}
+      {/* Header Sticky */}
       <Header
         currentTab={currentTab}
         setCurrentTab={(tab: any) => setCurrentTab(tab)}
       />
 
-      {/* Container de Rolagem Dedicado */}
-      <div id="app-scroll-container" className="grow w-full overflow-y-auto overscroll-y-contain">
-        <main className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 pb-24 md:pb-4">
-          {currentTab === 'calendario' && (
-            <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
-          )}
+      {/* Conteúdo Principal */}
+      <main className="grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 pb-24 md:pb-4">
+        {currentTab === 'calendario' && (
+          <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
+        )}
 
-          {currentTab === 'gerador' && (
-            <BatchGeneratorView onSuccess={() => setCurrentTab('calendario')} />
-          )}
+        {currentTab === 'gerador' && (
+          <BatchGeneratorView onSuccess={() => setCurrentTab('calendario')} />
+        )}
 
-          {currentTab === 'metricas' && (
-            <MetricsDashboard />
-          )}
+        {currentTab === 'metricas' && (
+          <MetricsDashboard />
+        )}
 
-          {currentTab === 'cadastros' && (
-            <RegistersManager />
-          )}
-        </main>
-      </div>
+        {currentTab === 'cadastros' && (
+          <RegistersManager />
+        )}
+      </main>
 
       {/* Navegação Inferior para Telas Mobile */}
       <BottomNav

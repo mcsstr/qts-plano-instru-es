@@ -234,13 +234,12 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
     <header
       onTouchMove={e => e.preventDefault()}
       style={{
-        backgroundColor: themePalette.headerHex,
-        boxShadow: `0 -120px 0 0 ${themePalette.headerHex}`
+        backgroundColor: themePalette.headerHex
       }}
-      className={`relative shrink-0 z-30 ${themePalette.headerBg} ${themePalette.headerBorderTop} safe-top-header md:pt-0 transition-colors duration-200 select-none touch-none`}
+      className={`sticky top-0 z-30 ${themePalette.headerBg} ${themePalette.headerBorderTop} safe-top-header md:pt-0 transition-colors duration-200 select-none touch-none`}
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-12 sm:h-15">
+        <div className="flex items-center justify-between h-13 sm:h-15">
           {/* Logo & Title */}
           <div
             className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer group min-w-0"
@@ -249,7 +248,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
             <img
               src="/favicon.svg"
               alt="Quadro de Instruções FT"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-sm shrink-0 transition-transform group-hover:scale-105"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shrink-0 transition-transform group-hover:scale-105"
             />
             <div className="flex flex-col min-w-0">
               <span className={`font-extrabold text-sm sm:text-base ${themePalette.headerText} tracking-tight leading-tight truncate`}>
@@ -328,8 +327,8 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
                 title="Configurações, Conta, Tema e Versão"
                 className={`relative p-2 rounded-xl border transition-all flex items-center justify-center ${
                   isDarkHeader
-                    ? 'border-white/15 bg-white/[0.07] text-slate-200 hover:text-white hover:bg-white/15'
-                    : 'border-slate-200/90 bg-slate-100/80 text-slate-700 hover:text-slate-950 hover:bg-slate-200/70'
+                    ? 'border-[#2d3a52] bg-[#162032] text-white hover:bg-[#1e293b]'
+                    : 'border-slate-300 bg-slate-100 text-slate-900 hover:bg-slate-200'
                 }`}
               >
                 {/* Ícone no Desktop: Engrenagem */}

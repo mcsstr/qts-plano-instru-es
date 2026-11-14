@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.4.1';
+export const CURRENT_APP_VERSION = 'v2.4.2';
 export const CURRENT_APP_DATE = '14/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.4.2',
+    date: '14/11/2026',
+    highlights: [
+      'Eliminação do efeito esfumaçado (blur) nos botões do menu superior no iOS 26 usando faixa sólida de topo para o Color Sampler do WebKit e cores 100% opacas'
+    ]
+  },
   {
     version: 'v2.4.1',
     date: '14/11/2026',

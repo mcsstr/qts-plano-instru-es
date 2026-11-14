@@ -6,13 +6,11 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  html, body, #root {
+  html, body {
     margin: 0;
     padding: 0;
-    height: 100dvh;
-    max-height: 100dvh;
-    overflow: hidden;
-    overscroll-behavior: none;
+    min-height: 100%;
+    overscroll-behavior-y: none;
   }
 
   body {
@@ -43,7 +41,7 @@
 }
 
 :root {
-  --safe-top-offset: env(safe-area-inset-top, 0px);
+  --safe-top-offset: max(calc(env(safe-area-inset-top, 0px) + 6px), 14px);
 }
 
 input[type="date"] {
@@ -56,20 +54,22 @@ input[type="date"] {
   box-sizing: border-box !important;
 }
 
-/* Safe Area Superior (iPhone / Android / PWA) colada no limite da safe area e sem blur */
+/* Safe Area Superior (iPhone / Android / PWA) nítida e sem backdrop-filter */
 @media (max-width: 767px) {
   .safe-top-header {
     padding-top: var(--safe-top-offset);
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
   }
 
   .sticky-below-header {
-    top: 0px;
+    top: calc(3.25rem + var(--safe-top-offset));
   }
 }
 
 /* Posicionamento do Card de Notificação (Toast) sempre abaixo do menu superior */
 .toast-below-header {
-  top: calc(3.35rem + var(--safe-top-offset));
+  top: calc(3.75rem + var(--safe-top-offset));
 }
 
 @media (min-width: 768px) {
@@ -92,7 +92,7 @@ input[type="date"] {
 @media (max-width: 767px) {
   .fixed.inset-0.z-50,
   .fixed.inset-0.modal-safe-overlay {
-    padding-top: calc(var(--safe-top-offset) + 3.25rem) !important;
+    padding-top: calc(var(--safe-top-offset) + 3.5rem) !important;
     padding-bottom: 1.25rem !important;
     align-items: flex-start !important;
     overflow-y: auto !important;
@@ -100,7 +100,7 @@ input[type="date"] {
 
   .fixed.inset-0.z-50 > div:not(.fixed),
   .fixed.inset-0.modal-safe-overlay > div:not(.fixed) {
-    max-height: calc(100dvh - var(--safe-top-offset) - 4.5rem) !important;
+    max-height: calc(100dvh - var(--safe-top-offset) - 4.75rem) !important;
     overflow-y: auto !important;
   }
 
