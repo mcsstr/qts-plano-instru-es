@@ -6,11 +6,13 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  html, body {
+  html, body, #root {
     margin: 0;
     padding: 0;
-    min-height: 100%;
-    overscroll-behavior-y: none;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   body {
@@ -41,7 +43,7 @@
 }
 
 :root {
-  --safe-top-offset: max(calc(env(safe-area-inset-top, 0px) + 4px), 12px);
+  --safe-top-offset: env(safe-area-inset-top, 0px);
 }
 
 input[type="date"] {
@@ -54,25 +56,25 @@ input[type="date"] {
   box-sizing: border-box !important;
 }
 
-/* Safe Area Superior (iPhone / Android / PWA) abaixo da faixa esfumaçada do topo */
+/* Safe Area Superior (iPhone / Android / PWA) colada no limite da safe area e sem blur */
 @media (max-width: 767px) {
   .safe-top-header {
     padding-top: var(--safe-top-offset);
   }
 
   .sticky-below-header {
-    top: calc(3.5rem + var(--safe-top-offset));
+    top: 0px;
   }
 }
 
 /* Posicionamento do Card de Notificação (Toast) sempre abaixo do menu superior */
 .toast-below-header {
-  top: calc(4.1rem + var(--safe-top-offset));
+  top: calc(3.35rem + var(--safe-top-offset));
 }
 
 @media (min-width: 768px) {
   .toast-below-header {
-    top: 4.5rem;
+    top: 4.25rem;
   }
 }
 
@@ -90,7 +92,7 @@ input[type="date"] {
 @media (max-width: 767px) {
   .fixed.inset-0.z-50,
   .fixed.inset-0.modal-safe-overlay {
-    padding-top: calc(var(--safe-top-offset) + 3.75rem) !important;
+    padding-top: calc(var(--safe-top-offset) + 3.25rem) !important;
     padding-bottom: 1.25rem !important;
     align-items: flex-start !important;
     overflow-y: auto !important;
@@ -98,7 +100,7 @@ input[type="date"] {
 
   .fixed.inset-0.z-50 > div:not(.fixed),
   .fixed.inset-0.modal-safe-overlay > div:not(.fixed) {
-    max-height: calc(100dvh - var(--safe-top-offset) - 5rem) !important;
+    max-height: calc(100dvh - var(--safe-top-offset) - 4.5rem) !important;
     overflow-y: auto !important;
   }
 
@@ -109,14 +111,14 @@ input[type="date"] {
     top: var(--vv-top, 0px) !important;
     bottom: auto !important;
     align-items: flex-start !important;
-    padding-top: calc(var(--safe-top-offset) + 0.75rem) !important;
+    padding-top: calc(var(--safe-top-offset) + 0.5rem) !important;
     padding-bottom: 0.5rem !important;
     overflow-y: auto !important;
   }
 
   body.keyboard-open .fixed.inset-0.z-50 > div:not(.fixed),
   body.keyboard-open .fixed.inset-0.modal-safe-overlay > div:not(.fixed) {
-    max-height: calc(var(--vvh, 100dvh) - var(--safe-top-offset) - 1.25rem) !important;
+    max-height: calc(var(--vvh, 100dvh) - var(--safe-top-offset) - 1rem) !important;
     overflow-y: auto !important;
   }
 }

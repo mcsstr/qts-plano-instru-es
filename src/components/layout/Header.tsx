@@ -90,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
             <div className="flex items-center justify-between gap-2">
               <div>
                 <span className="text-xs font-bold text-slate-900 block">Modo Consulta</span>
-                <span className="text-[11px] text-slate-500">Faça login para editar o QTM</span>
+                <span className="text-[11px] text-slate-500">Faça login para gerenciar o Quadro</span>
               </div>
               <button
                 onClick={() => {
@@ -237,26 +237,23 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
         backgroundColor: themePalette.headerHex,
         boxShadow: `0 -120px 0 0 ${themePalette.headerHex}`
       }}
-      className={`sticky top-0 z-30 ${themePalette.headerBg} ${themePalette.headerBorderTop} safe-top-header md:pt-0 transition-colors duration-200 select-none touch-none`}
+      className={`relative shrink-0 z-30 ${themePalette.headerBg} ${themePalette.headerBorderTop} safe-top-header md:pt-0 transition-colors duration-200 select-none touch-none`}
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16">
+        <div className="flex items-center justify-between h-12 sm:h-15">
           {/* Logo & Title */}
           <div
-            className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer group"
+            className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer group min-w-0"
             onClick={() => setCurrentTab('calendario')}
           >
             <img
               src="/favicon.svg"
-              alt="QTM"
+              alt="Quadro de Instruções FT"
               className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shadow-sm shrink-0 transition-transform group-hover:scale-105"
             />
-            <div className="flex flex-col">
-              <span className={`font-extrabold text-base sm:text-lg ${themePalette.headerText} tracking-tight leading-none`}>
-                QTM
-              </span>
-              <span className={`hidden sm:inline text-[10px] font-medium ${themePalette.headerSubtext} tracking-wide mt-0.5`}>
-                Quadro de Trabalho Mensal
+            <div className="flex flex-col min-w-0">
+              <span className={`font-extrabold text-sm sm:text-base ${themePalette.headerText} tracking-tight leading-tight truncate`}>
+                Quadro de Instruções FT
               </span>
             </div>
           </div>
@@ -317,21 +314,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
               - Desktop: Botão Engrenagem (Settings) contendo Login/Usuário, Sair, Tema e Versão
               - Mobile: Menu Sanduíche (Menu) contendo Login/Usuário, Sair, Tema e Versão
              ================================================================= */}
-          <div className="flex items-center space-x-2">
-            {!canEdit && (
-              <button
-                onClick={openLoginModal}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
-                  isDarkHeader
-                    ? 'bg-white/10 hover:bg-white/15 text-white border border-white/15'
-                    : 'bg-slate-900 hover:bg-slate-800 text-white shadow-2xs'
-                }`}
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>Entrar</span>
-              </button>
-            )}
-
+          <div className="flex items-center">
             <div className="relative">
               {/* Botão Engrenagem (Desktop) / Sanduíche (Mobile) */}
               <button

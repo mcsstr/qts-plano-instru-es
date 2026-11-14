@@ -43,7 +43,7 @@ export const LoginModal: React.FC = () => {
           </div>
           <h2 className="text-xl font-bold">Acesso de Gestor</h2>
           <p className="text-sm text-blue-100 mt-1">
-            Informe seu usuário e senha cadastrados para gerenciar o QTM.
+            Informe seu usuário e senha cadastrados para gerenciar o Quadro de Instruções FT.
           </p>
         </div>
 

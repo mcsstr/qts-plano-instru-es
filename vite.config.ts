@@ -11,12 +11,18 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
+      workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+        navigateFallbackDenylist: [/^\/version\.json$/]
+      },
       manifest: {
-        name: 'QTM - Quadro de Trabalho Mensal',
-        short_name: 'QTM',
-        description: 'Quadro de Trabalho Mensal',
-        theme_color: '#1e3a8a',
-        background_color: '#f8fafc',
+        name: 'Quadro de Instruções FT',
+        short_name: 'Instruções FT',
+        description: 'Quadro de Instruções FT',
+        theme_color: '#090d16',
+        background_color: '#f1f3f5',
         display: 'standalone',
         orientation: 'portrait-primary',
         icons: [
