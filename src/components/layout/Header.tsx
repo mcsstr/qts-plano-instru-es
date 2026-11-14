@@ -246,13 +246,24 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
             onClick={() => setCurrentTab('calendario')}
           >
             <img
-              src="/favicon.svg"
+              src="/logo-glass.png"
               alt="Quadro de Instruções FT"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl shrink-0 transition-transform group-hover:scale-105"
+              className={`w-8.5 h-8.5 sm:w-9.5 sm:h-9.5 rounded-[10px] shrink-0 border transition-transform group-hover:scale-105 ${
+                isDarkHeader ? 'border-[#2d3a52]' : 'border-slate-300'
+              }`}
             />
-            <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
               <span className={`font-extrabold text-sm sm:text-base ${themePalette.headerText} tracking-tight leading-tight truncate`}>
-                Quadro de Instruções FT
+                Quadro de Instruções
+              </span>
+              <span
+                className={`px-1.5 py-0.5 rounded-md text-[11px] sm:text-xs font-black tracking-wider leading-none border shrink-0 ${
+                  isDarkHeader
+                    ? 'bg-[#162844] text-[#38bdf8] border-[#26436e]'
+                    : 'bg-sky-50 text-sky-700 border-sky-200'
+                }`}
+              >
+                FT
               </span>
             </div>
           </div>

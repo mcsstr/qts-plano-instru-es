@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.4.4';
+export const CURRENT_APP_VERSION = 'v2.5.0';
 export const CURRENT_APP_DATE = '14/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.5.0',
+    date: '14/11/2026',
+    highlights: [
+      'Novo logotipo e ícone do app em estilo 3D Liquid Glass (Tema Vidro iOS 27) no cabeçalho e no PWA, acompanhado do selo FT estilizado'
+    ]
+  },
   {
     version: 'v2.4.4',
     date: '14/11/2026',

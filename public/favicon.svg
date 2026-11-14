@@ -1,64 +1,184 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e3a8a" />
-      <stop offset="50%" stop-color="#2563eb" />
-      <stop offset="100%" stop-color="#4f46e5" />
+    <!-- 1. iOS 27 Deep Midnight Sapphire Base -->
+    <linearGradient id="iosBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1628" />
+      <stop offset="50%" stop-color="#0f2347" />
+      <stop offset="100%" stop-color="#070e1c" />
     </linearGradient>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fbbf24" />
-      <stop offset="100%" stop-color="#f59e0b" />
+
+    <!-- Ambient Liquid Light Orbs (Refracted through the glass) -->
+    <radialGradient id="glowTopLeft" cx="20%" cy="15%" r="65%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.65" />
+      <stop offset="50%" stop-color="#0284c7" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="glowBottomRight" cx="85%" cy="85%" r="65%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.60" />
+      <stop offset="55%" stop-color="#2563eb" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#1e1b4b" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="glowCenterCyan" cx="50%" cy="52%" r="48%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Outer Squircle Specular Glass Bevel -->
+    <linearGradient id="squircleSpecular" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.65" />
+      <stop offset="30%" stop-color="#38bdf8" stop-opacity="0.30" />
+      <stop offset="70%" stop-color="#818cf8" stop-opacity="0.20" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.45" />
     </linearGradient>
-    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+
+    <!-- Back Tilted Glass Layer (iOS 27 Stacked Glass Depth) -->
+    <linearGradient id="backPaneFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.32" />
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0.14" />
+    </linearGradient>
+
+    <linearGradient id="backPaneRim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.60" />
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.15" />
+    </linearGradient>
+
+    <!-- Main Front Frosted Crystal Body -->
+    <linearGradient id="frontGlassFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.34" />
+      <stop offset="45%" stop-color="#e0f2fe" stop-opacity="0.20" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.48" />
+    </linearGradient>
+
+    <linearGradient id="frontGlassSpecular" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="28%" stop-color="#e0f2fe" stop-opacity="0.55" />
+      <stop offset="70%" stop-color="#38bdf8" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.70" />
+    </linearGradient>
+
+    <!-- Top Surface Curved Glass Reflection -->
+    <linearGradient id="surfaceReflection" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.42" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Liquid Glass Header Bar -->
+    <linearGradient id="headerBarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.95" />
+      <stop offset="50%" stop-color="#2563eb" stop-opacity="0.92" />
+      <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.95" />
+    </linearGradient>
+
+    <!-- Sculpted Glass Rings -->
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="100%" stop-color="#f1f5f9" />
+      <stop offset="60%" stop-color="#e0f2fe" />
+      <stop offset="100%" stop-color="#38bdf8" />
     </linearGradient>
-    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0f172a" flood-opacity="0.35" />
+
+    <!-- Luminous Glass Tiles -->
+    <linearGradient id="cyanPill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7dd3fc" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+
+    <linearGradient id="goldPill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a" />
+      <stop offset="45%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+
+    <linearGradient id="emeraldPill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ee7b7" />
+      <stop offset="45%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+
+    <linearGradient id="frostPill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.52" />
+      <stop offset="100%" stop-color="#bae6fd" stop-opacity="0.24" />
+    </linearGradient>
+
+    <filter id="dropShadow" x="-15%" y="-12%" width="130%" height="135%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#020617" flood-opacity="0.60" />
     </filter>
+
+    <filter id="pillShadow" x="-12%" y="-12%" width="124%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#040d21" flood-opacity="0.38" />
+    </filter>
+
+    <clipPath id="boardClip">
+      <rect x="72" y="88" width="368" height="352" rx="72" />
+    </clipPath>
   </defs>
 
-  <!-- Fundo Arredondado estilo iOS / Android Premium -->
-  <rect width="512" height="512" rx="116" fill="url(#bgGrad)" />
+  <!-- 1. Squircle Base with Liquid Light Refraction Orbs -->
+  <rect width="512" height="512" rx="118" fill="url(#iosBg)" />
+  <rect width="512" height="512" rx="118" fill="url(#glowTopLeft)" />
+  <rect width="512" height="512" rx="118" fill="url(#glowBottomRight)" />
+  <rect width="512" height="512" rx="118" fill="url(#glowCenterCyan)" />
 
-  <!-- Brilho sutil superior -->
-  <path d="M 0 116 Q 256 40 512 116 L 512 0 L 0 0 Z" fill="#ffffff" opacity="0.08" />
+  <!-- Outer Squircle Specular Glass Rim -->
+  <rect x="4" y="4" width="504" height="504" rx="114" fill="none" stroke="url(#squircleSpecular)" stroke-width="5" />
 
-  <!-- Moldura de Escudo / Emblema Sutil ao Fundo -->
-  <path d="M256 56 L416 112 L416 252 C416 356 346 432 256 468 C166 432 96 356 96 252 L96 112 Z" 
-        fill="#0f172a" opacity="0.18" />
-  <path d="M256 66 L404 118 L404 250 C404 346 339 418 256 452 C173 418 108 346 108 250 L108 118 Z" 
-        fill="none" stroke="url(#goldGrad)" stroke-width="5" opacity="0.65" />
-
-  <!-- Corpo Principal do Calendário -->
-  <g filter="url(#shadow)">
-    <rect x="116" y="118" width="280" height="260" rx="36" fill="url(#cardGrad)" />
-    <!-- Topo do Calendário -->
-    <path d="M 116 154 C 116 134 132 118 152 118 L 360 118 C 380 118 396 134 396 154 L 396 186 L 116 186 Z" fill="#1d4ed8" />
-    
-    <!-- Argolas Superiores Douradas -->
-    <rect x="176" y="96" width="22" height="44" rx="11" fill="url(#goldGrad)" />
-    <rect x="314" y="96" width="22" height="44" rx="11" fill="url(#goldGrad)" />
-
-    <!--Texto QTM no cabeçalho do calendário -->
-    <text x="256" y="167" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="36" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="4">QTM</text>
-
-    <!-- Grade de Aulas / Blocos Coloridos -->
-    <rect x="144" y="210" width="60" height="42" rx="10" fill="#3b82f6" opacity="0.9" />
-    <rect x="226" y="210" width="60" height="42" rx="10" fill="#6366f1" opacity="0.9" />
-    <rect x="308" y="210" width="60" height="42" rx="10" fill="#10b981" opacity="0.9" />
-
-    <rect x="144" y="268" width="60" height="42" rx="10" fill="#f59e0b" opacity="0.9" />
-    <rect x="226" y="268" width="60" height="42" rx="10" fill="#2563eb" />
-    <!-- Checkmark no bloco central -->
-    <path d="M246 289 L253 296 L268 281" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-    <rect x="308" y="268" width="60" height="42" rx="10" fill="#8b5cf6" opacity="0.9" />
-
-    <!-- Faixa Inferior FT -->
-    <rect x="144" y="324" width="224" height="34" rx="10" fill="#1e293b" />
-    <text x="256" y="348" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="800" fill="#fbbf24" text-anchor="middle" letter-spacing="6">FORÇA TÁTICA</text>
+  <!-- 2. Tilted Secondary Glass Plane (3D Layered Glass Depth) -->
+  <g transform="rotate(-7 256 260)">
+    <rect x="92" y="82" width="328" height="340" rx="68" fill="url(#backPaneFill)" stroke="url(#backPaneRim)" stroke-width="3.5" />
   </g>
 
-  <!-- Estrela Dourada no Rodapé do Escudo -->
-  <polygon points="256,402 263,417 280,419 267,430 271,446 256,438 241,446 245,430 232,419 249,417" fill="url(#goldGrad)" />
+  <!-- 3. Primary Liquid Glass Calendar / Tactical Board -->
+  <g filter="url(#dropShadow)">
+    <!-- Frosted Glass Main Plate -->
+    <rect x="72" y="88" width="368" height="352" rx="72" fill="url(#frontGlassFill)" />
+
+    <!-- Curved Specular Light Sheen -->
+    <g clip-path="url(#boardClip)">
+      <path d="M 40 60 L 472 60 L 472 230 Q 256 280 40 210 Z" fill="url(#surfaceReflection)" />
+    </g>
+
+    <!-- Top Liquid Sapphire Header Capsule -->
+    <rect x="98" y="114" width="316" height="84" rx="38" fill="url(#headerBarGrad)" filter="url(#pillShadow)" stroke="#ffffff" stroke-opacity="0.7" stroke-width="2.5" />
+
+    <!-- Sculpted 3D Glass Calendar Rings -->
+    <g filter="url(#pillShadow)">
+      <rect x="158" y="62" width="28" height="70" rx="14" fill="url(#ringGrad)" stroke="#ffffff" stroke-width="2.5" />
+      <rect x="326" y="62" width="28" height="70" rx="14" fill="url(#ringGrad)" stroke="#ffffff" stroke-width="2.5" />
+    </g>
+
+    <!-- Header Specular Bar Details -->
+    <circle cx="150" cy="156" r="16" fill="url(#goldPill)" stroke="#ffffff" stroke-width="2.5" />
+    <rect x="184" y="144" width="136" height="12" rx="6" fill="#ffffff" fill-opacity="0.95" />
+    <rect x="184" y="164" width="84" height="10" rx="5" fill="#bae6fd" fill-opacity="0.80" />
+
+    <!-- 4. Bold Liquid Glass Instruction Grid (High Clarity at 32px & 512px) -->
+    <g filter="url(#pillShadow)">
+      <!-- Row 1 Left: Cyan Glass Tile -->
+      <rect x="104" y="224" width="142" height="82" rx="28" fill="url(#cyanPill)" stroke="#ffffff" stroke-opacity="0.75" stroke-width="2.5" />
+      <rect x="128" y="250" width="82" height="12" rx="6" fill="#ffffff" fill-opacity="0.95" />
+      <rect x="128" y="270" width="52" height="10" rx="5" fill="#e0f2fe" fill-opacity="0.80" />
+
+      <!-- Row 1 Right: Tactical Gold Glass Tile -->
+      <rect x="266" y="224" width="142" height="82" rx="28" fill="url(#goldPill)" stroke="#ffffff" stroke-opacity="0.85" stroke-width="2.5" />
+      <rect x="290" y="250" width="82" height="12" rx="6" fill="#0f172a" fill-opacity="0.85" />
+      <rect x="290" y="270" width="52" height="10" rx="5" fill="#0f172a" fill-opacity="0.55" />
+
+      <!-- Row 2 Left (Wide): Active Emerald Glass Instruction Pill with Crisp Checkmark -->
+      <rect x="104" y="324" width="202" height="86" rx="30" fill="url(#emeraldPill)" stroke="#ffffff" stroke-opacity="0.85" stroke-width="2.5" />
+      <circle cx="148" cy="367" r="24" fill="#ffffff" fill-opacity="0.25" stroke="#ffffff" stroke-opacity="0.9" stroke-width="2.5" />
+      <path d="M137 367 L145 375 L161 359" fill="none" stroke="#ffffff" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" />
+      <rect x="186" y="353" width="94" height="12" rx="6" fill="#ffffff" fill-opacity="0.95" />
+      <rect x="186" y="373" width="62" height="10" rx="5" fill="#d1fae5" fill-opacity="0.85" />
+
+      <!-- Row 2 Right: Frosted Crystal Tile -->
+      <rect x="322" y="324" width="86" height="86" rx="30" fill="url(#frostPill)" stroke="#ffffff" stroke-opacity="0.65" stroke-width="2.5" />
+      <circle cx="365" cy="356" r="11" fill="#38bdf8" stroke="#ffffff" stroke-width="2" />
+      <rect x="342" y="378" width="46" height="10" rx="5" fill="#ffffff" fill-opacity="0.85" />
+    </g>
+
+    <!-- Primary Glass Board Specular Rim -->
+    <rect x="72" y="88" width="368" height="352" rx="72" fill="none" stroke="url(#frontGlassSpecular)" stroke-width="4" />
+    <rect x="76" y="92" width="360" height="344" rx="68" fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1.5" />
+  </g>
 </svg>
