@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.5.3';
+export const CURRENT_APP_VERSION = 'v2.5.4';
 export const CURRENT_APP_DATE = '14/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.5.4',
+    date: '14/11/2026',
+    highlights: [
+      'Aumento do respiro inferior do cabeçalho mobile logo abaixo do botão sanduíche para melhor contorno e separação visual do conteúdo'
+    ]
+  },
   {
     version: 'v2.5.3',
     date: '14/11/2026',

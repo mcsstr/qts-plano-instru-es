@@ -58,12 +58,13 @@ input[type="date"] {
 @media (max-width: 767px) {
   .safe-top-header {
     padding-top: var(--safe-top-offset);
+    padding-bottom: 0.375rem;
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
   }
 
   .sticky-below-header {
-    top: calc(2.75rem + var(--safe-top-offset) + 1px);
+    top: calc(3.125rem + var(--safe-top-offset) + 1px);
   }
 }
 
