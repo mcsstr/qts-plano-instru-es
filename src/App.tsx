@@ -42,7 +42,7 @@ const AppContent: React.FC = () => {
               if (reg.waiting) {
                 reg.waiting.postMessage({ type: 'SKIP_WAITING' });
               }
-              await reg.update().catch(() => {});
+              await reg.unregister().catch(() => {});
             })
           );
         }
@@ -53,7 +53,8 @@ const AppContent: React.FC = () => {
       } catch {
         // ignore
       }
-      window.location.reload();
+      const cleanUrl = `${window.location.origin}${window.location.pathname}?v=${encodeURIComponent(targetVersion)}&_t=${Date.now()}`;
+      window.location.replace(cleanUrl);
     };
 
     // Verifica se a versão salva localmente mudou
@@ -123,14 +124,16 @@ const AppContent: React.FC = () => {
     };
 
     window.addEventListener('focus', handleVisibilityOrFocus);
+    window.addEventListener('pageshow', handleVisibilityOrFocus);
     document.addEventListener('visibilitychange', handleVisibilityOrFocus);
-    const interval = setInterval(checkServerVersion, 45000);
+    const interval = setInterval(checkServerVersion, 15000);
 
     return () => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
       }
       window.removeEventListener('focus', handleVisibilityOrFocus);
+      window.removeEventListener('pageshow', handleVisibilityOrFocus);
       document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
       clearInterval(interval);
     };

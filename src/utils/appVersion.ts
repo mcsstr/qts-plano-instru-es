@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.4.0';
+export const CURRENT_APP_VERSION = 'v2.4.1';
 export const CURRENT_APP_DATE = '14/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.4.1',
+    date: '14/11/2026',
+    highlights: [
+      'Reforço de cache-busting no PWA (desregistro automático de Service Worker antigo e recarregamento com parâmetro de versão a cada 15s)'
+    ]
+  },
   {
     version: 'v2.4.0',
     date: '14/11/2026',
