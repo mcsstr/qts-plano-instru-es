@@ -63,7 +63,7 @@ input[type="date"] {
   }
 
   .sticky-below-header {
-    top: calc(2.75rem + var(--safe-top-offset));
+    top: calc(2.75rem + var(--safe-top-offset) + 1px);
   }
 }
 

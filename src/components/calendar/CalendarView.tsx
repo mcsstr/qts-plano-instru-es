@@ -184,7 +184,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
       {/* =========================================================================
           1. VERSÃO MOBILE: BARRA SUPERIOR FIXA (STICKY) APENAS COM MÊS/ANO E FILTROS
          ========================================================================= */}
-      <div className={`md:hidden sticky sticky-below-header z-20 ${themePalette.appBg} pt-1 pb-2 -mx-3 px-3 shadow-[0_6px_12px_-6px_rgba(15,23,42,0.06)] transition-colors duration-200`}>
+      <div className={`md:hidden sticky sticky-below-header z-20 ${themePalette.appBg} -mt-2 pt-2.5 pb-2 -mx-3 px-3 shadow-[0_6px_12px_-6px_rgba(15,23,42,0.06)] transition-colors duration-200`}>
         {/* Linha de Mês/Ano + Filtro + Histórico + Seleção Múltipla */}
         <div className="flex items-center justify-between bg-white px-2.5 py-2 rounded-2xl border border-slate-200/85 shadow-2xs">
           {isMobileHistoryPage && (

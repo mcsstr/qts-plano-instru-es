@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.4.3';
+export const CURRENT_APP_VERSION = 'v2.4.4';
 export const CURRENT_APP_DATE = '14/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.4.4',
+    date: '14/11/2026',
+    highlights: [
+      'Trava da barra de Mês/Ano no mobile para permanecer 100% imóvel na posição inicial durante a rolagem, sem subir para colar no menu'
+    ]
+  },
   {
     version: 'v2.4.3',
     date: '14/11/2026',
