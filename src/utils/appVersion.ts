@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.5.1';
+export const CURRENT_APP_VERSION = 'v2.5.2';
 export const CURRENT_APP_DATE = '14/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.5.2',
+    date: '14/11/2026',
+    highlights: [
+      'Ícone do PWA em estilo iOS 27 Liquid Glass 100% full-bleed (o próprio quadro/cápsulas de vidro preenchem todo o ícone de ponta a ponta, sem fundo delimitador externo)'
+    ]
+  },
   {
     version: 'v2.5.1',
     date: '14/11/2026',
