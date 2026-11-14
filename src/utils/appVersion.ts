@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.5.2';
+export const CURRENT_APP_VERSION = 'v2.5.3';
 export const CURRENT_APP_DATE = '14/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.5.3',
+    date: '14/11/2026',
+    highlights: [
+      'Redesign do card de adição de Assuntos da Matéria no mobile (campos e botão Adicionar 100% alinhados dentro do card)'
+    ]
+  },
   {
     version: 'v2.5.2',
     date: '14/11/2026',

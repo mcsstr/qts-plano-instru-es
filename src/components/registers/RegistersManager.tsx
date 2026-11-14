@@ -943,17 +943,23 @@ export const RegistersManager: React.FC = () => {
               </div>
 
               {/* Parametrização de Assuntos Pré-cadastrados */}
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/90 space-y-2.5">
-                <div>
-                  <label className="block text-xs font-bold text-slate-800">
-                    Assuntos Pré-cadastrados & Importância
-                  </label>
-                  <p className="text-[11px] text-slate-500">
-                    Cadastre os assuntos desta matéria. Assuntos com peso 2x ou 3x se repetem proporcionalmente no gerador de período.
-                  </p>
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90 space-y-3 overflow-hidden">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <label className="block text-xs font-bold text-slate-800">
+                      Assuntos Pré-cadastrados & Importância
+                    </label>
+                    <p className="text-[11px] text-slate-500 leading-relaxed mt-0.5">
+                      Assuntos com peso 2x ou 3x se repetem proporcionalmente no gerador de período.
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                    {materiaAssuntos.length} {materiaAssuntos.length === 1 ? 'item' : 'itens'}
+                  </span>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Bloco de Adição de Assunto (Responsivo e 100% contido no card) */}
+                <div className="bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-2xs space-y-2">
                   <input
                     type="text"
                     value={novoAssuntoNome}
@@ -964,41 +970,51 @@ export const RegistersManager: React.FC = () => {
                         handleAddAssuntoToMateria();
                       }
                     }}
-                    placeholder="Ex: Tiro em baixa luminosidade..."
-                    className="grow px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Nome do assunto (Ex: Tiro em baixa luminosidade)..."
+                    className="w-full min-w-0 px-3 py-2 rounded-lg border border-slate-200 bg-slate-50/70 focus:bg-white text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                   />
-                  <select
-                    value={novoAssuntoPeso}
-                    onChange={e => setNovoAssuntoPeso(Number(e.target.value))}
-                    title="Importância / Repetição no rodízio"
-                    className="px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-800"
-                  >
-                    <option value={1}>1x Normal</option>
-                    <option value={2}>2x Importante</option>
-                    <option value={3}>3x Prioritário</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={handleAddAssuntoToMateria}
-                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shrink-0"
-                  >
-                    + Add
-                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={novoAssuntoPeso}
+                      onChange={e => setNovoAssuntoPeso(Number(e.target.value))}
+                      title="Importância / Repetição no rodízio"
+                      className="flex-1 min-w-0 px-2.5 py-2 rounded-lg border border-slate-200 bg-slate-50/70 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value={1}>Peso 1x — Normal</option>
+                      <option value={2}>Peso 2x — Importante</option>
+                      <option value={3}>Peso 3x — Prioritário</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={handleAddAssuntoToMateria}
+                      className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-bold rounded-lg shrink-0 inline-flex items-center justify-center gap-1 shadow-2xs transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Adicionar</span>
+                    </button>
+                  </div>
                 </div>
 
                 {materiaAssuntos.length > 0 && (
-                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                    {materiaAssuntos.map(ass => (
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto pr-0.5">
+                    {materiaAssuntos.map((ass, idx) => (
                       <div
                         key={ass.id}
-                        className="flex items-center justify-between gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs"
+                        className="flex items-center justify-between gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200/90 shadow-2xs text-xs min-w-0"
                       >
-                        <span className="font-medium text-slate-800 truncate">{ass.nome}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-5 h-5 rounded-md bg-slate-100 text-slate-500 font-bold text-[10px] flex items-center justify-center shrink-0">
+                            {idx + 1}
+                          </span>
+                          <span className="font-semibold text-slate-800 truncate">{ass.nome}</span>
+                        </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           <select
                             value={ass.peso || 1}
                             onChange={e => handleUpdateAssuntoPeso(ass.id, Number(e.target.value))}
-                            className="text-[11px] font-bold px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-blue-700"
+                            className="text-[11px] font-bold px-2 py-1 rounded-lg border border-blue-200 bg-blue-50/80 text-blue-700 focus:outline-none"
                           >
                             <option value={1}>1x</option>
                             <option value={2}>2x</option>
@@ -1007,7 +1023,7 @@ export const RegistersManager: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleRemoveAssuntoFromMateria(ass.id)}
-                            className="p-1 text-slate-400 hover:text-rose-600 rounded"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                             title="Remover assunto"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
