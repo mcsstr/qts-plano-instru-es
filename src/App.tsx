@@ -210,7 +210,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className={`min-h-screen ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
-      {/* Faixa sólida fixa no topo (truque estrutural WebKit iOS 26 para desativar o blur automático da barra de status) */}
+      {/* Faixa sólida fixa no topo (truque estrutural WebKit iOS 26 para desativar o blur automático da barra de status sem cobrir os botões do header) */}
       <div
         aria-hidden="true"
         style={{
@@ -218,22 +218,9 @@ const AppContent: React.FC = () => {
           top: 0,
           left: 0,
           right: 0,
-          height: '10px',
+          height: 'max(calc(env(safe-area-inset-top, 0px) - 10px), 6px)',
           backgroundColor: themePalette.headerHex,
           zIndex: 45,
-          pointerEvents: 'none'
-        }}
-      />
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 'env(safe-area-inset-top, 0px)',
-          backgroundColor: themePalette.headerHex,
-          zIndex: 44,
           pointerEvents: 'none'
         }}
       />

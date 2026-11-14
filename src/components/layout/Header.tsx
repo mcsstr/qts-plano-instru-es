@@ -239,7 +239,7 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
       className={`sticky top-0 z-30 ${themePalette.headerBg} ${themePalette.headerBorderTop} safe-top-header md:pt-0 transition-colors duration-200 select-none touch-none`}
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-13 sm:h-15">
+        <div className="flex items-center justify-between h-11 sm:h-15">
           {/* Logo & Title */}
           <div
             className="flex items-center space-x-2.5 sm:space-x-3 cursor-pointer group min-w-0"

@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.4.2';
+export const CURRENT_APP_VERSION = 'v2.4.3';
 export const CURRENT_APP_DATE = '14/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.4.3',
+    date: '14/11/2026',
+    highlights: [
+      'Elevação do menu superior no PWA para ficar colado ao limite da Dynamic Island / Safe Area manteniendo 100% de nitidez'
+    ]
+  },
   {
     version: 'v2.4.2',
     date: '14/11/2026',

@@ -41,7 +41,7 @@
 }
 
 :root {
-  --safe-top-offset: max(calc(env(safe-area-inset-top, 0px) + 6px), 14px);
+  --safe-top-offset: max(calc(env(safe-area-inset-top, 0px) - 8px), 6px);
 }
 
 input[type="date"] {
@@ -63,13 +63,13 @@ input[type="date"] {
   }
 
   .sticky-below-header {
-    top: calc(3.25rem + var(--safe-top-offset));
+    top: calc(2.75rem + var(--safe-top-offset));
   }
 }
 
 /* Posicionamento do Card de Notificação (Toast) sempre abaixo do menu superior */
 .toast-below-header {
-  top: calc(3.75rem + var(--safe-top-offset));
+  top: calc(3.25rem + var(--safe-top-offset));
 }
 
 @media (min-width: 768px) {
@@ -92,7 +92,7 @@ input[type="date"] {
 @media (max-width: 767px) {
   .fixed.inset-0.z-50,
   .fixed.inset-0.modal-safe-overlay {
-    padding-top: calc(var(--safe-top-offset) + 3.5rem) !important;
+    padding-top: calc(var(--safe-top-offset) + 3rem) !important;
     padding-bottom: 1.25rem !important;
     align-items: flex-start !important;
     overflow-y: auto !important;
