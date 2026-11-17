@@ -20,8 +20,15 @@ import {
   Layers,
   Tag,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Award
 } from 'lucide-react';
+import {
+  PM_RANKS_HIERARCHY,
+  getInstrutorRank,
+  getNomeDeGuerraSemPosto,
+  groupInstrutoresByAntiguidade
+} from '../../utils/rankUtils';
 
 const naturalCompare = (a: string, b: string): number =>
   (a || '').localeCompare(b || '', 'pt-BR', { numeric: true, sensitivity: 'base' });
@@ -177,6 +184,7 @@ export const RegistersManager: React.FC = () => {
   const [novoAssuntoPeso, setNovoAssuntoPeso] = useState<number>(1);
 
   // FORM STATES - INSTRUTOR
+  const [instPosto, setInstPosto] = useState('Cap PM');
   const [instNome, setInstNome] = useState('');
   const [instContato, setInstContato] = useState('');
   const [instMateriasAptas, setInstMateriasAptas] = useState<string[]>([]);
@@ -275,12 +283,20 @@ export const RegistersManager: React.FC = () => {
   const handleOpenInstrutorModal = (instrutor?: Instrutor) => {
     if (instrutor) {
       setEditingInstrutor(instrutor);
-      setInstNome(instrutor.nome);
+      const detectedRank = getInstrutorRank(instrutor.nome);
+      if (detectedRank.id !== 'outros') {
+        setInstPosto(detectedRank.sigla);
+        setInstNome(getNomeDeGuerraSemPosto(instrutor.nome));
+      } else {
+        setInstPosto('');
+        setInstNome(instrutor.nome);
+      }
       setInstContato(instrutor.contato || '');
       setInstMateriasAptas(instrutor.materiasAptas || []);
       setInstObs(instrutor.observacoes || '');
     } else {
       setEditingInstrutor(null);
+      setInstPosto('1º Sgt PM');
       setInstNome('');
       setInstContato('');
       setInstMateriasAptas([]);
@@ -367,17 +383,20 @@ export const RegistersManager: React.FC = () => {
     e.preventDefault();
     if (!instNome.trim()) return;
 
+    const cleanGuerra = getNomeDeGuerraSemPosto(instNome.trim());
+    const finalNome = instPosto ? `${instPosto} ${cleanGuerra}`.trim() : instNome.trim();
+
     if (editingInstrutor) {
       updateInstrutor({
         ...editingInstrutor,
-        nome: instNome,
+        nome: finalNome,
         contato: instContato,
         materiasAptas: instMateriasAptas,
         observacoes: instObs
       });
     } else {
       addInstrutor({
-        nome: instNome,
+        nome: finalNome,
         contato: instContato,
         materiasAptas: instMateriasAptas,
         ativo: true,
@@ -980,76 +999,119 @@ export const RegistersManager: React.FC = () => {
         </div>
       )}
 
-      {/* 3. ABA INSTRUTORES */}
-      {activeTab === 'instrutores' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {instrutores.map(i => (
-            <div
-              key={i.id}
-              className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-bold text-slate-900 text-base">{i.nome}</h3>
-                  {i.contato && (
-                    <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                      <Phone className="w-3 h-3 text-slate-400" />
-                      {i.contato}
+      {/* 3. ABA INSTRUTORES (SEPARADOS EM GRUPOS POR ANTIGUIDADE DO MAIS ANTIGO AO MAIS MODERNO) */}
+      {activeTab === 'instrutores' && (() => {
+        const groupedInstrutores = groupInstrutoresByAntiguidade(instrutores);
+
+        return (
+          <div className="space-y-5">
+            {groupedInstrutores.map(group => (
+              <div
+                key={group.rank.id}
+                className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden"
+              >
+                {/* Cabeçalho do Grupo de Antiguidade (Posto / Graduação) */}
+                <div className="bg-slate-900 text-white px-4 sm:px-5 py-3 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="px-2.5 py-1 rounded-lg bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-extrabold tracking-wide shrink-0">
+                      {group.rank.sigla}
                     </span>
-                  )}
+                    <div className="min-w-0">
+                      <h3 className="text-xs sm:text-sm font-extrabold text-white truncate">
+                        {group.rank.titulo}
+                      </h3>
+                      <span className="text-[10px] text-slate-400 block leading-none mt-0.5">
+                        {group.rank.categoria}
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-200 border border-slate-700 shrink-0">
+                    {group.items.length} {group.items.length === 1 ? 'instrutor' : 'instrutores'}
+                  </span>
                 </div>
 
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => handleOpenInstrutorModal(i)}
-                    className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition-colors"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (confirm(`Excluir o instrutor ${i.nome}?`)) deleteInstrutor(i.id);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                {/* Grid de Instrutores deste Posto/Graduação */}
+                <div className="p-4 sm:p-5 bg-slate-50/50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                  {group.items.map(i => (
+                    <div
+                      key={i.id}
+                      className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4 space-y-3 flex flex-col justify-between"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-slate-900 text-sm sm:text-base truncate">
+                              {i.nome}
+                            </h4>
+                            {i.contato && (
+                              <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                                <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span>{i.contato}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center space-x-1 shrink-0">
+                            <button
+                              onClick={() => handleOpenInstrutorModal(i)}
+                              className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition-colors"
+                              title="Editar Instrutor"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Excluir o instrutor ${i.nome}?`)) deleteInstrutor(i.id);
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
+                              title="Excluir Instrutor"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Matérias Aptas */}
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                            Conhecimento Pertinente ({i.materiasAptas.length})
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {i.materiasAptas.length === 0 ? (
+                              <span className="text-xs text-slate-400 italic">
+                                Nenhuma matéria específica (Geral)
+                              </span>
+                            ) : (
+                              i.materiasAptas.map(matId => {
+                                const mat = materias.find(m => m.id === matId);
+                                return (
+                                  <span
+                                    key={matId}
+                                    className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200"
+                                  >
+                                    {mat?.sigla || mat?.nome || 'Matéria'}
+                                  </span>
+                                );
+                              })
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {i.observacoes && (
+                        <p className="text-xs text-slate-500 italic pt-2 border-t border-slate-100">
+                          "{i.observacoes}"
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              {/* Matérias Aptas */}
-              <div>
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
-                  Conhecimento Pertinente ({i.materiasAptas.length})
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {i.materiasAptas.length === 0 ? (
-                    <span className="text-xs text-slate-400 italic">Nenhuma matéria específica (Geral)</span>
-                  ) : (
-                    i.materiasAptas.map(matId => {
-                      const mat = materias.find(m => m.id === matId);
-                      return (
-                        <span
-                          key={matId}
-                          className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200"
-                        >
-                          {mat?.sigla || mat?.nome || 'Matéria'}
-                        </span>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-
-              {i.observacoes && (
-                <p className="text-xs text-slate-500 italic pt-1 border-t border-slate-100">
-                  "{i.observacoes}"
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        );
+      })()}
 
       {/* 4. ABA GESTORES & LOGINS */}
       {activeTab === 'gestores' && (
@@ -1537,16 +1599,38 @@ export const RegistersManager: React.FC = () => {
 
             <form onSubmit={handleSaveInstrutor} className="flex flex-col flex-1 min-h-0 pt-3">
               <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Nome do Instrutor *</label>
-                  <input
-                    type="text"
-                    required
-                    value={instNome}
-                    onChange={e => setInstNome(e.target.value)}
-                    placeholder="Ex: Capitão Rocha"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                  <div className="sm:col-span-5">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Posto / Graduação *
+                    </label>
+                    <select
+                      value={instPosto}
+                      onChange={e => setInstPosto(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      {PM_RANKS_HIERARCHY.map(r => (
+                        <option key={r.id} value={r.sigla}>
+                          {r.sigla} ({r.titulo})
+                        </option>
+                      ))}
+                      <option value="">Outro / Sem Posto</option>
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-7">
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Nome de Guerra / Nome *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={instNome}
+                      onChange={e => setInstNome(e.target.value)}
+                      placeholder="Ex: Teodoro, Marcos Sotero..."
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
 
                 <div>

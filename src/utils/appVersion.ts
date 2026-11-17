@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.6.3';
+export const CURRENT_APP_VERSION = 'v2.6.4';
 export const CURRENT_APP_DATE = '17/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.6.4',
+    date: '17/11/2026',
+    highlights: [
+      'Separação dos instrutores em grupos por antiguidade militar (do mais antigo ao mais moderno: Cel PM até Sd PM) e seletor de Posto/Graduação no cadastro'
+    ]
+  },
   {
     version: 'v2.6.3',
     date: '17/11/2026',

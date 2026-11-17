@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Aula, Turno } from '../../types';
 import { useApp } from '../../context/AppContext';
+import { groupInstrutoresByAntiguidade } from '../../utils/rankUtils';
 import { X, Calendar as CalendarIcon, Clock, BookOpen, Users, User, Check, Sparkles, AlertCircle } from 'lucide-react';
 
 interface AulaFormModalProps {
@@ -281,14 +282,18 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
               onChange={e => setInstrutorId(e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
-              {instrutores.map(i => {
-                const instrApto = i.materiasAptas.includes(materiaId);
-                return (
-                  <option key={i.id} value={i.id}>
-                    {i.nome} {instrApto ? '⭐ (Apto na matéria)' : ''}
-                  </option>
-                );
-              })}
+              {groupInstrutoresByAntiguidade(instrutores).map(group => (
+                <optgroup key={group.rank.id} label={`${group.rank.sigla} — ${group.rank.titulo}`}>
+                  {group.items.map(i => {
+                    const instrApto = i.materiasAptas.includes(materiaId);
+                    return (
+                      <option key={i.id} value={i.id}>
+                        {i.nome} {instrApto ? '⭐ (Apto na matéria)' : ''}
+                      </option>
+                    );
+                  })}
+                </optgroup>
+              ))}
             </select>
             <p className="text-[11px] text-slate-500 mt-1">
               Qualquer instrutor pode ser vinculado a qualquer matéria, mesmo sem cadastro prévio no perfil.
