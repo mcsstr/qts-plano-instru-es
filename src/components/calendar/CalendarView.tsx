@@ -375,11 +375,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                         )}
                       </div>
                       <div className="font-semibold text-xs text-slate-900 leading-snug line-clamp-1">
-                        {materia?.nome || 'Matéria'}
+                        {assunto || materia?.nome || 'Matéria'}
                       </div>
-                      {assunto && (
+                      {assunto && materia?.nome && (
                         <div className="text-[11px] text-slate-500 font-normal leading-tight line-clamp-2 mt-0.5">
-                          {assunto}
+                          {materia.nome}
                         </div>
                       )}
                     </div>

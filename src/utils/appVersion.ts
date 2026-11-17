@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.6.0';
-export const CURRENT_APP_DATE = '16/11/2026';
+export const CURRENT_APP_VERSION = 'v2.6.1';
+export const CURRENT_APP_DATE = '17/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.6.1',
+    date: '17/11/2026',
+    highlights: [
+      'Inversão da hierarquia visual nos cards do calendário: o Assunto da aula passa a ser o texto principal em destaque e o nome da Matéria aparece no texto menor logo abaixo'
+    ]
+  },
   {
     version: 'v2.6.0',
     date: '16/11/2026',

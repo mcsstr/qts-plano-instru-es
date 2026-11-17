@@ -53,3 +53,4 @@ export interface RespostaPesquisa {
 }
 
 export type SurveyAdminTab = 'criar' | 'divulgar' | 'metricas';
+

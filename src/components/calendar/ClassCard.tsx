@@ -151,7 +151,7 @@ export const ClassCard: React.FC<ClassCardProps> = ({
         ) : null}
       </div>
 
-      {/* Corpo: Nome da Matéria + Assunto */}
+      {/* Corpo: Assunto em destaque + Nome da Matéria em texto menor */}
       <div className="min-w-0">
         <div
           className={`font-semibold text-slate-900 tracking-[-0.015em] ${
@@ -159,21 +159,21 @@ export const ClassCard: React.FC<ClassCardProps> = ({
               ? 'text-[11px] leading-tight line-clamp-1'
               : 'text-[13px] sm:text-sm leading-snug line-clamp-1'
           }`}
-          title={materia?.nome}
+          title={assunto || materia?.nome}
         >
-          {materia?.nome || 'Matéria'}
+          {assunto || materia?.nome || 'Matéria'}
         </div>
 
-        {assunto && (
+        {assunto && materia?.nome && (
           <div
             className={`text-slate-500 font-normal ${
               compact
                 ? 'text-[9.5px] leading-tight line-clamp-1 mt-0.5'
                 : 'text-xs leading-snug line-clamp-2 mt-0.5'
             }`}
-            title={`Assunto: ${assunto}`}
+            title={`Matéria: ${materia.nome}`}
           >
-            {assunto}
+            {materia.nome}
           </div>
         )}
       </div>
