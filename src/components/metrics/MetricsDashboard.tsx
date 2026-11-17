@@ -22,15 +22,20 @@ import {
   CheckCircle2,
   Filter,
   TrendingUp,
-  Clock
+  Clock,
+  Layers,
+  Search
 } from 'lucide-react';
+import { getAulaAssunto } from '../calendar/ClassCard';
 
 export const MetricsDashboard: React.FC = () => {
   const { aulas, materias, instrutores, turmas } = useApp();
 
   const [turmaFilter, setTurmaFilter] = useState<string>('all');
   const [periodoFilter, setPeriodoFilter] = useState<'all' | '30dias' | 'mesAtual'>('all');
-  const [activeTab, setActiveTab] = useState<'todas' | 'materias' | 'instrutores' | 'prejuizos'>('todas');
+  const [activeTab, setActiveTab] = useState<'todas' | 'materias' | 'assuntos' | 'instrutores' | 'prejuizos'>('todas');
+  const [assuntoMateriaFilter, setAssuntoMateriaFilter] = useState<string>('all');
+  const [assuntoSearchQuery, setAssuntoSearchQuery] = useState<string>('');
 
   // Filtragem de dados com base nos filtros da página de métricas
   const filteredAulas = useMemo(() => {
@@ -83,6 +88,92 @@ export const MetricsDashboard: React.FC = () => {
       })
       .sort((a, b) => b.total - a.total);
   }, [filteredAulas, materias]);
+
+  // 1.5. Estatística de Assuntos Ministrados e Repetidos
+  const assuntosStats = useMemo(() => {
+    interface AssuntoStatItem {
+      key: string;
+      assuntoNome: string;
+      materiaId: string;
+      materiaNome: string;
+      materiaSigla: string;
+      materiaCor: string;
+      peso: number;
+      total: number;
+      realizadas: number;
+      prejudicadas: number;
+    }
+
+    const statsMap = new Map<string, AssuntoStatItem>();
+
+    // Inicializa com todos os assuntos pré-cadastrados dentro de cada matéria
+    materias.forEach(m => {
+      (m.assuntos || []).forEach(ass => {
+        const cleanAssunto = ass.nome.trim();
+        if (!cleanAssunto) return;
+        const key = `${m.id}::${cleanAssunto.toLowerCase()}`;
+        if (!statsMap.has(key)) {
+          statsMap.set(key, {
+            key,
+            assuntoNome: cleanAssunto,
+            materiaId: m.id,
+            materiaNome: m.nome,
+            materiaSigla: m.sigla,
+            materiaCor: m.cor || '#3b82f6',
+            peso: ass.peso || 1,
+            total: 0,
+            realizadas: 0,
+            prejudicadas: 0
+          });
+        }
+      });
+    });
+
+    // Contabiliza todas as aulas agendadas/aplicadas por assunto
+    filteredAulas.forEach(aula => {
+      if (aula.status === 'cancelada') return;
+      const mat = materias.find(m => m.id === aula.materiaId);
+      const extractedAssunto = getAulaAssunto(aula, mat?.descricao);
+      const assuntoFinal = (extractedAssunto || mat?.nome || 'Assunto Geral').trim();
+      const key = `${aula.materiaId}::${assuntoFinal.toLowerCase()}`;
+
+      const existing = statsMap.get(key) || {
+        key,
+        assuntoNome: assuntoFinal,
+        materiaId: aula.materiaId,
+        materiaNome: mat?.nome || 'Matéria',
+        materiaSigla: mat?.sigla || 'MAT',
+        materiaCor: mat?.cor || '#3b82f6',
+        peso: 1,
+        total: 0,
+        realizadas: 0,
+        prejudicadas: 0
+      };
+
+      existing.total += 1;
+      if (aula.status === 'realizada') existing.realizadas += 1;
+      if (aula.status === 'prejudicada') existing.prejudicadas += 1;
+      statsMap.set(key, existing);
+    });
+
+    const q = assuntoSearchQuery.toLowerCase().trim();
+
+    return Array.from(statsMap.values())
+      .filter(item => {
+        if (assuntoMateriaFilter !== 'all' && item.materiaId !== assuntoMateriaFilter) {
+          return false;
+        }
+        if (q) {
+          return (
+            item.assuntoNome.toLowerCase().includes(q) ||
+            item.materiaNome.toLowerCase().includes(q) ||
+            item.materiaSigla.toLowerCase().includes(q)
+          );
+        }
+        return true;
+      })
+      .sort((a, b) => b.total - a.total || a.assuntoNome.localeCompare(b.assuntoNome));
+  }, [filteredAulas, materias, assuntoMateriaFilter, assuntoSearchQuery]);
 
   // 2. Estatística de Instrutores por Dias Aplicados (Contabilização por DIA, não por hora)
   const instrutoresStats = useMemo(() => {
@@ -244,6 +335,16 @@ export const MetricsDashboard: React.FC = () => {
             Matérias Mais Aplicadas
           </button>
           <button
+            onClick={() => setActiveTab('assuntos')}
+            className={`pb-2.5 transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === 'assuntos'
+                ? 'border-emerald-600 text-emerald-700 font-bold'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            Assuntos Aplicados & Repetições
+          </button>
+          <button
             onClick={() => setActiveTab('instrutores')}
             className={`pb-2.5 transition-colors border-b-2 whitespace-nowrap ${
               activeTab === 'instrutores'
@@ -329,6 +430,172 @@ export const MetricsDashboard: React.FC = () => {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 1.5. SEÇÃO DE ASSUNTOS APLICADOS E REPETIÇÕES */}
+      {(activeTab === 'todas' || activeTab === 'assuntos') && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 space-y-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <Layers className="w-5 h-5 text-indigo-600" />
+                <span>Metrificação de Assuntos Ministrados & Repetições</span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Acompanhe quantas vezes cada assunto foi aplicado ou repetido no período e a qual matéria está vinculado
+              </p>
+            </div>
+
+            {/* Filtro por Matéria + Busca por Assunto */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={assuntoSearchQuery}
+                  onChange={e => setAssuntoSearchQuery(e.target.value)}
+                  placeholder="Filtrar assunto..."
+                  className="w-full sm:w-48 pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <select
+                value={assuntoMateriaFilter}
+                onChange={e => setAssuntoMateriaFilter(e.target.value)}
+                className="text-xs py-1.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="all">Todas as Matérias ({materias.length})</option>
+                {materias.map(m => (
+                  <option key={m.id} value={m.id}>
+                    {m.nome} ({m.sigla})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {assuntosStats.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              Nenhum assunto encontrado para os filtros selecionados.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Gráfico dos Top 10 Assuntos Mais Aplicados/Repetidos */}
+              <div className="lg:col-span-6 space-y-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                  Top Assuntos por Quantidade de Repetições / Encontros
+                </span>
+                <div className="h-72 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={assuntosStats.slice(0, 10).map(item => ({
+                        ...item,
+                        shortName:
+                          item.assuntoNome.length > 22
+                            ? item.assuntoNome.slice(0, 22) + '...'
+                            : item.assuntoNome
+                      }))}
+                      layout="vertical"
+                      margin={{ top: 5, right: 24, left: 10, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                      <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                      <YAxis
+                        type="category"
+                        dataKey="shortName"
+                        width={135}
+                        tick={{ fontSize: 10.5, fontWeight: 600 }}
+                      />
+                      <Tooltip
+                        formatter={(val: any, _name: any, props: any) => [
+                          `${val} encontro(s) — Matéria: ${props?.payload?.materiaNome || ''}`,
+                          props?.payload?.assuntoNome || 'Assunto'
+                        ]}
+                        contentStyle={{
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          borderColor: '#e2e8f0'
+                        }}
+                      />
+                      <Bar dataKey="total" radius={[0, 6, 6, 0]}>
+                        {assuntosStats.slice(0, 10).map((entry, index) => (
+                          <Cell key={`cell-ass-${index}`} fill={entry.materiaCor || '#4f46e5'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Lista Detalhada de Assuntos e Repetições */}
+              <div className="lg:col-span-6 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Detalhamento por Assunto ({assuntosStats.length})
+                  </span>
+                  <span className="text-[11px] text-slate-400">
+                    Ordenado por nº de aulas
+                  </span>
+                </div>
+
+                <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                  {assuntosStats.map((item, idx) => (
+                    <div
+                      key={item.key}
+                      className="p-3 rounded-xl border border-slate-200/80 bg-slate-50/70 flex items-center justify-between gap-3 text-xs"
+                      style={{
+                        borderLeftWidth: '4px',
+                        borderLeftColor: item.materiaCor
+                      }}
+                    >
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-slate-900 truncate">
+                            {idx + 1}. {item.assuntoNome}
+                          </span>
+                          {item.peso > 1 && (
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 shrink-0">
+                              Peso {item.peso}x
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                          <span
+                            className="font-bold px-1.5 py-0.2 rounded text-[10px]"
+                            style={{
+                              backgroundColor: `${item.materiaCor}18`,
+                              color: item.materiaCor
+                            }}
+                          >
+                            {item.materiaNome} ({item.materiaSigla})
+                          </span>
+                          <span>• {item.realizadas} concluída(s)</span>
+                          {item.prejudicadas > 0 && (
+                            <span className="text-amber-700 font-semibold">
+                              • {item.prejudicadas} com prejuízo
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 text-right">
+                        <span
+                          className={`inline-block font-extrabold px-2.5 py-1 rounded-full text-xs ${
+                            item.total > 0
+                              ? 'bg-indigo-100 text-indigo-800'
+                              : 'bg-slate-200/70 text-slate-500'
+                          }`}
+                        >
+                          {item.total} {item.total === 1 ? 'aula' : 'aulas'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

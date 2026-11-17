@@ -4,10 +4,18 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.6.1';
+export const CURRENT_APP_VERSION = 'v2.6.2';
 export const CURRENT_APP_DATE = '17/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.6.2',
+    date: '17/11/2026',
+    highlights: [
+      'Aba Matérias (Cadastros): novos botões e busca para consultar Por Matéria (listando seus assuntos) ou Por Assunto (exibindo a matéria vinculada)',
+      'Página de Métricas: nova seção e aba de Metrificação de Assuntos Ministrados & Repetições com gráfico, filtro por matéria e contagem individual'
+    ]
+  },
   {
     version: 'v2.6.1',
     date: '17/11/2026',

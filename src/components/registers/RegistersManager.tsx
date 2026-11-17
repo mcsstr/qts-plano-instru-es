@@ -15,7 +15,10 @@ import {
   ArrowRight,
   KeyRound,
   Eye,
-  EyeOff
+  EyeOff,
+  Search,
+  Layers,
+  Tag
 } from 'lucide-react';
 
 export const RegistersManager: React.FC = () => {
@@ -41,6 +44,12 @@ export const RegistersManager: React.FC = () => {
   const { canEdit, openLoginModal } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'turmas' | 'materias' | 'instrutores' | 'gestores'>('turmas');
+
+  // Estados de visualização e busca dentro da Aba Matérias
+  const [materiasViewMode, setMateriasViewMode] = useState<'por_materia' | 'por_assunto'>('por_materia');
+  const [searchMateriaQuery, setSearchMateriaQuery] = useState('');
+  const [selectedMateriaFilterId, setSelectedMateriaFilterId] = useState<string>('all');
+  const [searchAssuntoQuery, setSearchAssuntoQuery] = useState('');
 
   // Modais de Criação / Edição
   const [editingTurma, setEditingTurma] = useState<Turma | null>(null);
@@ -504,90 +513,358 @@ export const RegistersManager: React.FC = () => {
         </div>
       )}
 
-      {/* 2. ABA MATÉRIAS */}
+      {/* 2. ABA MATÉRIAS (COM BOTÕES DE CONSULTA POR MATÉRIA OU POR ASSUNTO) */}
       {activeTab === 'materias' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {materias.map(m => (
-            <div
-              key={m.id}
-              className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3 relative overflow-hidden"
-            >
-              <div
-                className="absolute top-0 left-0 right-0 h-1.5"
-                style={{ backgroundColor: m.cor }}
-              />
-
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-2">
-                  <span
-                    className="w-3 h-3 rounded-full shrink-0"
-                    style={{ backgroundColor: m.cor }}
-                  />
-                  <div>
-                    <span className="text-[11px] font-bold text-slate-500 uppercase">{m.sigla}</span>
-                    <h3 className="font-bold text-slate-900 text-sm leading-tight">{m.nome}</h3>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => handleOpenMateriaModal(m)}
-                    className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition-colors"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (confirm(`Excluir a matéria ${m.nome}?`)) deleteMateria(m.id);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-500 line-clamp-2">
-                {m.descricao || 'Sem descrição cadastrada'}
-              </p>
-
-              {/* Assuntos pré-cadastrados na matéria */}
+        <div className="space-y-4">
+          {/* Painel de Alternância e Pesquisa (Por Matéria vs Por Assunto) */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-                  Assuntos Cadastrados ({m.assuntos?.length || 0})
-                </span>
-                {m.assuntos && m.assuntos.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {m.assuntos.slice(0, 4).map(ass => (
-                      <span
-                        key={ass.id}
-                        className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/80"
-                      >
-                        <span className="truncate max-w-[140px]">{ass.nome}</span>
-                        {(ass.peso || 1) > 1 && (
-                          <span className="text-[9px] font-bold text-blue-700 bg-blue-100 px-1 rounded">
-                            {ass.peso}x
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                    {m.assuntos.length > 4 && (
-                      <span className="text-[10px] text-slate-400 font-medium px-1 py-0.5">
-                        +{m.assuntos.length - 4}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="text-[11px] text-slate-400 italic">Nenhum assunto pré-cadastrado</span>
-                )}
+                <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
+                  Consulta de Matérias e Assuntos Cadastrados
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Escolha abaixo se deseja pesquisar pela Matéria (para ver seus assuntos) ou pelo Assunto (para ver a qual matéria pertence)
+                </p>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                <span>Meta: <strong>{m.cargaDiasObjetivo || 0} encontros</strong></span>
-                <span className="text-emerald-600 font-semibold">Ativa</span>
+              {/* Botões de Alternância de Modo */}
+              <div className="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200/80 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setMateriasViewMode('por_materia')}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+                    materiasViewMode === 'por_materia'
+                      ? 'bg-slate-900 text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <BookOpen className="w-3.5 h-3.5 shrink-0" />
+                  <span>Pesquisar por Matéria</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setMateriasViewMode('por_assunto')}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition-all ${
+                    materiasViewMode === 'por_assunto'
+                      ? 'bg-slate-900 text-white shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5 shrink-0" />
+                  <span>Pesquisar por Assunto</span>
+                </button>
               </div>
             </div>
-          ))}
+
+            {/* Controles da Visão POR MATÉRIA */}
+            {materiasViewMode === 'por_materia' && (
+              <div className="space-y-3 pt-2 border-t border-slate-100">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchMateriaQuery}
+                    onChange={e => setSearchMateriaQuery(e.target.value)}
+                    placeholder="Pesquisar matéria por nome ou sigla (Ex: Tiro, CQB, Direito, POP)..."
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 bg-slate-50/70 focus:bg-white text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Botões Rápidos das Matérias Cadastradas */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMateriaFilterId('all')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all shrink-0 ${
+                      selectedMateriaFilterId === 'all'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                        : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                    }`}
+                  >
+                    Todas as Matérias ({materias.length})
+                  </button>
+                  {materias.map(m => {
+                    const active = selectedMateriaFilterId === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() =>
+                          setSelectedMateriaFilterId(active ? 'all' : m.id)
+                        }
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all shrink-0 ${
+                          active
+                            ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
+                            : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+                        }`}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: m.cor }}
+                        />
+                        <span>{m.nome}</span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                            active
+                              ? 'bg-white/20 text-white'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {m.assuntos?.length || 0}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Controles da Visão POR ASSUNTO */}
+            {materiasViewMode === 'por_assunto' && (
+              <div className="pt-2 border-t border-slate-100">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchAssuntoQuery}
+                    onChange={e => setSearchAssuntoQuery(e.target.value)}
+                    placeholder="Digite o nome do assunto para ver a qual matéria ele está vinculado..."
+                    className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-300 bg-slate-50/70 focus:bg-white text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* RESULTADO MODO 1: POR MATÉRIA (MOSTRA A MATÉRIA E SEUS ASSUNTOS DENTRO) */}
+          {materiasViewMode === 'por_materia' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {materias
+                .filter(m => {
+                  if (selectedMateriaFilterId !== 'all' && m.id !== selectedMateriaFilterId) {
+                    return false;
+                  }
+                  if (!searchMateriaQuery.trim()) return true;
+                  const q = searchMateriaQuery.toLowerCase().trim();
+                  const matchMateria =
+                    m.nome.toLowerCase().includes(q) ||
+                    m.sigla.toLowerCase().includes(q) ||
+                    (m.descricao || '').toLowerCase().includes(q);
+                  const matchAssunto = (m.assuntos || []).some(a =>
+                    a.nome.toLowerCase().includes(q)
+                  );
+                  return matchMateria || matchAssunto;
+                })
+                .map(m => (
+                  <div
+                    key={m.id}
+                    className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3 relative overflow-hidden flex flex-col justify-between"
+                  >
+                    <div
+                      className="absolute top-0 left-0 right-0 h-1.5"
+                      style={{ backgroundColor: m.cor }}
+                    />
+
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center space-x-2 min-w-0">
+                          <span
+                            className="w-3 h-3 rounded-full shrink-0"
+                            style={{ backgroundColor: m.cor }}
+                          />
+                          <div className="min-w-0">
+                            <span className="text-[11px] font-bold text-slate-500 uppercase block truncate">
+                              {m.sigla}
+                            </span>
+                            <h3 className="font-bold text-slate-900 text-sm leading-tight truncate">
+                              {m.nome}
+                            </h3>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-1 shrink-0">
+                          <button
+                            onClick={() => handleOpenMateriaModal(m)}
+                            className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition-colors"
+                            title="Editar Matéria e Assuntos"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Excluir a matéria ${m.nome}?`)) deleteMateria(m.id);
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
+                            title="Excluir Matéria"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {m.descricao && (
+                        <p className="text-xs text-slate-500 line-clamp-2">{m.descricao}</p>
+                      )}
+
+                      {/* Lista Completa de Assuntos Cadastrados dentro desta Matéria */}
+                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider">
+                            Assuntos desta Matéria ({m.assuntos?.length || 0})
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenMateriaModal(m)}
+                            className="text-[11px] font-bold text-blue-600 hover:text-blue-800"
+                          >
+                            + Gerenciar
+                          </button>
+                        </div>
+
+                        {m.assuntos && m.assuntos.length > 0 ? (
+                          <div className="space-y-1.5 max-h-44 overflow-y-auto pr-0.5">
+                            {m.assuntos.map((ass, idx) => (
+                              <div
+                                key={ass.id}
+                                className="flex items-center justify-between gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200/90 text-xs"
+                              >
+                                <span className="font-semibold text-slate-800 truncate">
+                                  {idx + 1}. {ass.nome}
+                                </span>
+                                <span
+                                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                                    (ass.peso || 1) >= 3
+                                      ? 'bg-amber-100 text-amber-800'
+                                      : (ass.peso || 1) === 2
+                                      ? 'bg-blue-100 text-blue-700'
+                                      : 'bg-slate-100 text-slate-600'
+                                  }`}
+                                >
+                                  {ass.peso || 1}x
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-slate-400 italic">
+                            Nenhum assunto cadastrado nesta matéria ainda.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                      <span>
+                        Meta: <strong>{m.cargaDiasObjetivo || 0} encontros</strong>
+                      </span>
+                      <span className="text-emerald-600 font-semibold">Ativa</span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {/* RESULTADO MODO 2: POR ASSUNTO (MOSTRA O ASSUNTO EM DESTAQUE E A MATÉRIA VINCULADA) */}
+          {materiasViewMode === 'por_assunto' && (() => {
+            const allAssuntosItems = materias.flatMap(m =>
+              (m.assuntos || []).map(ass => ({
+                assuntoId: ass.id,
+                assuntoNome: ass.nome,
+                peso: ass.peso || 1,
+                materia: m
+              }))
+            );
+
+            const q = searchAssuntoQuery.toLowerCase().trim();
+            const filteredItems = allAssuntosItems.filter(
+              item =>
+                !q ||
+                item.assuntoNome.toLowerCase().includes(q) ||
+                item.materia.nome.toLowerCase().includes(q) ||
+                item.materia.sigla.toLowerCase().includes(q)
+            );
+
+            return (
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-4 sm:p-5 space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                    Assuntos Encontrados ({filteredItems.length})
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    Assunto em destaque → Matéria vinculada
+                  </span>
+                </div>
+
+                {filteredItems.length === 0 ? (
+                  <div className="p-8 text-center space-y-2">
+                    <p className="text-xs font-bold text-slate-600">
+                      Nenhum assunto pré-cadastrado encontrado para esta pesquisa.
+                    </p>
+                    <p className="text-[11px] text-slate-400">
+                      Você pode adicionar novos assuntos clicando no botão de editar dentro de qualquer matéria.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    {filteredItems.map(item => (
+                      <div
+                        key={`${item.materia.id}_${item.assuntoId}`}
+                        className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200/90 hover:border-slate-300 bg-slate-50/60 transition-all"
+                        style={{
+                          borderLeftWidth: '4px',
+                          borderLeftColor: item.materia.cor
+                        }}
+                      >
+                        <div className="min-w-0 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-xs sm:text-sm truncate">
+                              {item.assuntoNome}
+                            </span>
+                            <span
+                              className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
+                                item.peso >= 3
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : item.peso === 2
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-slate-200/80 text-slate-700'
+                              }`}
+                            >
+                              {item.peso}x
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
+                            <Tag className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span>Matéria vinculada:</span>
+                            <span
+                              className="font-extrabold px-2 py-0.5 rounded-md text-[10px]"
+                              style={{
+                                backgroundColor: `${item.materia.cor}18`,
+                                color: item.materia.cor
+                              }}
+                            >
+                              {item.materia.nome} ({item.materia.sigla})
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenMateriaModal(item.materia)}
+                          className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-white border border-transparent hover:border-slate-200 shrink-0 transition-colors"
+                          title="Editar matéria / assunto"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       )}
 
