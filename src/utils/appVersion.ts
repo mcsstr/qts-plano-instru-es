@@ -4,10 +4,20 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.6.2';
+export const CURRENT_APP_VERSION = 'v2.6.3';
 export const CURRENT_APP_DATE = '17/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.6.3',
+    date: '17/11/2026',
+    highlights: [
+      'Botões principais (Cancelar / Salvar) fixos no rodapé dos modais sem nunca sumir durante a rolagem',
+      'Ordenação alfabética e numérica sequencial automática para todas as Matérias e todos os Assuntos',
+      'Botão de expandir/recolher os assuntos nas matérias (substituindo a barra de pílulas Todas as Matérias)',
+      'Modal específico ao editar na aba "Pesquisar por Assunto" permitindo alterar o nome do assunto ou transferi-lo para outra matéria'
+    ]
+  },
   {
     version: 'v2.6.2',
     date: '17/11/2026',

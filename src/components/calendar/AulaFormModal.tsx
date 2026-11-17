@@ -53,8 +53,13 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
   // Verifica se o instrutor selecionado é apto na matéria selecionada
   const selectedInstructor = instrutores.find(i => i.id === instrutorId);
   const isApto = selectedInstructor ? selectedInstructor.materiasAptas.includes(materiaId) : false;
+  const sortedMaterias = [...materias].sort((a, b) =>
+    (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { numeric: true, sensitivity: 'base' })
+  );
   const selectedMateria = materias.find(m => m.id === materiaId);
-  const materiaAssuntos = selectedMateria?.assuntos || [];
+  const materiaAssuntos = [...(selectedMateria?.assuntos || [])].sort((a, b) =>
+    (a.nome || '').localeCompare(b.nome || '', 'pt-BR', { numeric: true, sensitivity: 'base' })
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +122,8 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 p-5">
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-4">
           {error && (
             <div className="p-3 bg-red-50 text-red-700 text-xs rounded-xl flex items-center space-x-2 border border-red-200">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -198,7 +204,7 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
               onChange={e => setMateriaId(e.target.value)}
               className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
-              {materias.map(m => (
+              {sortedMaterias.map(m => (
                 <option key={m.id} value={m.id}>
                   {m.nome} ({m.sigla})
                 </option>
@@ -288,9 +294,10 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
               Qualquer instrutor pode ser vinculado a qualquer matéria, mesmo sem cadastro prévio no perfil.
             </p>
           </div>
+          </div>
 
-          {/* Footer Actions */}
-          <div className="pt-2 flex items-center justify-end space-x-2 border-t border-slate-100">
+          {/* Footer Actions Fixo no Final do Card */}
+          <div className="pt-3.5 mt-3 shrink-0 flex items-center justify-end space-x-2 border-t border-slate-200 bg-white">
             <button
               type="button"
               onClick={onClose}
