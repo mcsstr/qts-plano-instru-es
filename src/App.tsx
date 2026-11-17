@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
@@ -9,13 +9,28 @@ import { BatchGeneratorView } from './components/generator/BatchGeneratorView';
 import { MetricsDashboard } from './components/metrics/MetricsDashboard';
 import { RegistersManager } from './components/registers/RegistersManager';
 import { Toast } from './components/common/Toast';
+import { SurveyAdminModule } from './components/survey/SurveyAdminModule';
+import { PublicSurveyPage } from './components/survey/PublicSurveyPage';
+import { SurveyAdminTab } from './types/survey';
 import { CURRENT_APP_VERSION } from './utils/appVersion';
 
 const VERSION_STORAGE_KEY = 'qtm_enforced_app_version';
 
 const AppContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<'calendario' | 'gerador' | 'metricas' | 'cadastros'>('calendario');
+  const [surveyAdminView, setSurveyAdminView] = useState<SurveyAdminTab | null>(null);
   const { toast, closeToast, themePalette } = useApp();
+  const { isAdmin } = useAuth();
+
+  // Detecta se o link aberto é a página pública independente de resposta de uma Pesquisa Organizacional (?pesquisa=<id>)
+  const publicSurveyId = React.useMemo(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('pesquisa');
+    } catch {
+      return null;
+    }
+  }, []);
 
   // Impede qualquer pop-up automático do navegador pedindo para instalar PWA
   useEffect(() => {
@@ -53,7 +68,10 @@ const AppContent: React.FC = () => {
       } catch {
         // ignore
       }
-      const cleanUrl = `${window.location.origin}${window.location.pathname}?v=${encodeURIComponent(targetVersion)}&_t=${Date.now()}`;
+      const params = new URLSearchParams(window.location.search);
+      params.set('v', targetVersion);
+      params.set('_t', String(Date.now()));
+      const cleanUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
       window.location.replace(cleanUrl);
     };
 
@@ -208,6 +226,11 @@ const AppContent: React.FC = () => {
     };
   }, []);
 
+  // Se o link acessado for uma Pesquisa Organizacional pública (?pesquisa=...), renderiza exclusivamente a página independente da pesquisa
+  if (publicSurveyId) {
+    return <PublicSurveyPage surveyId={publicSurveyId} />;
+  }
+
   return (
     <div className={`min-h-screen ${themePalette.appBg} flex flex-col text-slate-800 antialiased selection:bg-blue-600 selection:text-white transition-colors duration-200`}>
       {/* Faixa sólida fixa no topo (truque estrutural WebKit iOS 26 para desativar o blur automático da barra de status sem cobrir os botões do header) */}
@@ -231,33 +254,48 @@ const AppContent: React.FC = () => {
       {/* Header Sticky */}
       <Header
         currentTab={currentTab}
-        setCurrentTab={(tab: any) => setCurrentTab(tab)}
+        setCurrentTab={(tab: any) => {
+          setSurveyAdminView(null);
+          setCurrentTab(tab);
+        }}
+        onOpenSurveyAdmin={view => setSurveyAdminView(view)}
       />
 
       {/* Conteúdo Principal */}
       <main className="grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-2.5 pb-24 md:pb-4">
-        {currentTab === 'calendario' && (
-          <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
-        )}
+        {isAdmin && surveyAdminView ? (
+          <SurveyAdminModule
+            initialView={surveyAdminView}
+            onCloseModule={() => setSurveyAdminView(null)}
+          />
+        ) : (
+          <>
+            {currentTab === 'calendario' && (
+              <CalendarView onGoToGenerator={() => setCurrentTab('gerador')} />
+            )}
 
-        {currentTab === 'gerador' && (
-          <BatchGeneratorView onSuccess={() => setCurrentTab('calendario')} />
-        )}
+            {currentTab === 'gerador' && (
+              <BatchGeneratorView onSuccess={() => setCurrentTab('calendario')} />
+            )}
 
-        {currentTab === 'metricas' && (
-          <MetricsDashboard />
-        )}
+            {currentTab === 'metricas' && (
+              <MetricsDashboard />
+            )}
 
-        {currentTab === 'cadastros' && (
-          <RegistersManager />
+            {currentTab === 'cadastros' && (
+              <RegistersManager />
+            )}
+          </>
         )}
       </main>
 
-      {/* Navegação Inferior para Telas Mobile */}
-      <BottomNav
-        currentTab={currentTab}
-        setCurrentTab={(tab: any) => setCurrentTab(tab)}
-      />
+      {/* Navegação Inferior para Telas Mobile (oculta enquanto estiver nas páginas independentes de Pesquisa Organizacional) */}
+      {!(isAdmin && surveyAdminView) && (
+        <BottomNav
+          currentTab={currentTab}
+          setCurrentTab={(tab: any) => setCurrentTab(tab)}
+        />
+      )}
 
       {/* Modal de Login */}
       <LoginModal />

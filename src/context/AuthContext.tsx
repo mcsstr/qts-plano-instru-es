@@ -48,10 +48,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
-  const checkIsAdminLogin = (loginStr?: string): boolean => {
-    if (!loginStr) return false;
-    const clean = loginStr.trim().toLowerCase();
-    return clean === 'admin' || clean === 'administrador';
+  const checkIsAdminLogin = (loginStr?: string, cargoStr?: string): boolean => {
+    const cleanLogin = (loginStr || '').trim().toLowerCase();
+    const cleanCargo = (cargoStr || '').trim().toLowerCase();
+    return (
+      cleanLogin === 'admin' ||
+      cleanLogin === 'administrador' ||
+      cleanCargo.includes('admin')
+    );
   };
 
   const login = (usuarioOuLogin: string, senhaOuPin: string): boolean => {
@@ -62,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const gestorEncontrado = validateGestorLogin(cleanUser, cleanPass);
     if (gestorEncontrado) {
       const isUserAdmin =
-        checkIsAdminLogin(gestorEncontrado.login) ||
+        checkIsAdminLogin(gestorEncontrado.login, gestorEncontrado.cargo) ||
         gestorEncontrado.id === 'gestor-1';
 
       setUser({
@@ -95,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginAsGestor = (gestor: Gestor) => {
     const isUserAdmin =
-      checkIsAdminLogin(gestor.login) ||
+      checkIsAdminLogin(gestor.login, gestor.cargo) ||
       gestor.id === 'gestor-1';
 
     setUser({

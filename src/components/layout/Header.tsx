@@ -19,15 +19,20 @@ import {
   History,
   ChevronRight,
   ChevronDown,
-  Settings
+  Settings,
+  ClipboardList,
+  FileEdit,
+  Share2
 } from 'lucide-react';
+import { SurveyAdminTab } from '../../types/survey';
 
 interface HeaderProps {
   currentTab: string;
   setCurrentTab: (tab: string) => void;
+  onOpenSurveyAdmin?: (view: SurveyAdminTab) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => {
+export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, onOpenSurveyAdmin }) => {
   const { user, canEdit, isAdmin, openLoginModal, logout } = useAuth();
   const { theme, themePalette, setTheme } = useApp();
 
@@ -107,7 +112,92 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab }) => 
         </div>
 
         <div className="p-2.5 space-y-2 max-h-[72vh] overflow-y-auto">
-          {/* 2. Sub-menu Tema (Exclusivo Admin) */}
+          {/* 2. Pesquisa Organizacional (Exclusivo Gestor Administrador) */}
+          {isAdmin && onOpenSurveyAdmin && (
+            <div className="rounded-xl border border-blue-200/90 overflow-hidden bg-blue-50/40 p-2 space-y-1.5">
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-1.5">
+                  <ClipboardList className="w-3.5 h-3.5 text-blue-600" />
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-800">
+                    Pesquisa Organizacional
+                  </span>
+                </div>
+                <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
+                  Admin
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleCloseMenu();
+                    onOpenSurveyAdmin('criar');
+                  }}
+                  className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg bg-white hover:bg-blue-50 border border-slate-200/80 text-left transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <FileEdit className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block leading-tight">
+                        Criar / Estruturar Pesquisa
+                      </span>
+                      <span className="text-[10px] text-slate-500 block leading-tight">
+                        Tópicos, perguntas e tipos de resposta
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleCloseMenu();
+                    onOpenSurveyAdmin('divulgar');
+                  }}
+                  className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg bg-white hover:bg-blue-50 border border-slate-200/80 text-left transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Share2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block leading-tight">
+                        Divulgar Link & QR Code
+                      </span>
+                      <span className="text-[10px] text-slate-500 block leading-tight">
+                        Página pública para respostas
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleCloseMenu();
+                    onOpenSurveyAdmin('metricas');
+                  }}
+                  className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg bg-white hover:bg-blue-50 border border-slate-200/80 text-left transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block leading-tight">
+                        Metrificar Resultados
+                      </span>
+                      <span className="text-[10px] text-slate-500 block leading-tight">
+                        Indicadores, médias e exportação CSV
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 3. Sub-menu Tema (Exclusivo Admin) */}
           {isAdmin && (
             <div className="rounded-xl border border-slate-200/80 overflow-hidden bg-white">
               <button

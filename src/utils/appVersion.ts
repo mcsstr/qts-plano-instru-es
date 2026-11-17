@@ -4,10 +4,20 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.5.4';
-export const CURRENT_APP_DATE = '14/11/2026';
+export const CURRENT_APP_VERSION = 'v2.6.0';
+export const CURRENT_APP_DATE = '16/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.6.0',
+    date: '16/11/2026',
+    highlights: [
+      'Novo Módulo Independente de Pesquisa Organizacional exclusivo para o Gestor Administrador no menu engrenagem',
+      '1. Construtor de Pesquisas por Tópicos e Perguntas parametrizadas (Escala 1-5, Nota 0-10, Número, Escolha Única/Múltipla, Sim/Não e Texto)',
+      '2. Central de Divulgação com geração de Link Público Independente (?pesquisa=...), compartilhamento no WhatsApp e QR Code',
+      '3. Painel de Metrificação de Resultados por Tópico e por Pergunta com exportação para Excel (CSV)'
+    ]
+  },
   {
     version: 'v2.5.4',
     date: '14/11/2026',

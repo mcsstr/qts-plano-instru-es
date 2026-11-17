@@ -270,7 +270,7 @@ export async function fetchAppwriteData(): Promise<AppwriteFetchedData> {
 
   let theme: AppTheme | undefined = undefined;
   let remoteDeletedIds: string[] = [];
-  const globalConfig = configRows.find(c => c.id === 'global' || c.$id === 'global') || configRows[0];
+  const globalConfig = configRows.find(c => c.id === 'global' || c.$id === 'global');
   if (globalConfig) {
     if (globalConfig.theme) {
       theme = globalConfig.theme as AppTheme;
