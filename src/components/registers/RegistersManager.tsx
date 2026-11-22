@@ -1049,23 +1049,13 @@ export const RegistersManager: React.FC = () => {
           selectedInstrutorRankFilter !== 'all' ||
           instrutorSearchQuery.trim().length > 0;
 
-        // Quando nenhum filtro restritivo de busca ou turma está ativo, exibe todos os postos oficiais
-        // com includeEmptyRanks=true para que o usuário possa clicar em "+ Adicionar" em qualquer patente
-        let groupedInstrutores = groupInstrutoresByAntiguidade(
-          filteredInstrutores,
-          !isFiltered
+        // Exibe APENAS os grupos que possuem pelo menos 1 instrutor cadastrado
+        let groupedInstrutores = groupInstrutoresByAntiguidade(filteredInstrutores, false).filter(
+          g => g.items.length > 0
         );
 
-        // Se o usuário filtrou especificamente por um Posto/Graduação, garante que o card desse posto apareça
         if (selectedInstrutorRankFilter !== 'all') {
-          if (groupedInstrutores.length === 0) {
-            const rankDef = PM_RANKS_HIERARCHY.find(r => r.id === selectedInstrutorRankFilter);
-            if (rankDef) {
-              groupedInstrutores = [{ rank: rankDef, items: [] }];
-            }
-          } else {
-            groupedInstrutores = groupedInstrutores.filter(g => g.rank.id === selectedInstrutorRankFilter);
-          }
+          groupedInstrutores = groupedInstrutores.filter(g => g.rank.id === selectedInstrutorRankFilter);
         }
 
         return (
@@ -1220,30 +1210,15 @@ export const RegistersManager: React.FC = () => {
                   </div>
 
                   {/* Grid de Instrutores deste Posto/Graduação */}
-                  {group.items.length === 0 ? (
-                    <div className="p-4 sm:p-5 text-center bg-slate-50/50">
-                      <p className="text-xs text-slate-400 italic">
-                        Nenhum instrutor cadastrado neste posto.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenInstrutorModal(undefined, group.rank.sigla)}
-                        className="mt-2 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        Cadastrar instrutor como {group.rank.sigla}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="p-4 sm:p-5 bg-slate-50/50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                      {group.items.map(i => {
-                        const linkedTurma = i.turmaId ? turmas.find(t => t.id === i.turmaId) : null;
+                  <div className="p-4 sm:p-5 bg-slate-50/50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    {group.items.map(i => {
+                      const linkedTurma = i.turmaId ? turmas.find(t => t.id === i.turmaId) : null;
 
-                        return (
-                          <div
-                            key={i.id}
-                            className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4 space-y-3 flex flex-col justify-between"
-                          >
+                      return (
+                        <div
+                          key={i.id}
+                          className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4 space-y-3 flex flex-col justify-between"
+                        >
                             <div className="space-y-3">
                               <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0">
@@ -1338,7 +1313,6 @@ export const RegistersManager: React.FC = () => {
                         );
                       })}
                     </div>
-                  )}
                 </div>
               ))
             )}

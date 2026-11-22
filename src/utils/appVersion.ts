@@ -4,10 +4,17 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.6.5';
+export const CURRENT_APP_VERSION = 'v2.6.6';
 export const CURRENT_APP_DATE = '17/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.6.6',
+    date: '17/11/2026',
+    highlights: [
+      'Exibição restrita apenas aos grupos de postos/patentes que possuam instrutores cadastrados, ocultando grupos sem efetivo'
+    ]
+  },
   {
     version: 'v2.6.5',
     date: '17/11/2026',
