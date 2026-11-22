@@ -21,7 +21,9 @@ import {
   Tag,
   ChevronDown,
   ChevronUp,
-  Award
+  Award,
+  Filter,
+  X
 } from 'lucide-react';
 import {
   PM_RANKS_HIERARCHY,
@@ -187,8 +189,14 @@ export const RegistersManager: React.FC = () => {
   const [instPosto, setInstPosto] = useState('Cap PM');
   const [instNome, setInstNome] = useState('');
   const [instContato, setInstContato] = useState('');
+  const [instTurmaId, setInstTurmaId] = useState('');
   const [instMateriasAptas, setInstMateriasAptas] = useState<string[]>([]);
   const [instObs, setInstObs] = useState('');
+
+  // FILTROS - ABA INSTRUTORES
+  const [instrutorSearchQuery, setInstrutorSearchQuery] = useState('');
+  const [selectedInstrutorTurmaFilter, setSelectedInstrutorTurmaFilter] = useState<string>('all');
+  const [selectedInstrutorRankFilter, setSelectedInstrutorRankFilter] = useState<string>('all');
 
   // FORM STATES - GESTOR
   const [gestorNome, setGestorNome] = useState('');
@@ -280,7 +288,7 @@ export const RegistersManager: React.FC = () => {
     setMateriaAssuntos(prev => prev.filter(a => a.id !== assId));
   };
 
-  const handleOpenInstrutorModal = (instrutor?: Instrutor) => {
+  const handleOpenInstrutorModal = (instrutor?: Instrutor, defaultRank?: string) => {
     if (instrutor) {
       setEditingInstrutor(instrutor);
       const detectedRank = getInstrutorRank(instrutor.nome);
@@ -292,13 +300,15 @@ export const RegistersManager: React.FC = () => {
         setInstNome(instrutor.nome);
       }
       setInstContato(instrutor.contato || '');
+      setInstTurmaId(instrutor.turmaId || '');
       setInstMateriasAptas(instrutor.materiasAptas || []);
       setInstObs(instrutor.observacoes || '');
     } else {
       setEditingInstrutor(null);
-      setInstPosto('1º Sgt PM');
+      setInstPosto(defaultRank || '1º Sgt PM');
       setInstNome('');
       setInstContato('');
+      setInstTurmaId('');
       setInstMateriasAptas([]);
       setInstObs('');
     }
@@ -391,6 +401,7 @@ export const RegistersManager: React.FC = () => {
         ...editingInstrutor,
         nome: finalNome,
         contato: instContato,
+        turmaId: instTurmaId ? instTurmaId : undefined,
         materiasAptas: instMateriasAptas,
         observacoes: instObs
       });
@@ -398,6 +409,7 @@ export const RegistersManager: React.FC = () => {
       addInstrutor({
         nome: finalNome,
         contato: instContato,
+        turmaId: instTurmaId ? instTurmaId : undefined,
         materiasAptas: instMateriasAptas,
         ativo: true,
         observacoes: instObs
@@ -999,116 +1011,337 @@ export const RegistersManager: React.FC = () => {
         </div>
       )}
 
-      {/* 3. ABA INSTRUTORES (SEPARADOS EM GRUPOS POR ANTIGUIDADE DO MAIS ANTIGO AO MAIS MODERNO) */}
+      {/* 3. ABA INSTRUTORES (SEPARADOS EM GRUPOS POR ANTIGUIDADE COM FILTROS E VÍNCULO A TURMAS) */}
       {activeTab === 'instrutores' && (() => {
-        const groupedInstrutores = groupInstrutoresByAntiguidade(instrutores);
+        // Filtragem dos instrutores
+        const filteredInstrutores = instrutores.filter(inst => {
+          // Busca textual por nome, contato, matérias aptas ou observações
+          if (instrutorSearchQuery.trim()) {
+            const q = instrutorSearchQuery.toLowerCase().trim();
+            const matchesNome = inst.nome.toLowerCase().includes(q);
+            const matchesContato = (inst.contato || '').toLowerCase().includes(q);
+            const matchesObs = (inst.observacoes || '').toLowerCase().includes(q);
+            const matchesMat = inst.materiasAptas.some(mId => {
+              const mat = materias.find(m => m.id === mId);
+              return mat && (mat.nome.toLowerCase().includes(q) || mat.sigla.toLowerCase().includes(q));
+            });
+            if (!matchesNome && !matchesContato && !matchesObs && !matchesMat) return false;
+          }
+
+          // Filtro por Turma
+          if (selectedInstrutorTurmaFilter === 'sem_turma') {
+            if (inst.turmaId) return false;
+          } else if (selectedInstrutorTurmaFilter !== 'all') {
+            if (inst.turmaId !== selectedInstrutorTurmaFilter) return false;
+          }
+
+          // Filtro por Posto/Graduação
+          if (selectedInstrutorRankFilter !== 'all') {
+            const r = getInstrutorRank(inst.nome);
+            if (r.id !== selectedInstrutorRankFilter) return false;
+          }
+
+          return true;
+        });
+
+        const isFiltered =
+          selectedInstrutorTurmaFilter !== 'all' ||
+          selectedInstrutorRankFilter !== 'all' ||
+          instrutorSearchQuery.trim().length > 0;
+
+        // Quando nenhum filtro restritivo de busca ou turma está ativo, exibe todos os postos oficiais
+        // com includeEmptyRanks=true para que o usuário possa clicar em "+ Adicionar" em qualquer patente
+        let groupedInstrutores = groupInstrutoresByAntiguidade(
+          filteredInstrutores,
+          !isFiltered
+        );
+
+        // Se o usuário filtrou especificamente por um Posto/Graduação, garante que o card desse posto apareça
+        if (selectedInstrutorRankFilter !== 'all') {
+          if (groupedInstrutores.length === 0) {
+            const rankDef = PM_RANKS_HIERARCHY.find(r => r.id === selectedInstrutorRankFilter);
+            if (rankDef) {
+              groupedInstrutores = [{ rank: rankDef, items: [] }];
+            }
+          } else {
+            groupedInstrutores = groupedInstrutores.filter(g => g.rank.id === selectedInstrutorRankFilter);
+          }
+        }
 
         return (
           <div className="space-y-5">
-            {groupedInstrutores.map(group => (
-              <div
-                key={group.rank.id}
-                className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden"
-              >
-                {/* Cabeçalho do Grupo de Antiguidade (Posto / Graduação) */}
-                <div className="bg-slate-900 text-white px-4 sm:px-5 py-3 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="px-2.5 py-1 rounded-lg bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-extrabold tracking-wide shrink-0">
-                      {group.rank.sigla}
-                    </span>
-                    <div className="min-w-0">
-                      <h3 className="text-xs sm:text-sm font-extrabold text-white truncate">
-                        {group.rank.titulo}
-                      </h3>
-                      <span className="text-[10px] text-slate-400 block leading-none mt-0.5">
-                        {group.rank.categoria}
+            {/* Barra de Filtros Gerais: Busca Textual, Filtro por Turma e Filtro por Posto/Graduação */}
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                {/* Busca Textual */}
+                <div className="sm:col-span-5 relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={instrutorSearchQuery}
+                    onChange={e => setInstrutorSearchQuery(e.target.value)}
+                    placeholder="Buscar por nome, contato ou matéria..."
+                    className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50"
+                  />
+                  {instrutorSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setInstrutorSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Filtro por Turma */}
+                <div className="sm:col-span-4">
+                  <div className="relative">
+                    <select
+                      value={selectedInstrutorTurmaFilter}
+                      onChange={e => setSelectedInstrutorTurmaFilter(e.target.value)}
+                      className="w-full px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">Todas as Turmas</option>
+                      <option value="sem_turma">Geral / Sem Turma Vinculada</option>
+                      {turmas.map(t => (
+                        <option key={t.id} value={t.id}>
+                          Turma: {t.nome} ({t.sigla})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Filtro por Posto / Graduação */}
+                <div className="sm:col-span-3">
+                  <div className="relative">
+                    <select
+                      value={selectedInstrutorRankFilter}
+                      onChange={e => setSelectedInstrutorRankFilter(e.target.value)}
+                      className="w-full px-3 py-2 text-xs sm:text-sm font-semibold rounded-xl border border-slate-300 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">Todos os Postos / Patentes</option>
+                      {PM_RANKS_HIERARCHY.map(r => (
+                        <option key={r.id} value={r.id}>
+                          {r.sigla} ({r.titulo})
+                        </option>
+                      ))}
+                      <option value="outros">Outro / Sem Posto</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status e Limpar Filtros */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                <span className="text-slate-500">
+                  Mostrando <strong className="text-slate-900">{filteredInstrutores.length}</strong> de <strong className="text-slate-900">{instrutores.length}</strong> instrutores
+                  {isFiltered && ' (filtros aplicados)'}
+                </span>
+
+                {isFiltered && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInstrutorSearchQuery('');
+                      setSelectedInstrutorTurmaFilter('all');
+                      setSelectedInstrutorRankFilter('all');
+                    }}
+                    className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 hover:underline"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Limpar Filtros</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Listagem de Grupos por Antiguidade Militar */}
+            {groupedInstrutores.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center space-y-3">
+                <UserCheck className="w-10 h-10 text-slate-300 mx-auto" />
+                <h3 className="font-bold text-slate-800 text-base">
+                  Nenhum instrutor encontrado com os filtros atuais
+                </h3>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  Tente alterar os filtros de turma, posto ou termo de busca para visualizar os instrutores cadastrados.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInstrutorSearchQuery('');
+                    setSelectedInstrutorTurmaFilter('all');
+                    setSelectedInstrutorRankFilter('all');
+                  }}
+                  className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs rounded-xl transition-colors"
+                >
+                  Limpar todos os filtros
+                </button>
+              </div>
+            ) : (
+              groupedInstrutores.map(group => (
+                <div
+                  key={group.rank.id}
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden"
+                >
+                  {/* Cabeçalho do Grupo de Antiguidade (Posto / Graduação) com Botão de Adicionar Direto */}
+                  <div className="bg-slate-900 text-white px-4 sm:px-5 py-3 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="px-2.5 py-1 rounded-lg bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-extrabold tracking-wide shrink-0">
+                        {group.rank.sigla}
                       </span>
+                      <div className="min-w-0">
+                        <h3 className="text-xs sm:text-sm font-extrabold text-white truncate">
+                          {group.rank.titulo}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 block leading-none mt-0.5">
+                          {group.rank.categoria}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-200 border border-slate-700 shrink-0">
+                        {group.items.length} {group.items.length === 1 ? 'instrutor' : 'instrutores'}
+                      </span>
+
+                      {/* Botão de Adicionar Instrutor diretamente neste Posto/Graduação */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenInstrutorModal(undefined, group.rank.sigla)}
+                        className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
+                        title={`Adicionar Instrutor no posto ${group.rank.sigla}`}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span className="hidden xs:inline">Adicionar</span>
+                      </button>
                     </div>
                   </div>
 
-                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-200 border border-slate-700 shrink-0">
-                    {group.items.length} {group.items.length === 1 ? 'instrutor' : 'instrutores'}
-                  </span>
-                </div>
-
-                {/* Grid de Instrutores deste Posto/Graduação */}
-                <div className="p-4 sm:p-5 bg-slate-50/50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                  {group.items.map(i => (
-                    <div
-                      key={i.id}
-                      className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4 space-y-3 flex flex-col justify-between"
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <h4 className="font-bold text-slate-900 text-sm sm:text-base truncate">
-                              {i.nome}
-                            </h4>
-                            {i.contato && (
-                              <span className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                                <Phone className="w-3 h-3 text-slate-400 shrink-0" />
-                                <span>{i.contato}</span>
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center space-x-1 shrink-0">
-                            <button
-                              onClick={() => handleOpenInstrutorModal(i)}
-                              className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition-colors"
-                              title="Editar Instrutor"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (confirm(`Excluir o instrutor ${i.nome}?`)) deleteInstrutor(i.id);
-                              }}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
-                              title="Excluir Instrutor"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Matérias Aptas */}
-                        <div>
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                            Conhecimento Pertinente ({i.materiasAptas.length})
-                          </span>
-                          <div className="flex flex-wrap gap-1">
-                            {i.materiasAptas.length === 0 ? (
-                              <span className="text-xs text-slate-400 italic">
-                                Nenhuma matéria específica (Geral)
-                              </span>
-                            ) : (
-                              i.materiasAptas.map(matId => {
-                                const mat = materias.find(m => m.id === matId);
-                                return (
-                                  <span
-                                    key={matId}
-                                    className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200"
-                                  >
-                                    {mat?.sigla || mat?.nome || 'Matéria'}
-                                  </span>
-                                );
-                              })
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {i.observacoes && (
-                        <p className="text-xs text-slate-500 italic pt-2 border-t border-slate-100">
-                          "{i.observacoes}"
-                        </p>
-                      )}
+                  {/* Grid de Instrutores deste Posto/Graduação */}
+                  {group.items.length === 0 ? (
+                    <div className="p-4 sm:p-5 text-center bg-slate-50/50">
+                      <p className="text-xs text-slate-400 italic">
+                        Nenhum instrutor cadastrado neste posto.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenInstrutorModal(undefined, group.rank.sigla)}
+                        className="mt-2 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Cadastrar instrutor como {group.rank.sigla}
+                      </button>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="p-4 sm:p-5 bg-slate-50/50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                      {group.items.map(i => {
+                        const linkedTurma = i.turmaId ? turmas.find(t => t.id === i.turmaId) : null;
+
+                        return (
+                          <div
+                            key={i.id}
+                            className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4 space-y-3 flex flex-col justify-between"
+                          >
+                            <div className="space-y-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <h4 className="font-bold text-slate-900 text-sm sm:text-base truncate">
+                                    {i.nome}
+                                  </h4>
+
+                                  <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                    {/* Tag de Turma Vinculada */}
+                                    {linkedTurma ? (
+                                      <span
+                                        className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2 py-0.5 rounded-md border"
+                                        style={{
+                                          backgroundColor: `${linkedTurma.cor}18`,
+                                          color: linkedTurma.cor,
+                                          borderColor: `${linkedTurma.cor}44`
+                                        }}
+                                        title={`Vinculado à Turma ${linkedTurma.nome}`}
+                                      >
+                                        <Users className="w-3 h-3 shrink-0" />
+                                        <span>Turma {linkedTurma.sigla}</span>
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 border border-slate-200">
+                                        Geral / Sem Turma
+                                      </span>
+                                    )}
+
+                                    {/* Contato Telefônico */}
+                                    {i.contato && (
+                                      <span className="text-xs text-slate-500 flex items-center gap-1">
+                                        <Phone className="w-3 h-3 text-slate-400 shrink-0" />
+                                        <span>{i.contato}</span>
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center space-x-1 shrink-0">
+                                  <button
+                                    onClick={() => handleOpenInstrutorModal(i)}
+                                    className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition-colors"
+                                    title="Editar Instrutor"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`Excluir o instrutor ${i.nome}?`)) deleteInstrutor(i.id);
+                                    }}
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
+                                    title="Excluir Instrutor"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Matérias Aptas */}
+                              <div>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+                                  Conhecimento Pertinente ({i.materiasAptas.length})
+                                </span>
+                                <div className="flex flex-wrap gap-1">
+                                  {i.materiasAptas.length === 0 ? (
+                                    <span className="text-xs text-slate-400 italic">
+                                      Nenhuma matéria específica (Geral)
+                                    </span>
+                                  ) : (
+                                    i.materiasAptas.map(matId => {
+                                      const mat = materias.find(m => m.id === matId);
+                                      return (
+                                        <span
+                                          key={matId}
+                                          className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200"
+                                        >
+                                          {mat?.sigla || mat?.nome || 'Matéria'}
+                                        </span>
+                                      );
+                                    })
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            {i.observacoes && (
+                              <p className="text-xs text-slate-500 italic pt-2 border-t border-slate-100">
+                                "{i.observacoes}"
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         );
       })()}
@@ -1642,6 +1875,28 @@ export const RegistersManager: React.FC = () => {
                     placeholder="(11) 98765-4321"
                     className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                </div>
+
+                {/* Turma Vinculada (Opcional) */}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Turma Vinculada (Opcional)
+                  </label>
+                  <select
+                    value={instTurmaId}
+                    onChange={e => setInstTurmaId(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Geral / Sem vínculo (Disponível para qualquer turma)</option>
+                    {turmas.map(t => (
+                      <option key={t.id} value={t.id}>
+                        {t.nome} ({t.sigla})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Vincule este instrutor a uma turma específica ou deixe geral para atuar em todo o batalhão.
+                  </p>
                 </div>
 
                 {/* Seleção de Conhecimento Pertinente (Em ordem alfabética) */}

@@ -4,10 +4,20 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.6.4';
+export const CURRENT_APP_VERSION = 'v2.6.5';
 export const CURRENT_APP_DATE = '17/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.6.5',
+    date: '17/11/2026',
+    highlights: [
+      'Botões "+ Adicionar" em cada grupo de patente militar com pré-seleção automática do posto no modal',
+      'Campo opcional no cadastro de instrutores para vinculá-lo a uma turma existente ou manter geral',
+      'Exibição de badge com a cor e sigla da turma vinculada nos cards de instrutores',
+      'Filtros na página geral de Instrutores: filtrar por Turma, por Posto/Graduação e busca rápida por nome/contato'
+    ]
+  },
   {
     version: 'v2.6.4',
     date: '17/11/2026',

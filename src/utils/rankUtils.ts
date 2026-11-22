@@ -181,13 +181,21 @@ export function sortInstrutoresByAntiguidade(instrutores: Instrutor[]): Instruto
 }
 
 /**
- * Agrupa os instrutores por Posto/Graduação em ordem de antiguidade (do mais antigo para o mais moderno)
+ * Agrupa os instrutores por Posto/Graduação em ordem de antiguidade (do mais antigo para o mais moderno).
+ * Se includeEmptyRanks for true, inclui todos os postos oficiais da hierarquia mesmo sem instrutores cadastrados.
  */
 export function groupInstrutoresByAntiguidade(
-  instrutores: Instrutor[]
+  instrutores: Instrutor[],
+  includeEmptyRanks = false
 ): { rank: MilitaryRankDef; items: Instrutor[] }[] {
   const sorted = sortInstrutoresByAntiguidade(instrutores);
   const groupsMap = new Map<string, { rank: MilitaryRankDef; items: Instrutor[] }>();
+
+  if (includeEmptyRanks) {
+    for (const rank of PM_RANKS_HIERARCHY) {
+      groupsMap.set(rank.id, { rank, items: [] });
+    }
+  }
 
   for (const inst of sorted) {
     const rank = getInstrutorRank(inst.nome);
@@ -201,3 +209,4 @@ export function groupInstrutoresByAntiguidade(
 
   return Array.from(groupsMap.values()).sort((a, b) => a.rank.ordem - b.rank.ordem);
 }
+

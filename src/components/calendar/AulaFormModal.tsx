@@ -286,9 +286,10 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
                 <optgroup key={group.rank.id} label={`${group.rank.sigla} — ${group.rank.titulo}`}>
                   {group.items.map(i => {
                     const instrApto = i.materiasAptas.includes(materiaId);
+                    const linkedTurma = i.turmaId ? turmas.find(t => t.id === i.turmaId) : null;
                     return (
                       <option key={i.id} value={i.id}>
-                        {i.nome} {instrApto ? '⭐ (Apto na matéria)' : ''}
+                        {i.nome} {linkedTurma ? `[Turma ${linkedTurma.sigla}]` : ''} {instrApto ? '⭐ (Apto na matéria)' : ''}
                       </option>
                     );
                   })}

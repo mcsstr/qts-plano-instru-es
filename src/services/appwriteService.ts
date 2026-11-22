@@ -210,6 +210,19 @@ export async function fetchAppwriteData(): Promise<AppwriteFetchedData> {
         materiasAptas = [];
       }
     }
+
+    let turmaId: string | undefined = undefined;
+    let cleanObservacoes = String(r.observacoes || '');
+
+    if (r.turmaId) {
+      turmaId = String(r.turmaId);
+    }
+    const turmaMatch = cleanObservacoes.match(/\[TURMA:([^\]]+)\]/);
+    if (turmaMatch) {
+      turmaId = turmaMatch[1];
+      cleanObservacoes = cleanObservacoes.replace(/\[TURMA:[^\]]+\]\s*/g, '').trim();
+    }
+
     const dbPayload = {
       id: String(r.id || r.$id),
       nome: String(r.nome || ''),
@@ -224,9 +237,10 @@ export async function fetchAppwriteData(): Promise<AppwriteFetchedData> {
       id: dbPayload.id,
       nome: dbPayload.nome,
       contato: dbPayload.contato,
+      turmaId,
       materiasAptas,
       ativo: dbPayload.ativo,
-      observacoes: dbPayload.observacoes
+      observacoes: cleanObservacoes
     };
   });
 
@@ -337,6 +351,9 @@ export async function pushAppwriteData(data: {
   }
 
   for (const i of data.instrutores) {
+    const rawObs = (i.observacoes || '').replace(/\[TURMA:[^\]]+\]\s*/g, '').trim();
+    const encodedObs = i.turmaId ? `[TURMA:${i.turmaId}] ${rawObs}`.trim() : rawObs;
+
     tasks.push(
       upsertTableRow('instrutores', i.id, {
         id: String(i.id),
@@ -344,7 +361,7 @@ export async function pushAppwriteData(data: {
         contato: String(i.contato || ''),
         materiasAptasJson: JSON.stringify(Array.isArray(i.materiasAptas) ? i.materiasAptas : []),
         ativo: Boolean(i.ativo ?? true),
-        observacoes: String(i.observacoes || '')
+        observacoes: encodedObs
       })
     );
   }

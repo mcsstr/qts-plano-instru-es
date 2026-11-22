@@ -39,6 +39,7 @@ export interface Instrutor {
   materiasAptas: string[]; // IDs das matérias em que possui conhecimento pertinente
   ativo: boolean;
   observacoes?: string;
+  turmaId?: string; // ID da turma vinculada (opcional)
 }
 
 export interface Aula {
