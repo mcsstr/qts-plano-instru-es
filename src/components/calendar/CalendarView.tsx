@@ -8,8 +8,8 @@ import { getAulaAssunto } from './ClassCard';
 import { AulaFormModal } from './AulaFormModal';
 import { AulaDetailsModal } from './AulaDetailsModal';
 import { PrejuizoModal } from './PrejuizoModal';
-import { MonthlyPdfModal } from './MonthlyPdfModal';
 import { BulkActionBar } from './BulkActionBar';
+import { openMonthlySchedulePdf } from '../../utils/printPdfUtils';
 import {
   formatMonthYear,
   formatDateBr,
@@ -93,7 +93,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
 
   const [selectedAulaForDetails, setSelectedAulaForDetails] = useState<Aula | null>(null);
   const [selectedAulaForPrejuizo, setSelectedAulaForPrejuizo] = useState<Aula | null>(null);
-  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   // Navegação de Datas
   const handlePrevMonth = () => setCurrentDate(prev => subMonths(prev, 1));
@@ -252,10 +251,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
               )}
             </button>
 
-            {/* Botão Gerar PDF Mobile (ao lado do filtro, apenas ícone) */}
+            {/* Botão Gerar PDF Mobile (ao lado do filtro, apenas ícone - abre nova guia com o PDF A4) */}
             <button
               type="button"
-              onClick={() => setIsPdfModalOpen(true)}
+              onClick={() => openMonthlySchedulePdf(currentDate, aulas, turmas, materias, instrutores)}
               className="p-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition-colors"
               title="Gerar PDF do Calendário (A4)"
             >
@@ -597,10 +596,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             )}
           </button>
 
-          {/* Botão Gerar PDF Desktop (ao lado do filtro) */}
+          {/* Botão Gerar PDF Desktop (ao lado do filtro - abre nova guia com o PDF A4) */}
           <button
             type="button"
-            onClick={() => setIsPdfModalOpen(true)}
+            onClick={() => openMonthlySchedulePdf(currentDate, aulas, turmas, materias, instrutores)}
             className="flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-slate-200/90 bg-white text-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-xs font-semibold transition-all shadow-2xs"
             title="Gerar PDF do Calendário Mensal em Tabela A4"
           >
@@ -799,12 +798,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
         isOpen={!!selectedAulaForPrejuizo}
         onClose={() => setSelectedAulaForPrejuizo(null)}
         aula={selectedAulaForPrejuizo}
-      />
-
-      <MonthlyPdfModal
-        isOpen={isPdfModalOpen}
-        onClose={() => setIsPdfModalOpen(false)}
-        initialDate={currentDate}
       />
     </div>
   );
