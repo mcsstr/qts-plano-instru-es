@@ -4,10 +4,20 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.7.2';
+export const CURRENT_APP_VERSION = 'v2.7.3';
 export const CURRENT_APP_DATE = '24/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.7.3',
+    date: '24/11/2026',
+    highlights: [
+      'Substituição do ícone pelo símbolo de Impressora (Printer) no botão do Calendário (desktop e mobile)',
+      'Identificação explícita da versão do sistema no rodapé da folha impressa A4 para validação visual imediata',
+      'Botão "Atualizar" de 1 toque no cabeçalho/menu para limpar Service Worker, esvaziar cache PWA e recarregar',
+      'Foco automático imediato na guia de pré-visualização do PDF ao clicar em Imprimir/Gerar'
+    ]
+  },
   {
     version: 'v2.7.2',
     date: '24/11/2026',

@@ -2,6 +2,7 @@ import { Aula, Turma, Materia, Instrutor } from '../types';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BRASAO_FT_BASE64 } from './brasaoFtBase64';
+import { CURRENT_APP_VERSION } from './appVersion';
 
 function getCleanAssunto(aula: Aula, materiaDescricao?: string): string {
   if (aula.observacoes) {
@@ -770,7 +771,7 @@ export function openMonthlySchedulePdf(
       <div class="doc-footer">
         <div class="doc-meta">
           <span>Quadro de Trabalho Semanal (QTS) — Sistema de Gestão de Instruções FT</span>
-          <span>Formato Oficial Retrato A4 • Total no Mês: ${totalAulasNoMes} instruções programadas</span>
+          <span>Formato Oficial Retrato A4 • Total no Mês: ${totalAulasNoMes} instruções programadas • Versão ${CURRENT_APP_VERSION}</span>
         </div>
       </div>
     </div>
@@ -781,4 +782,5 @@ export function openMonthlySchedulePdf(
   newWindow.document.open();
   newWindow.document.write(fullHtml);
   newWindow.document.close();
+  newWindow.focus();
 }

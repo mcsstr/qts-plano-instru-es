@@ -17,6 +17,7 @@ import {
   X,
   Sparkles,
   History,
+  RefreshCw,
   ChevronRight,
   ChevronDown,
   Settings,
@@ -287,14 +288,38 @@ export const Header: React.FC<HeaderProps> = ({ currentTab, setCurrentTab, onOpe
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setShowVersionHistory(!showVersionHistory)}
-                className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-              >
-                <History className="w-3.5 h-3.5" />
-                <span>{showVersionHistory ? 'Ocultar' : 'Notas'}</span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      if ('serviceWorker' in navigator) {
+                        const regs = await navigator.serviceWorker.getRegistrations();
+                        await Promise.all(regs.map(r => r.unregister().catch(() => {})));
+                      }
+                      if ('caches' in window) {
+                        const keys = await caches.keys();
+                        await Promise.all(keys.map(k => caches.delete(k)));
+                      }
+                    } catch {}
+                    window.location.reload();
+                  }}
+                  className="text-[11px] font-semibold text-slate-600 hover:text-blue-700 flex items-center gap-1 px-2 py-1 rounded-lg border border-slate-200/90 hover:bg-blue-50 transition-colors"
+                  title="Limpar cache e recarregar última versão do sistema"
+                >
+                  <RefreshCw className="w-3 h-3 text-slate-500" />
+                  <span>Atualizar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowVersionHistory(!showVersionHistory)}
+                  className="text-[11px] font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  <History className="w-3.5 h-3.5" />
+                  <span>{showVersionHistory ? 'Ocultar' : 'Notas'}</span>
+                </button>
+              </div>
             </div>
 
             {showVersionHistory && (

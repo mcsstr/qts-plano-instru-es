@@ -37,7 +37,7 @@ import {
   Clock,
   CheckCircle2,
   AlertTriangle,
-  FileText
+  Printer
 } from 'lucide-react';
 
 interface CalendarViewProps {
@@ -251,14 +251,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
               )}
             </button>
 
-            {/* Botão Gerar PDF Mobile (ao lado do filtro, apenas ícone - abre nova guia com o PDF A4) */}
+            {/* Botão Gerar PDF Mobile (ao lado do filtro, ícone da impressora - abre nova guia com o PDF A4) */}
             <button
               type="button"
               onClick={() => openMonthlySchedulePdf(currentDate, aulas, turmas, materias, instrutores)}
               className="p-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition-colors"
-              title="Gerar PDF do Calendário (A4)"
+              title="Gerar / Imprimir PDF do Calendário (A4)"
             >
-              <FileText className="w-4 h-4 text-blue-600" />
+              <Printer className="w-4 h-4 text-blue-600" />
             </button>
 
             {/* Botão de Histórico (abre página com o mês inteiro) */}
@@ -601,9 +601,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
             type="button"
             onClick={() => openMonthlySchedulePdf(currentDate, aulas, turmas, materias, instrutores)}
             className="flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-slate-200/90 bg-white text-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-xs font-semibold transition-all shadow-2xs"
-            title="Gerar PDF do Calendário Mensal em Tabela A4"
+            title="Gerar / Imprimir PDF do Calendário Mensal em Tabela A4"
           >
-            <FileText className="w-3.5 h-3.5 text-blue-600" />
+            <Printer className="w-3.5 h-3.5 text-blue-600" />
             <span>Gerar PDF</span>
           </button>
 
