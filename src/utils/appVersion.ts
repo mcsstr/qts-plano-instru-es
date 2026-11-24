@@ -4,10 +4,19 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.7.1';
+export const CURRENT_APP_VERSION = 'v2.7.2';
 export const CURRENT_APP_DATE = '24/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.7.2',
+    date: '24/11/2026',
+    highlights: [
+      'Brasão oficial da Força Tática (19º BPM/I) em alta resolução incorporado diretamente no cabeçalho do PDF impresso',
+      'Remoção do ícone de usuário na coluna de instrutor e remoção da sigla da matéria na tabela de instruções',
+      'Desativação temporária dos blocos de assinatura para maior aproveitamento de espaço e impressão direta'
+    ]
+  },
   {
     version: 'v2.7.1',
     date: '24/11/2026',

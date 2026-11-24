@@ -1,6 +1,7 @@
 import { Aula, Turma, Materia, Instrutor } from '../types';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { BRASAO_FT_BASE64 } from './brasaoFtBase64';
 
 function getCleanAssunto(aula: Aula, materiaDescricao?: string): string {
   if (aula.observacoes) {
@@ -138,7 +139,6 @@ export function openMonthlySchedulePdf(
                 <span class="dot" style="background-color: ${materia?.cor || '#3b82f6'};"></span>
                 <strong>${materia?.nome || 'Matéria'}</strong>
               </div>
-              ${materia?.sigla ? `<span class="materia-sigla">SIGLA: ${materia.sigla}</span>` : ''}
             </td>
 
             <!-- Coluna 4: ASSUNTO MINISTRADO (Fundo Branco #ffffff) -->
@@ -148,7 +148,7 @@ export function openMonthlySchedulePdf(
 
             <!-- Coluna 5: INSTRUTOR DESIGNADO (Fundo Suave #f1f5f9) -->
             <td class="col-instrutor">
-              <span class="inst-nome">👤 ${instrutor?.nome || 'Instrutor a Designar'}</span>
+              <span class="inst-nome">${instrutor?.nome || 'Instrutor a Designar'}</span>
               ${instrutor?.contato ? `<span class="inst-contato">${instrutor.contato}</span>` : ''}
             </td>
 
@@ -333,18 +333,20 @@ export function openMonthlySchedulePdf(
       gap: 14px;
     }
 
-    .shield-badge {
-      width: 48px;
-      height: 48px;
-      background: #0f172a;
-      color: #f59e0b;
-      border-radius: 12px;
+    .emblem-container {
+      width: 52px;
+      height: 62px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
       flex-shrink: 0;
-      border: 1px solid #1e293b;
+    }
+
+    .emblem-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.18));
     }
 
     .header-titles .org-title {
@@ -743,7 +745,9 @@ export function openMonthlySchedulePdf(
         <!-- Cabeçalho Oficial -->
         <div class="doc-header">
           <div class="header-branding">
-            <div class="shield-badge">🛡️</div>
+            <div class="emblem-container">
+              <img src="${BRASAO_FT_BASE64}" alt="Brasão Força Tática 19º BPM/I" class="emblem-img" />
+            </div>
             <div class="header-titles">
               <div class="org-title">POLÍCIA MILITAR DO ESTADO DE SÃO PAULO</div>
               <h1 class="main-title">PLANO MENSAL DE INSTRUÇÃO E TREINAMENTO — QTS</h1>
@@ -762,22 +766,8 @@ export function openMonthlySchedulePdf(
         ${sectionsHtml}
       </div>
 
-      <!-- Rodapé Oficial com Assinaturas -->
+      <!-- Rodapé Oficial (Bloco de assinaturas adormecido temporariamente) -->
       <div class="doc-footer">
-        <div class="signatures-grid">
-          <div class="sig-box">
-            <div class="sig-line"></div>
-            <div class="sig-title">Oficial de Instrução e Treinamento</div>
-            <div class="sig-sub">Pelotões de Força Tática — 19º BPM/I</div>
-          </div>
-
-          <div class="sig-box">
-            <div class="sig-line"></div>
-            <div class="sig-title">Comandante da Subunidade / Batalhão</div>
-            <div class="sig-sub">19º Batalhão de Polícia Militar do Interior</div>
-          </div>
-        </div>
-
         <div class="doc-meta">
           <span>Quadro de Trabalho Semanal (QTS) — Sistema de Gestão de Instruções FT</span>
           <span>Formato Oficial Retrato A4 • Total no Mês: ${totalAulasNoMes} instruções programadas</span>
