@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Aula, Turno } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { groupInstrutoresByAntiguidade } from '../../utils/rankUtils';
@@ -29,7 +29,22 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
   const [observacoes, setObservacoes] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  // Mantém controle para inicializar campos apenas ao abrir o modal,
+  // permitindo que o usuário altere livremente qualquer campo sem ser resetado por re-renders
+  const prevIsOpenRef = useRef(false);
+
   useEffect(() => {
+    if (!isOpen) {
+      prevIsOpenRef.current = false;
+      return;
+    }
+
+    // Se já estava aberto e não mudou a aula de edição, não reinicializa para preservar escolhas do usuário
+    if (prevIsOpenRef.current && !aulaToEdit) {
+      return;
+    }
+    prevIsOpenRef.current = true;
+
     if (aulaToEdit) {
       setData(aulaToEdit.data);
       setTurmaId(aulaToEdit.turmaId);
@@ -61,7 +76,7 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
       setObservacoes('');
     }
     setError(null);
-  }, [aulaToEdit, initialDate, isOpen, turmas, materias, instrutores, horarios]);
+  }, [isOpen, aulaToEdit, initialDate]);
 
   const handleTurnoChange = (newTurno: Turno) => {
     setTurno(newTurno);
@@ -189,51 +204,65 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-semibold text-slate-700">Turno / Horário *</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-blue-600" />
+                  Turno / Horário *
+                </label>
                 <span className="text-[10px] text-slate-500">Padrão: Tarde</span>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <select
-                  value={turno}
-                  onChange={e => handleTurnoChange(e.target.value as Turno)}
-                  className="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                >
-                  <option value="Tarde">Tarde</option>
-                  <option value="Manhã">Manhã</option>
-                  <option value="Integral">Integral</option>
-                  <option value="Noite">Noite</option>
-                </select>
-                <input
-                  type="text"
-                  value={horario}
-                  onChange={e => setHorario(e.target.value)}
-                  placeholder="13:00 - 17:00"
-                  className="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
 
-              {/* Botões Rápidos de Horários Cadastrados */}
-              {horarios && horarios.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {horarios.filter(h => h.ativo !== false).map(h => (
-                    <button
-                      key={h.id}
-                      type="button"
-                      onClick={() => {
-                        setTurno(h.turno);
-                        setHorario(h.horario);
-                      }}
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border transition-all ${
-                        turno === h.turno && horario === h.horario
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
-                          : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                      }`}
-                    >
-                      {h.nome}: {h.horario}
-                    </button>
+              {/* Lista Suspensa com os Horários Pré-Cadastrados */}
+              <select
+                value={
+                  (horarios || []).find(h => h.turno === turno && h.horario === horario)?.id || 'manual'
+                }
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === 'manual') return;
+                  const sel = (horarios || []).find(h => h.id === val);
+                  if (sel) {
+                    setTurno(sel.turno);
+                    setHorario(sel.horario);
+                  }
+                }}
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 bg-white"
+              >
+                <optgroup label="Horários Pré-Cadastrados">
+                  {(horarios || []).filter(h => h.ativo !== false).map(h => (
+                    <option key={h.id} value={h.id}>
+                      {h.nome} ({h.turno}) — {h.horario} {h.padrao ? '★ [Padrão]' : ''}
+                    </option>
                   ))}
+                </optgroup>
+                <option value="manual">Personalizado (definir turno/horário livremente abaixo)...</option>
+              </select>
+
+              {/* Controles para ajuste fino ou digitação manual */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Turno</label>
+                  <select
+                    value={turno}
+                    onChange={e => handleTurnoChange(e.target.value as Turno)}
+                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+                  >
+                    <option value="Tarde">Tarde</option>
+                    <option value="Manhã">Manhã</option>
+                    <option value="Integral">Integral</option>
+                    <option value="Noite">Noite</option>
+                  </select>
                 </div>
-              )}
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Horário</label>
+                  <input
+                    type="text"
+                    value={horario}
+                    onChange={e => setHorario(e.target.value)}
+                    placeholder="13:00 - 17:00"
+                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -283,44 +312,51 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
 
           {/* Assunto da Aula (exibido no card do calendário) */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Assunto da Aula (Exibido no Card do Calendário)
-            </label>
-            {materiaAssuntos.length > 0 && (
-              <div className="mb-2 flex flex-wrap gap-1.5">
-                {materiaAssuntos.map(ass => {
-                  const isActive = observacoes === ass.nome;
-                  return (
-                    <button
-                      key={ass.id}
-                      type="button"
-                      onClick={() => setObservacoes(ass.nome)}
-                      className={`text-[11px] font-medium px-2 py-1 rounded-lg border transition-all flex items-center gap-1 ${
-                        isActive
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
-                          : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                      }`}
-                    >
-                      <span>{ass.nome}</span>
-                      {(ass.peso || 1) > 1 && (
-                        <span className={`text-[9px] font-bold px-1 rounded ${isActive ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'}`}>
-                          {ass.peso}x
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-slate-700">
+                Assunto da Aula (Exibido no Card do Calendário)
+              </label>
+              {materiaAssuntos.length > 0 && (
+                <span className="text-[10px] text-blue-600 font-semibold">
+                  {materiaAssuntos.length} assuntos cadastrados
+                </span>
+              )}
+            </div>
+
+            {/* Lista Suspensa com os Assuntos Cadastrados na Matéria Selecionada */}
+            {materiaAssuntos.length > 0 ? (
+              <select
+                value={
+                  materiaAssuntos.some(a => a.nome === observacoes) ? observacoes : (observacoes ? 'manual' : '')
+                }
+                onChange={e => {
+                  const val = e.target.value;
+                  if (val === 'manual') return;
+                  setObservacoes(val);
+                }}
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 bg-white"
+              >
+                <option value="">-- Selecione um assunto na lista suspensa --</option>
+                {materiaAssuntos.map(ass => (
+                  <option key={ass.id} value={ass.nome}>
+                    {ass.nome} {(ass.peso || 1) > 1 ? `(${ass.peso}x)` : ''}
+                  </option>
+                ))}
+                <option value="manual">Outro assunto (digitar manualmente abaixo)...</option>
+              </select>
+            ) : null}
+
             <input
               type="text"
               value={observacoes}
               onChange={e => setObservacoes(e.target.value)}
-              placeholder="Selecione acima ou digite um assunto específico..."
+              placeholder={materiaAssuntos.length > 0 ? "Ou digite/ajuste o assunto aqui..." : "Digite o assunto da aula..."}
               className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
             <p className="text-[11px] text-slate-500 mt-1">
-              Escolha um assunto pré-cadastrado da matéria ou informe um novo.
+              {materiaAssuntos.length > 0
+                ? "Escolha na lista suspensa acima ou digite/ajuste o assunto livremente."
+                : "Digite o assunto específico para esta instrução."}
             </p>
           </div>
 

@@ -252,16 +252,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
               )}
             </button>
 
-            {/* Botão Gerar PDF Mobile (ao lado do filtro, ícone da impressora - abre nova guia com o PDF A4) */}
-            <button
-              type="button"
-              onClick={() => openMonthlySchedulePdf(currentDate, aulas, turmas, materias, instrutores)}
-              className="p-2 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition-colors"
-              title="Gerar / Imprimir PDF do Calendário (A4)"
-            >
-              <Printer className="w-4 h-4 text-blue-600" />
-            </button>
-
             {/* Botão de Histórico (abre página com o mês inteiro) */}
             <button
               onClick={() => setIsMobileHistoryPage(!isMobileHistoryPage)}

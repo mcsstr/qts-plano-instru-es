@@ -4,10 +4,19 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.8.0';
+export const CURRENT_APP_VERSION = 'v2.8.1';
 export const CURRENT_APP_DATE = '24/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.8.1',
+    date: '24/11/2026',
+    highlights: [
+      'Garantia de edição total no modal de aula: qualquer alteração de matéria, turma, horário, instrutor ou data é mantida sem reset automático',
+      'Substituição de botões por listas suspensas (select) elegantes para a escolha de horários pré-cadastrados e de assuntos da matéria',
+      'Ocultação do botão de impressora na versão mobile do calendário, mantendo a barra de ações limpa'
+    ]
+  },
   {
     version: 'v2.8.0',
     date: '24/11/2026',
