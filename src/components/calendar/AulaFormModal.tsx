@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Aula, Turno } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { groupInstrutoresByAntiguidade } from '../../utils/rankUtils';
-import { formatDayOfWeek, formatDayOfWeekAbbr } from '../../utils/dateUtils';
+import { formatDayOfWeekAbbr } from '../../utils/dateUtils';
 import { X, Calendar as CalendarIcon, Clock, BookOpen, Users, User, Check, Sparkles, AlertCircle } from 'lucide-react';
 
 interface AulaFormModalProps {
@@ -69,6 +69,7 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
       // Turno padrão é Tarde; busca horário pré-cadastrado padrão ou para o turno Tarde
       const defaultHorario = (horarios || []).find(h => h.padrao) ||
         (horarios || []).find(h => h.turno === 'Tarde') ||
+        (horarios || [])[0] ||
         { turno: 'Tarde' as Turno, horario: '13:00 - 17:00' };
 
       setTurno(defaultHorario.turno || 'Tarde');
@@ -77,22 +78,6 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
     }
     setError(null);
   }, [isOpen, aulaToEdit, initialDate]);
-
-  const handleTurnoChange = (newTurno: Turno) => {
-    setTurno(newTurno);
-    const matching = (horarios || []).find(h => h.turno === newTurno);
-    if (matching) {
-      setHorario(matching.horario);
-    } else if (newTurno === 'Tarde') {
-      setHorario('13:00 - 17:00');
-    } else if (newTurno === 'Manhã') {
-      setHorario('08:00 - 12:00');
-    } else if (newTurno === 'Integral') {
-      setHorario('08:00 - 17:00');
-    } else if (newTurno === 'Noite') {
-      setHorario('18:00 - 22:00');
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -195,11 +180,6 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
                 onChange={e => setData(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
-              {data && (
-                <span className="text-[10px] text-slate-500 mt-1 block">
-                  Dia: <strong className="text-slate-700 capitalize">{formatDayOfWeek(data)}</strong> ({formatDayOfWeekAbbr(data)})
-                </span>
-              )}
             </div>
 
             <div>
@@ -208,61 +188,35 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
                   <Clock className="w-3.5 h-3.5 text-blue-600" />
                   Turno / Horário *
                 </label>
-                <span className="text-[10px] text-slate-500">Padrão: Tarde</span>
               </div>
 
-              {/* Lista Suspensa com os Horários Pré-Cadastrados */}
+              {/* Lista Suspensa com apenas os Turnos e Horários Criados */}
               <select
+                required
                 value={
-                  (horarios || []).find(h => h.turno === turno && h.horario === horario)?.id || 'manual'
+                  (horarios || []).find(h => h.turno === turno && h.horario === horario)?.id ||
+                  (horario && !(horarios || []).some(h => h.turno === turno && h.horario === horario) ? 'current' : ((horarios || [])[0]?.id || ''))
                 }
                 onChange={e => {
-                  const val = e.target.value;
-                  if (val === 'manual') return;
-                  const sel = (horarios || []).find(h => h.id === val);
+                  const sel = (horarios || []).find(h => h.id === e.target.value);
                   if (sel) {
                     setTurno(sel.turno);
                     setHorario(sel.horario);
                   }
                 }}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none mb-2 bg-white"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
               >
-                <optgroup label="Horários Pré-Cadastrados">
-                  {(horarios || []).filter(h => h.ativo !== false).map(h => (
-                    <option key={h.id} value={h.id}>
-                      {h.nome} ({h.turno}) — {h.horario} {h.padrao ? '★ [Padrão]' : ''}
-                    </option>
-                  ))}
-                </optgroup>
-                <option value="manual">Personalizado (definir turno/horário livremente abaixo)...</option>
+                {horario && !(horarios || []).some(h => h.turno === turno && h.horario === horario) && (
+                  <option value="current">
+                    {turno} — {horario}
+                  </option>
+                )}
+                {(horarios || []).filter(h => h.ativo !== false).map(h => (
+                  <option key={h.id} value={h.id}>
+                    {h.nome} ({h.turno}) — {h.horario} {h.padrao ? '★ [Padrão]' : ''}
+                  </option>
+                ))}
               </select>
-
-              {/* Controles para ajuste fino ou digitação manual */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Turno</label>
-                  <select
-                    value={turno}
-                    onChange={e => handleTurnoChange(e.target.value as Turno)}
-                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
-                  >
-                    <option value="Tarde">Tarde</option>
-                    <option value="Manhã">Manhã</option>
-                    <option value="Integral">Integral</option>
-                    <option value="Noite">Noite</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-semibold text-slate-500 mb-0.5">Horário</label>
-                  <input
-                    type="text"
-                    value={horario}
-                    onChange={e => setHorario(e.target.value)}
-                    placeholder="13:00 - 17:00"
-                    className="w-full px-2.5 py-1.5 rounded-xl border border-slate-300 text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"
-                  />
-                </div>
-              </div>
             </div>
           </div>
 

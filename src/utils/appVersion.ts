@@ -4,10 +4,19 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.8.1';
+export const CURRENT_APP_VERSION = 'v2.8.2';
 export const CURRENT_APP_DATE = '24/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.8.2',
+    date: '24/11/2026',
+    highlights: [
+      'Simplificação do seletor de turnos e horários no modal de agendamento de aulas, exibindo apenas as opções criadas na aba de Cadastros',
+      'Remoção dos campos secundários de turno e horário personalizado abaixo da lista',
+      'Limpeza do campo de data, mantendo exclusivamente o selo em destaque com a abreviação do dia da semana no topo e removendo o texto redundante na parte inferior'
+    ]
+  },
   {
     version: 'v2.8.1',
     date: '24/11/2026',
