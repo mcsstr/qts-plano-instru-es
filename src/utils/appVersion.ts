@@ -4,10 +4,20 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.6.6';
-export const CURRENT_APP_DATE = '17/11/2026';
+export const CURRENT_APP_VERSION = 'v2.7.0';
+export const CURRENT_APP_DATE = '24/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.7.0',
+    date: '24/11/2026',
+    highlights: [
+      'Novo gerador de PDF do Calendário Mensal de Instruções em formato oficial A4 Retrato para envio aos instrutores',
+      'Tabelas separadas por Pelotão/Turma contendo apenas os dias de instrução, turno, matéria, assunto e instrutor',
+      'Colunas com cores alternadas e campos de assinatura oficial para conferência e visto de comando',
+      'Botão de acesso rápido "Gerar PDF" posicionado ao lado do botão de Filtros (desktop e mobile)'
+    ]
+  },
   {
     version: 'v2.6.6',
     date: '17/11/2026',
