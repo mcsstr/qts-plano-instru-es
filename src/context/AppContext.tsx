@@ -8,8 +8,10 @@ import {
   Gestor,
   GoogleSheetsConfig,
   Turno,
-  AppTheme
+  AppTheme,
+  HorarioConfig
 } from '../types';
+import { INITIAL_HORARIOS } from '../services/mockData';
 import { storageService, markIdsAsDeleted } from '../services/storageService';
 import { subscribeAppwriteRealtime } from '../services/appwriteService';
 import { GeneratedAulaPreview } from '../utils/rotationAlgorithm';
@@ -88,6 +90,13 @@ interface AppContextType {
   deleteGestor: (id: string) => void;
   validateGestorLogin: (loginOrNome: string, senha: string) => Gestor | null;
 
+  // Horários
+  horarios: HorarioConfig[];
+  addHorario: (horario: Omit<HorarioConfig, 'id'>) => HorarioConfig;
+  updateHorario: (horario: HorarioConfig) => void;
+  deleteHorario: (id: string) => void;
+  setDefaultHorario: (id: string) => void;
+
   // Google Sheets & Backup
   syncSheets: (customUrl?: string) => Promise<void>;
   forcePushToSheets: (customUrl?: string) => Promise<void>;
@@ -147,6 +156,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     storageService.saveState(state);
   }, [state]);
+
+  // Efeito para verificar se aulas agendadas venceram a data (passou da meia-noite) e promovê-las a realizadas
+  useEffect(() => {
+    const checkExpiredAulas = () => {
+      const todayStr = new Date().toISOString().split('T')[0];
+      setState(prev => {
+        let changed = false;
+        const newAulas = prev.aulas.map(a => {
+          if (a.status === 'agendada' && a.data && a.data < todayStr) {
+            changed = true;
+            return { ...a, status: 'realizada' as const };
+          }
+          return a;
+        });
+        if (!changed) return prev;
+        return { ...prev, aulas: newAulas };
+      });
+    };
+
+    checkExpiredAulas();
+    const interval = setInterval(checkExpiredAulas, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Ao abrir o aplicativo, busca os dados mais recentes do Appwrite e conecta ao WebSocket Realtime
   useEffect(() => {
@@ -575,6 +607,64 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ) || null;
   };
 
+  // HORÁRIOS CRUD
+  const addHorario = (horarioData: Omit<HorarioConfig, 'id'>): HorarioConfig => {
+    const newHorario: HorarioConfig = {
+      ...horarioData,
+      id: `horario-${Date.now()}`
+    };
+    setState(prev => {
+      const existing = prev.horarios || INITIAL_HORARIOS;
+      const updated = newHorario.padrao
+        ? existing.map(h => ({ ...h, padrao: false }))
+        : existing;
+      return {
+        ...prev,
+        horarios: [...updated, newHorario]
+      };
+    });
+    showToast({ type: 'success', title: 'Horário cadastrado com sucesso' });
+    return newHorario;
+  };
+
+  const updateHorario = (horario: HorarioConfig) => {
+    setState(prev => {
+      const existing = prev.horarios || INITIAL_HORARIOS;
+      const updated = existing.map(h => {
+        if (h.id === horario.id) return horario;
+        if (horario.padrao) return { ...h, padrao: false };
+        return h;
+      });
+      return { ...prev, horarios: updated };
+    });
+    showToast({ type: 'success', title: 'Horário atualizado com sucesso' });
+  };
+
+  const deleteHorario = (id: string) => {
+    setState(prev => {
+      const existing = prev.horarios || INITIAL_HORARIOS;
+      return {
+        ...prev,
+        horarios: existing.filter(h => h.id !== id)
+      };
+    });
+    showToast({ type: 'success', title: 'Horário excluído com sucesso' });
+  };
+
+  const setDefaultHorario = (id: string) => {
+    setState(prev => {
+      const existing = prev.horarios || INITIAL_HORARIOS;
+      return {
+        ...prev,
+        horarios: existing.map(h => ({
+          ...h,
+          padrao: h.id === id
+        }))
+      };
+    });
+    showToast({ type: 'success', title: 'Horário padrão atualizado' });
+  };
+
   // Reset / Backup
   const resetToDefaultData = () => {
     storageService.saveState(storageService.loadState());
@@ -677,6 +767,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateGestor,
         deleteGestor,
         validateGestorLogin,
+
+        horarios: state.horarios || INITIAL_HORARIOS,
+        addHorario,
+        updateHorario,
+        deleteHorario,
+        setDefaultHorario,
 
         syncSheets,
         forcePushToSheets,

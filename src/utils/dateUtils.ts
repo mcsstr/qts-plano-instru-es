@@ -28,11 +28,32 @@ export const formatDateBr = (dateStr: string): string => {
 export const formatDayOfWeek = (dateStr: string): string => {
   if (!dateStr) return '';
   try {
-    const date = parseISO(dateStr);
+    const clean = dateStr.includes('T') ? dateStr : `${dateStr}T12:00:00`;
+    const date = parseISO(clean);
     return format(date, 'EEEE', { locale: ptBR });
   } catch (e) {
     return '';
   }
+};
+
+export const formatDayOfWeekAbbr = (dateStr: string): string => {
+  if (!dateStr) return '';
+  try {
+    const clean = dateStr.includes('T') ? dateStr : `${dateStr}T12:00:00`;
+    const date = parseISO(clean);
+    const day = date.getDay(); // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb
+    const map = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    return map[day] || '';
+  } catch {
+    return '';
+  }
+};
+
+export const formatDateBrWithDay = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const dateFormatted = formatDateBr(dateStr);
+  const dayAbbr = formatDayOfWeekAbbr(dateStr);
+  return dayAbbr ? `${dateFormatted} (${dayAbbr})` : dateFormatted;
 };
 
 export const formatMonthYear = (date: Date): string => {

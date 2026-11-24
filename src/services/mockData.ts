@@ -1,4 +1,4 @@
-import { Turma, Materia, Instrutor, Aula, Gestor } from '../types';
+import { Turma, Materia, Instrutor, Aula, Gestor, HorarioConfig } from '../types';
 
 export const INITIAL_TURMAS: Turma[] = [
   {
@@ -177,6 +177,41 @@ export const INITIAL_GESTORES: Gestor[] = [
     login: '1488872',
     senha: 'Str302415@',
     cargo: 'Cmt Pel FT',
+    ativo: true
+  }
+];
+
+export const INITIAL_HORARIOS: HorarioConfig[] = [
+  {
+    id: 'horario-tarde',
+    nome: 'Tarde (Padrão)',
+    turno: 'Tarde',
+    horario: '13:00 - 17:00',
+    padrao: true,
+    ativo: true
+  },
+  {
+    id: 'horario-manha',
+    nome: 'Manhã',
+    turno: 'Manhã',
+    horario: '08:00 - 12:00',
+    padrao: false,
+    ativo: true
+  },
+  {
+    id: 'horario-integral',
+    nome: 'Integral',
+    turno: 'Integral',
+    horario: '08:00 - 17:00',
+    padrao: false,
+    ativo: true
+  },
+  {
+    id: 'horario-noite',
+    nome: 'Noite',
+    turno: 'Noite',
+    horario: '18:00 - 22:00',
+    padrao: false,
     ativo: true
   }
 ];

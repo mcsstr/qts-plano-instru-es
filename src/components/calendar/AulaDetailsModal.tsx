@@ -3,7 +3,7 @@ import { Aula } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { StatusBadge } from '../common/Badge';
-import { formatDateBr, formatDayOfWeek } from '../../utils/dateUtils';
+import { formatDateBr, formatDayOfWeek, formatDayOfWeekAbbr } from '../../utils/dateUtils';
 import {
   X,
   Calendar,
@@ -127,7 +127,9 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
             <div className="flex items-center space-x-2 text-slate-800 text-sm font-semibold">
               <Calendar className="w-4 h-4 text-blue-600" />
               <span>{formatDateBr(aula.data)}</span>
-              <span className="text-slate-400 font-normal capitalize">({formatDayOfWeek(aula.data)})</span>
+              <span className="text-slate-500 font-normal capitalize">
+                ({formatDayOfWeek(aula.data)} • <strong className="text-blue-700">{formatDayOfWeekAbbr(aula.data)}</strong>)
+              </span>
             </div>
             <StatusBadge status={aula.status} />
           </div>
@@ -278,14 +280,34 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
               )}
 
               {aula.status !== 'realizada' && (
-                <button
-                  type="button"
-                  onClick={handleMarkAsDone}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Realizada</span>
-                </button>
+                (() => {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  const isPastDate = Boolean(aula.data && aula.data < todayStr);
+
+                  if (isPastDate) {
+                    return (
+                      <button
+                        type="button"
+                        onClick={handleMarkAsDone}
+                        className="flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
+                        title="Marcar aula retroativa como realizada"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Realizada</span>
+                      </button>
+                    );
+                  }
+
+                  return (
+                    <span
+                      className="text-[10px] text-slate-500 flex items-center gap-1 bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200"
+                      title="Uma aula só pode ser confirmada como ministrada após o encerramento do dia (meia-noite), pois no próprio dia ainda pode sofrer adiamento ou prejuízo."
+                    >
+                      <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span>Ministrada após a data (00h)</span>
+                    </span>
+                  );
+                })()
               )}
             </div>
           </div>

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import { Turma, Materia, AssuntoMateria, Instrutor, Gestor, Turno } from '../../types';
+import { Turma, Materia, AssuntoMateria, Instrutor, Gestor, Turno, HorarioConfig } from '../../types';
 import {
   Users,
   BookOpen,
   UserCheck,
   ShieldCheck,
+  Clock,
   Plus,
   Edit2,
   Trash2,
@@ -44,6 +45,7 @@ export const RegistersManager: React.FC = () => {
     materias,
     instrutores,
     gestores,
+    horarios,
     addTurma,
     updateTurma,
     deleteTurma,
@@ -55,12 +57,16 @@ export const RegistersManager: React.FC = () => {
     deleteInstrutor,
     addGestor,
     updateGestor,
-    deleteGestor
+    deleteGestor,
+    addHorario,
+    updateHorario,
+    deleteHorario,
+    setDefaultHorario
   } = useApp();
 
   const { canEdit, openLoginModal } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'turmas' | 'materias' | 'instrutores' | 'gestores'>('turmas');
+  const [activeTab, setActiveTab] = useState<'turmas' | 'materias' | 'instrutores' | 'horarios' | 'gestores'>('turmas');
 
   // Estados de visualização e busca dentro da Aba Matérias
   const [materiasViewMode, setMateriasViewMode] = useState<'por_materia' | 'por_assunto'>('por_materia');
@@ -167,6 +173,13 @@ export const RegistersManager: React.FC = () => {
   const [editingGestor, setEditingGestor] = useState<Gestor | null>(null);
   const [isGestorModalOpen, setIsGestorModalOpen] = useState(false);
   const [showPasswords, setShowPasswords] = useState<{ [id: string]: boolean }>({});
+
+  const [editingHorario, setEditingHorario] = useState<HorarioConfig | null>(null);
+  const [isHorarioModalOpen, setIsHorarioModalOpen] = useState(false);
+  const [horarioNome, setHorarioNome] = useState('');
+  const [horarioTurno, setHorarioTurno] = useState<Turno>('Tarde');
+  const [horarioTexto, setHorarioTexto] = useState('13:00 - 17:00');
+  const [horarioIsPadrao, setHorarioIsPadrao] = useState(false);
 
   // FORM STATES - TURMA
   const [turmaNome, setTurmaNome] = useState('');
@@ -445,6 +458,51 @@ export const RegistersManager: React.FC = () => {
     setIsGestorModalOpen(false);
   };
 
+  const handleOpenHorarioModal = (h?: HorarioConfig) => {
+    if (h) {
+      setEditingHorario(h);
+      setHorarioNome(h.nome);
+      setHorarioTurno(h.turno);
+      setHorarioTexto(h.horario);
+      setHorarioIsPadrao(Boolean(h.padrao));
+    } else {
+      setEditingHorario(null);
+      setHorarioNome('');
+      setHorarioTurno('Tarde');
+      setHorarioTexto('13:00 - 17:00');
+      setHorarioIsPadrao(false);
+    }
+    setIsHorarioModalOpen(true);
+  };
+
+  const handleSaveHorario = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!horarioNome.trim() || !horarioTexto.trim()) {
+      alert('Preencha o Nome e o Horário.');
+      return;
+    }
+
+    if (editingHorario) {
+      updateHorario({
+        ...editingHorario,
+        nome: horarioNome.trim(),
+        turno: horarioTurno,
+        horario: horarioTexto.trim(),
+        padrao: horarioIsPadrao,
+        ativo: true
+      });
+    } else {
+      addHorario({
+        nome: horarioNome.trim(),
+        turno: horarioTurno,
+        horario: horarioTexto.trim(),
+        padrao: horarioIsPadrao,
+        ativo: true
+      });
+    }
+    setIsHorarioModalOpen(false);
+  };
+
   const toggleInstMateria = (id: string) => {
     setInstMateriasAptas(prev =>
       prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
@@ -536,6 +594,16 @@ export const RegistersManager: React.FC = () => {
                 <span>Novo Gestor</span>
               </button>
             )}
+
+            {activeTab === 'horarios' && (
+              <button
+                onClick={() => handleOpenHorarioModal()}
+                className="flex items-center space-x-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-md shadow-blue-500/20 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Novo Horário</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -575,6 +643,18 @@ export const RegistersManager: React.FC = () => {
           >
             <UserCheck className="w-4 h-4" />
             <span>Instrutores ({instrutores.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('horarios')}
+            className={`pb-2.5 transition-colors border-b-2 flex items-center space-x-2 whitespace-nowrap ${
+              activeTab === 'horarios'
+                ? 'border-blue-600 text-blue-700 font-bold'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            <span>Horários ({(horarios || []).length})</span>
           </button>
 
           <button
@@ -1399,6 +1479,186 @@ export const RegistersManager: React.FC = () => {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* 4. ABA HORÁRIOS */}
+      {activeTab === 'horarios' && (
+        <div className="space-y-4">
+          <div className="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-4 flex items-start gap-3">
+            <Clock className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+            <div className="text-xs text-blue-900 space-y-1">
+              <p className="font-bold">Horários e Turnos Pré-Cadastrados</p>
+              <p>
+                Os horários cadastrados aqui alimentam automaticamente a seleção rápida ao agendar aulas no calendário. Você pode definir horários padrão para a Tarde, Manhã, Noite ou Integral, evitando digitação manual repetitiva.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {(horarios || []).map(h => {
+              const turnoColors: Record<Turno, { bg: string; text: string; border: string }> = {
+                Tarde: { bg: 'bg-amber-50', text: 'text-amber-800', border: 'border-amber-200' },
+                Manhã: { bg: 'bg-sky-50', text: 'text-sky-800', border: 'border-sky-200' },
+                Integral: { bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-200' },
+                Noite: { bg: 'bg-indigo-50', text: 'text-indigo-800', border: 'border-indigo-200' }
+              };
+              const colors = turnoColors[h.turno] || turnoColors['Tarde'];
+
+              return (
+                <div
+                  key={h.id}
+                  className={`bg-white rounded-2xl border p-5 space-y-3 relative transition-all ${
+                    h.padrao ? 'border-blue-500 shadow-md ring-2 ring-blue-500/20' : 'border-slate-200 shadow-xs'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${colors.bg} ${colors.text} ${colors.border}`}>
+                          {h.turno}
+                        </span>
+                        {h.padrao && (
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-600 text-white">
+                            ⭐ Padrão
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-slate-900 text-base mt-2">{h.nome}</h3>
+                    </div>
+
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => handleOpenHorarioModal(h)}
+                        className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition-colors"
+                        title="Editar Horário"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Excluir o horário "${h.nome}" (${h.horario})?`)) deleteHorario(h.id);
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
+                        title="Excluir Horário"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-slate-500 block uppercase font-semibold">Horário de Instrução</span>
+                      <span className="text-sm font-extrabold text-slate-900 font-mono">{h.horario}</span>
+                    </div>
+
+                    {!h.padrao && (
+                      <button
+                        type="button"
+                        onClick={() => setDefaultHorario(h.id)}
+                        className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        Definir como Padrão
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL HORÁRIO */}
+      {isHorarioModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <h3 className="text-lg font-bold text-slate-900">
+              {editingHorario ? 'Editar Horário' : 'Cadastrar Novo Horário'}
+            </h3>
+
+            <form onSubmit={handleSaveHorario} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Nome / Identificação *</label>
+                <input
+                  type="text"
+                  required
+                  value={horarioNome}
+                  onChange={e => setHorarioNome(e.target.value)}
+                  placeholder="Ex: Tarde (Padrão), Manhã Operacional..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Turno *</label>
+                  <select
+                    value={horarioTurno}
+                    onChange={e => {
+                      const t = e.target.value as Turno;
+                      setHorarioTurno(t);
+                      if (!editingHorario) {
+                        if (t === 'Tarde') setHorarioTexto('13:00 - 17:00');
+                        else if (t === 'Manhã') setHorarioTexto('08:00 - 12:00');
+                        else if (t === 'Integral') setHorarioTexto('08:00 - 17:00');
+                        else if (t === 'Noite') setHorarioTexto('18:00 - 22:00');
+                      }
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  >
+                    <option value="Tarde">Tarde</option>
+                    <option value="Manhã">Manhã</option>
+                    <option value="Integral">Integral</option>
+                    <option value="Noite">Noite</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Horário (Início - Fim) *</label>
+                  <input
+                    type="text"
+                    required
+                    value={horarioTexto}
+                    onChange={e => setHorarioTexto(e.target.value)}
+                    placeholder="Ex: 13:00 - 17:00"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={horarioIsPadrao}
+                    onChange={e => setHorarioIsPadrao(e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
+                  />
+                  <span className="text-xs text-slate-700 font-semibold">
+                    Definir como horário padrão para novas aulas
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsHorarioModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-xs"
+                >
+                  Salvar Horário
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

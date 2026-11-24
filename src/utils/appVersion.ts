@@ -4,10 +4,21 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.7.3';
+export const CURRENT_APP_VERSION = 'v2.8.0';
 export const CURRENT_APP_DATE = '24/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.8.0',
+    date: '24/11/2026',
+    highlights: [
+      'Nova aba "Horários" na tela de Cadastros para gerenciar turnos, horários de instrução e configurar o horário padrão do sistema',
+      'Configuração padrão no agendamento: Turno pré-selecionado para Tarde (13:00 - 17:00) e Matéria pré-selecionada para Atividade Física',
+      'Remoção da identificação de turma na lista de seleção de instrutores, mantendo a visualização limpa',
+      'Exibição do dia da semana (Seg, Ter, Qua, Qui, Sex, Sáb, Dom) em conjunto com a data em todo o sistema e modais',
+      'Regra de conclusão de aulas: aulas agendadas anteriores ao dia de hoje (após a meia-noite) passam automaticamente a realizadas, mantendo no dia atual a possibilidade de remanejamento/prejuízo com total controle do gestor'
+    ]
+  },
   {
     version: 'v2.7.3',
     date: '24/11/2026',

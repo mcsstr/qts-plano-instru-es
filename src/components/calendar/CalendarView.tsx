@@ -14,6 +14,7 @@ import {
   formatMonthYear,
   formatDateBr,
   formatDayOfWeek,
+  formatDayOfWeekAbbr,
   addMonths,
   subMonths,
   format
@@ -314,11 +315,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ onGoToGenerator }) =
                       HOJE
                     </span>
                     <span className="text-xs text-slate-300 capitalize font-medium">
-                      {formatDayOfWeek(todayStr)}
+                      {formatDayOfWeek(todayStr)} ({formatDayOfWeekAbbr(todayStr)})
                     </span>
                   </div>
                   <h2 className="text-sm font-bold tracking-tight mt-0.5">
-                    {formatDateBr(todayStr)}
+                    {formatDateBr(todayStr)} ({formatDayOfWeekAbbr(todayStr)})
                   </h2>
                 </div>
               </div>

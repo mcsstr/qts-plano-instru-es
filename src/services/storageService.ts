@@ -1,5 +1,5 @@
 import { AppState } from '../types';
-import { INITIAL_TURMAS, INITIAL_MATERIAS, INITIAL_INSTRUTORES, INITIAL_AULAS, INITIAL_GESTORES } from './mockData';
+import { INITIAL_TURMAS, INITIAL_MATERIAS, INITIAL_INSTRUTORES, INITIAL_AULAS, INITIAL_GESTORES, INITIAL_HORARIOS } from './mockData';
 import {
   fetchAppwriteData,
   pushAppwriteData,
@@ -24,15 +24,27 @@ export const DEFAULT_STATE: AppState = {
     autoSync: true,
     theme: 'ft-19bpm',
     ultimaSincronizacao: undefined
-  }
+  },
+  horarios: INITIAL_HORARIOS
 };
 
 function normalizeAulasDates(aulas: any[]): any[] {
   if (!Array.isArray(aulas)) return [];
-  return aulas.map(a => ({
-    ...a,
-    data: a.data ? String(a.data).split('T')[0].split(' ')[0].trim() : ''
-  }));
+  const todayStr = new Date().toISOString().split('T')[0];
+  return aulas.map(a => {
+    const cleanDate = a.data ? String(a.data).split('T')[0].split(' ')[0].trim() : '';
+    let currentStatus = a.status || 'agendada';
+    // Se a aula ainda estiver 'agendada' e sua data já venceu (meia-noite passou),
+    // o sistema considera automaticamente como ministrada/realizada
+    if (currentStatus === 'agendada' && cleanDate && cleanDate < todayStr) {
+      currentStatus = 'realizada';
+    }
+    return {
+      ...a,
+      data: cleanDate,
+      status: currentStatus
+    };
+  });
 }
 
 function normalizeGestores(gestores: any[]): any[] {
@@ -154,7 +166,8 @@ export const storageService = {
           instrutores: parsed.instrutores?.length ? parsed.instrutores : INITIAL_INSTRUTORES,
           aulas: normalizeAulasDates(parsed.aulas?.length ? parsed.aulas : INITIAL_AULAS),
           gestores: normalizeGestores(parsed.gestores?.length ? parsed.gestores : INITIAL_GESTORES),
-          sheetsConfig
+          sheetsConfig,
+          horarios: parsed.horarios?.length ? parsed.horarios : INITIAL_HORARIOS
         };
       }
     } catch (e) {
@@ -210,6 +223,7 @@ export const storageService = {
         instrutores: mergedInstrutores.length > 0 ? mergedInstrutores : INITIAL_INSTRUTORES,
         aulas: mergedAulas,
         gestores: mergedGestores.length > 0 ? mergedGestores : INITIAL_GESTORES,
+        horarios: state.horarios?.length ? state.horarios : INITIAL_HORARIOS,
         sheetsConfig: {
           ...state.sheetsConfig,
           scriptUrl: DEFAULT_SCRIPT_URL,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Aula } from '../../types';
 import { ClassCard, getAulaAssunto } from './ClassCard';
-import { formatDateBr, formatDayOfWeek, format, formatMonthYear } from '../../utils/dateUtils';
+import { formatDateBr, formatDayOfWeek, formatDayOfWeekAbbr, format, formatMonthYear } from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
 import { Plus, CalendarDays, Sparkles, Clock, CheckCircle2, AlertTriangle, History } from 'lucide-react';
@@ -87,7 +87,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                     HOJE
                   </span>
                   <span className="text-xs text-slate-300 capitalize font-medium">
-                    {formatDayOfWeek(todayStr)}
+                    {formatDayOfWeek(todayStr)} ({formatDayOfWeekAbbr(todayStr)})
                   </span>
                 </div>
                 <h2 className="text-base sm:text-lg font-bold tracking-tight mt-0.5">
@@ -226,7 +226,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                       <div>
                         <div className="flex items-center space-x-2">
                           <span className={`text-sm font-bold capitalize ${isToday ? 'text-blue-900' : 'text-slate-900'}`}>
-                            {formatDayOfWeek(group.date)}
+                            {formatDayOfWeek(group.date)} ({formatDayOfWeekAbbr(group.date)})
                           </span>
                           {isToday && (
                             <span className="text-[10px] font-bold uppercase bg-blue-600 text-white px-2 py-0.5 rounded-md">

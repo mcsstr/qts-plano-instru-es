@@ -173,7 +173,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                 }`}
               >
                 <Users className="w-4 h-4 text-purple-600" />
-                <span>Cadastros (Turmas, Matérias, Instrutores)</span>
+                <span>Cadastros (Turmas, Matérias, Instrutores, Horários)</span>
               </button>
 
               {isAdmin && (

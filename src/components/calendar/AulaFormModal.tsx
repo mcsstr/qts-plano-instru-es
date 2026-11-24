@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Aula, Turno } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { groupInstrutoresByAntiguidade } from '../../utils/rankUtils';
+import { formatDayOfWeek, formatDayOfWeekAbbr } from '../../utils/dateUtils';
 import { X, Calendar as CalendarIcon, Clock, BookOpen, Users, User, Check, Sparkles, AlertCircle } from 'lucide-react';
 
 interface AulaFormModalProps {
@@ -17,14 +18,14 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
   aulaToEdit,
   initialDate
 }) => {
-  const { turmas, materias, instrutores, addAula, updateAula } = useApp();
+  const { turmas, materias, instrutores, horarios, addAula, updateAula } = useApp();
 
   const [data, setData] = useState('');
   const [turmaId, setTurmaId] = useState('');
   const [materiaId, setMateriaId] = useState('');
   const [instrutorId, setInstrutorId] = useState('');
-  const [turno, setTurno] = useState<Turno>('Integral');
-  const [horario, setHorario] = useState('08:00 - 17:00');
+  const [turno, setTurno] = useState<Turno>('Tarde');
+  const [horario, setHorario] = useState('13:00 - 17:00');
   const [observacoes, setObservacoes] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -35,19 +36,48 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
       setMateriaId(aulaToEdit.materiaId);
       setInstrutorId(aulaToEdit.instrutorId);
       setTurno(aulaToEdit.turno);
-      setHorario(aulaToEdit.horario || '08:00 - 17:00');
+      setHorario(aulaToEdit.horario || '13:00 - 17:00');
       setObservacoes(aulaToEdit.observacoes || '');
     } else {
       setData(initialDate || new Date().toISOString().split('T')[0]);
       setTurmaId(turmas[0]?.id || '');
-      setMateriaId(materias[0]?.id || '');
+
+      // Matéria padrão: busca "Atividade Física", "Condicionamento Físico" ou sigla "FÍSICO"
+      const defaultMateria = materias.find(
+        m => /atividade f[ií]sica|condicionamento f[ií]sica|educa[cç][aã]o f[ií]sica|f[ií]sico/i.test(m.nome) ||
+             /f[ií]sico/i.test(m.sigla)
+      ) || materias[0];
+      setMateriaId(defaultMateria?.id || '');
+
       setInstrutorId(instrutores[0]?.id || '');
-      setTurno(turmas[0]?.turnoPadrao || 'Integral');
-      setHorario('08:00 - 17:00');
+
+      // Turno padrão é Tarde; busca horário pré-cadastrado padrão ou para o turno Tarde
+      const defaultHorario = (horarios || []).find(h => h.padrao) ||
+        (horarios || []).find(h => h.turno === 'Tarde') ||
+        { turno: 'Tarde' as Turno, horario: '13:00 - 17:00' };
+
+      setTurno(defaultHorario.turno || 'Tarde');
+      setHorario(defaultHorario.horario || '13:00 - 17:00');
       setObservacoes('');
     }
     setError(null);
-  }, [aulaToEdit, initialDate, isOpen, turmas, materias, instrutores]);
+  }, [aulaToEdit, initialDate, isOpen, turmas, materias, instrutores, horarios]);
+
+  const handleTurnoChange = (newTurno: Turno) => {
+    setTurno(newTurno);
+    const matching = (horarios || []).find(h => h.turno === newTurno);
+    if (matching) {
+      setHorario(matching.horario);
+    } else if (newTurno === 'Tarde') {
+      setHorario('13:00 - 17:00');
+    } else if (newTurno === 'Manhã') {
+      setHorario('08:00 - 12:00');
+    } else if (newTurno === 'Integral') {
+      setHorario('08:00 - 17:00');
+    } else if (newTurno === 'Noite') {
+      setHorario('18:00 - 22:00');
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -135,7 +165,14 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
           {/* Data e Turno */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Data da Aula *</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-slate-700">Data da Aula *</label>
+                {data && (
+                  <span className="text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-md capitalize">
+                    {formatDayOfWeekAbbr(data)}
+                  </span>
+                )}
+              </div>
               <input
                 type="date"
                 required
@@ -143,29 +180,60 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
                 onChange={e => setData(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
+              {data && (
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Dia: <strong className="text-slate-700 capitalize">{formatDayOfWeek(data)}</strong> ({formatDayOfWeekAbbr(data)})
+                </span>
+              )}
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Turno / Horário *</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-slate-700">Turno / Horário *</label>
+                <span className="text-[10px] text-slate-500">Padrão: Tarde</span>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <select
                   value={turno}
-                  onChange={e => setTurno(e.target.value as Turno)}
+                  onChange={e => handleTurnoChange(e.target.value as Turno)}
                   className="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 >
-                  <option value="Integral">Integral</option>
-                  <option value="Manhã">Manhã</option>
                   <option value="Tarde">Tarde</option>
+                  <option value="Manhã">Manhã</option>
+                  <option value="Integral">Integral</option>
                   <option value="Noite">Noite</option>
                 </select>
                 <input
                   type="text"
                   value={horario}
                   onChange={e => setHorario(e.target.value)}
-                  placeholder="08:00 - 17:00"
+                  placeholder="13:00 - 17:00"
                   className="w-full px-2.5 py-2 rounded-xl border border-slate-300 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
+
+              {/* Botões Rápidos de Horários Cadastrados */}
+              {horarios && horarios.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {horarios.filter(h => h.ativo !== false).map(h => (
+                    <button
+                      key={h.id}
+                      type="button"
+                      onClick={() => {
+                        setTurno(h.turno);
+                        setHorario(h.horario);
+                      }}
+                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border transition-all ${
+                        turno === h.turno && horario === h.horario
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                          : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      {h.nome}: {h.horario}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -286,10 +354,9 @@ export const AulaFormModal: React.FC<AulaFormModalProps> = ({
                 <optgroup key={group.rank.id} label={`${group.rank.sigla} — ${group.rank.titulo}`}>
                   {group.items.map(i => {
                     const instrApto = i.materiasAptas.includes(materiaId);
-                    const linkedTurma = i.turmaId ? turmas.find(t => t.id === i.turmaId) : null;
                     return (
                       <option key={i.id} value={i.id}>
-                        {i.nome} {linkedTurma ? `[Turma ${linkedTurma.sigla}]` : ''} {instrApto ? '⭐ (Apto na matéria)' : ''}
+                        {i.nome} {instrApto ? '⭐ (Apto na matéria)' : ''}
                       </option>
                     );
                   })}

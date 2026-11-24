@@ -8,6 +8,7 @@ import {
   format,
   formatDateBr,
   formatDayOfWeek,
+  formatDayOfWeekAbbr,
   isWeekend
 } from '../../utils/dateUtils';
 import { useAuth } from '../../context/AuthContext';
@@ -204,10 +205,10 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                 </div>
                 <div>
                   <span className="text-[11px] uppercase font-semibold tracking-wider text-slate-400 block capitalize">
-                    {formatDayOfWeek(modalDayStr)}
+                    {formatDayOfWeek(modalDayStr)} ({formatDayOfWeekAbbr(modalDayStr)})
                   </span>
                   <h3 className="text-base font-bold leading-tight">
-                    {formatDateBr(modalDayStr)} • {modalDayAulas.length} {modalDayAulas.length === 1 ? 'aula' : 'aulas'}
+                    {formatDateBr(modalDayStr)} ({formatDayOfWeekAbbr(modalDayStr)}) • {modalDayAulas.length} {modalDayAulas.length === 1 ? 'aula' : 'aulas'}
                   </h3>
                 </div>
               </div>

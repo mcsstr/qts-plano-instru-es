@@ -67,6 +67,15 @@ export interface Gestor {
   ativo: boolean;
 }
 
+export interface HorarioConfig {
+  id: string;
+  nome: string; // Ex: "Tarde (Padrão)", "Manhã", "Integral", "Noite"
+  turno: Turno;
+  horario: string; // Ex: "13:00 - 17:00"
+  padrao?: boolean;
+  ativo: boolean;
+}
+
 export interface AuthUser {
   nome: string;
   login?: string;
@@ -88,4 +97,5 @@ export interface AppState {
   aulas: Aula[];
   gestores: Gestor[];
   sheetsConfig: GoogleSheetsConfig;
+  horarios?: HorarioConfig[];
 }
