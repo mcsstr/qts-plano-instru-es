@@ -51,6 +51,7 @@ export interface Aula {
   turno: Turno;
   horario?: string; // ex: "08:00 - 12:00"
   status: AulaStatus;
+  manualStatus?: boolean; // Define se o status foi ajustado ou fixado manualmente pelo gestor
   motivoPrejuizo?: string; // Detalhes caso a aula tenha sido prejudicada
   remanejadaParaId?: string; // ID da nova aula criada caso remanejada
   remanejadaDeId?: string; // ID da aula original caso seja fruto de remanejamento

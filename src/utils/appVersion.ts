@@ -4,10 +4,19 @@ export interface AppVersionEntry {
   highlights: string[];
 }
 
-export const CURRENT_APP_VERSION = 'v2.8.2';
-export const CURRENT_APP_DATE = '24/11/2026';
+export const CURRENT_APP_VERSION = 'v2.8.3';
+export const CURRENT_APP_DATE = '25/11/2026';
 
 export const APP_VERSION_HISTORY: AppVersionEntry[] = [
+  {
+    version: 'v2.8.3',
+    date: '25/11/2026',
+    highlights: [
+      'Controle manual completo de status: possibilidade de marcar como realizada (aplicada) ou reverter para agendada diretamente no modal de detalhes a qualquer momento',
+      'Campo de status adicionado ao formulário de cadastro/edição de aulas (Agendada, Realizada, Prejudicada, Remanejada, Cancelada)',
+      'A transição automática para realizada após a meia-noite da data da aula foi preservada e aprimorada para respeitar e nunca sobrescrever alterações manuais realizadas pelo gestor'
+    ]
+  },
   {
     version: 'v2.8.2',
     date: '24/11/2026',

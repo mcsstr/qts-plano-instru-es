@@ -157,13 +157,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     storageService.saveState(state);
   }, [state]);
 
-  // Efeito para verificar se aulas agendadas venceram a data (passou da meia-noite) e promovê-las a realizadas
+const MANUAL_STATUS_STORAGE_KEY = 'qts_manual_status_aulas_v1';
+
+function getManualStatusAulaIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(MANUAL_STATUS_STORAGE_KEY);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set(Array.isArray(arr) ? arr : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveManualStatusAulaId(aulaId: string) {
+  try {
+    const set = getManualStatusAulaIds();
+    set.add(aulaId);
+    localStorage.setItem(MANUAL_STATUS_STORAGE_KEY, JSON.stringify([...set]));
+  } catch {}
+}
+
+  // Efeito para verificar se aulas agendadas venceram a data (passou da meia-noite) e promovê-las a realizadas naturalmente
   useEffect(() => {
     const checkExpiredAulas = () => {
       const todayStr = new Date().toISOString().split('T')[0];
+      const manualStatusIds = getManualStatusAulaIds();
       setState(prev => {
         let changed = false;
         const newAulas = prev.aulas.map(a => {
+          // Se o gestor definiu manualmente o status desta aula, respeita a decisão e não sobrescreve
+          if (a.manualStatus || manualStatusIds.has(a.id)) {
+            return a;
+          }
+          // Transição natural da meia-noite: aula agendada anterior à data de hoje passa a realizada
           if (a.status === 'agendada' && a.data && a.data < todayStr) {
             changed = true;
             return { ...a, status: 'realizada' as const };
@@ -347,9 +374,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // AULAS CRUD
   const addAula = (aulaData: Omit<Aula, 'id' | 'criadaEm'>): Aula => {
+    const newAulaId = `aula-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    if (aulaData.manualStatus || (aulaData.status && aulaData.status !== 'agendada')) {
+      saveManualStatusAulaId(newAulaId);
+    }
     const newAula: Aula = {
       ...aulaData,
-      id: `aula-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      id: newAulaId,
       criadaEm: new Date().toISOString()
     };
 
@@ -363,9 +394,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateAula = (aula: Aula) => {
+    const existing = state.aulas.find(a => a.id === aula.id);
+    const isManual = aula.manualStatus || (existing && existing.status !== aula.status);
+    if (isManual) {
+      saveManualStatusAulaId(aula.id);
+    }
+    const updatedAula: Aula = {
+      ...aula,
+      manualStatus: isManual ? true : aula.manualStatus
+    };
+
     setState(prev => ({
       ...prev,
-      aulas: prev.aulas.map(a => (a.id === aula.id ? aula : a))
+      aulas: prev.aulas.map(a => (a.id === aula.id ? updatedAula : a))
     }));
     showToast({ type: 'success', title: 'Alterado com sucesso' });
   };

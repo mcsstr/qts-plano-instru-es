@@ -54,7 +54,25 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
   const handleMarkAsDone = () => {
     updateAula({
       ...aula,
-      status: 'realizada'
+      status: 'realizada',
+      manualStatus: true
+    });
+    showToast({
+      type: 'success',
+      title: 'Aula marcada como realizada com sucesso'
+    });
+    onClose();
+  };
+
+  const handleMarkAsAgendada = () => {
+    updateAula({
+      ...aula,
+      status: 'agendada',
+      manualStatus: true
+    });
+    showToast({
+      type: 'success',
+      title: 'Status revertido para agendada com sucesso'
     });
     onClose();
   };
@@ -279,35 +297,26 @@ export const AulaDetailsModal: React.FC<AulaDetailsModalProps> = ({
                 </button>
               )}
 
-              {aula.status !== 'realizada' && (
-                (() => {
-                  const todayStr = new Date().toISOString().split('T')[0];
-                  const isPastDate = Boolean(aula.data && aula.data < todayStr);
-
-                  if (isPastDate) {
-                    return (
-                      <button
-                        type="button"
-                        onClick={handleMarkAsDone}
-                        className="flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
-                        title="Marcar aula retroativa como realizada"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Realizada</span>
-                      </button>
-                    );
-                  }
-
-                  return (
-                    <span
-                      className="text-[10px] text-slate-500 flex items-center gap-1 bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200"
-                      title="Uma aula só pode ser confirmada como ministrada após o encerramento do dia (meia-noite), pois no próprio dia ainda pode sofrer adiamento ou prejuízo."
-                    >
-                      <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>Ministrada após a data (00h)</span>
-                    </span>
-                  );
-                })()
+              {aula.status === 'realizada' ? (
+                <button
+                  type="button"
+                  onClick={handleMarkAsAgendada}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-xl transition-colors border border-blue-200 shadow-2xs"
+                  title="Reverter status da aula para agendada"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Reverter p/ Agendada</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleMarkAsDone}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
+                  title="Marcar aula como realizada / aplicada"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Marcar Realizada</span>
+                </button>
               )}
             </div>
           </div>
